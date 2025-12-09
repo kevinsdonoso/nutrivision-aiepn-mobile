@@ -100,10 +100,9 @@ class HomePage extends StatelessWidget {
                   _DetectionOptionCard(
                     icon: Icons.camera_alt_outlined,
                     title: 'Con Cámara',
-                    subtitle: 'Toma una foto o detecta en tiempo real',
+                    subtitle: 'Detecta ingredientes en tiempo real',
                     color: AppColors.secondaryOrange,
                     onTap: () => context.go(AppConstants.routeCamera),
-                    badge: 'Próximamente',
                   ),
                   const SizedBox(height: 32),
 
@@ -142,7 +141,6 @@ class _DetectionOptionCard extends StatelessWidget {
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
-  final String? badge;
 
   const _DetectionOptionCard({
     required this.icon,
@@ -150,7 +148,6 @@ class _DetectionOptionCard extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.onTap,
-    this.badge,
   });
 
   @override
@@ -188,36 +185,11 @@ class _DetectionOptionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        if (badge != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryOrangeLight,
-                              borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
-                            ),
-                            child: Text(
-                              badge!,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.secondaryOrangeDark,
-                              ),
-                            ),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(

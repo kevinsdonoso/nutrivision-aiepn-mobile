@@ -125,13 +125,34 @@ abstract class AppConstants {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Frames a saltar entre inferencias (para rendimiento)
-  static const int cameraFrameSkip = 3;
+  /// Con cámara a 30fps, frameSkip=5 → ~6 inferencias/segundo
+  static const int cameraFrameSkip = 5;
 
   /// Ancho máximo de imagen para procesamiento
   static const int maxImageWidth = 1920;
 
   /// Alto máximo de imagen para procesamiento
   static const int maxImageHeight = 1920;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONFIGURACIÓN DE CÁMARA EN TIEMPO REAL
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Umbral de confianza para detección en tiempo real
+  /// (ligeramente más alto que galería para reducir falsos positivos)
+  static const double realtimeConfidenceThreshold = 0.45;
+
+  /// Tiempo máximo de inferencia antes de saltar frame (ms)
+  static const int maxInferenceTimeMs = 800;
+
+  /// Tiempo mínimo entre inferencias para evitar sobrecarga (ms)
+  static const int minInferenceIntervalMs = 100;
+
+  /// Mostrar indicador de FPS en modo debug
+  static const bool showDebugFps = true;
+
+  /// Número máximo de detecciones a mostrar en overlay
+  static const int maxOverlayDetections = 10;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MENSAJES DE UI

@@ -454,3 +454,59 @@ class NutriVisionGenericException extends NutriVisionException {
   @override
   String get userMessage => 'Ocurrió un error inesperado. Por favor intenta de nuevo.';
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXCEPCIONES DE CÁMARA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Excepción cuando la cámara no se puede inicializar.
+class CameraInitializationException extends NutriVisionException {
+  const CameraInitializationException({
+    required super.message,
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'CAMERA_INIT_ERROR');
+
+  @override
+  String get userMessage =>
+      'No se pudo inicializar la cámara. Verifica los permisos en configuración.';
+}
+
+/// Excepción cuando falla el streaming de frames.
+class CameraStreamException extends NutriVisionException {
+  const CameraStreamException({
+    required super.message,
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'CAMERA_STREAM_ERROR');
+
+  @override
+  String get userMessage =>
+      'Error en la transmisión de la cámara. Intenta reiniciar la aplicación.';
+}
+
+/// Excepción cuando falla la conversión de frame YUV a RGB.
+class FrameConversionException extends NutriVisionException {
+  const FrameConversionException({
+    required super.message,
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'FRAME_CONVERSION_ERROR');
+
+  @override
+  String get userMessage =>
+      'Error procesando el frame de cámara.';
+}
+
+/// Excepción cuando no hay cámaras disponibles.
+class NoCameraAvailableException extends NutriVisionException {
+  const NoCameraAvailableException({
+    super.message = 'No se encontraron cámaras disponibles',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'NO_CAMERA_AVAILABLE');
+
+  @override
+  String get userMessage =>
+      'No se encontraron cámaras en el dispositivo.';
+}

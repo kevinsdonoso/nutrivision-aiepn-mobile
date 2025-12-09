@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../constants/app_constants.dart';
 import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/gallery_detection_page.dart';
+import '../../presentation/pages/camera_detection_page.dart';
 
 /// Configuración del router de la aplicación.
 ///
@@ -71,14 +72,14 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // ═══════════════════════════════════════════════════════════════════════
-    // DETECCIÓN DESDE CÁMARA (Placeholder)
+    // DETECCIÓN DESDE CÁMARA
     // ═══════════════════════════════════════════════════════════════════════
     GoRoute(
       path: AppConstants.routeCamera,
       name: 'camera',
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
-        child: const _CameraPlaceholderPage(),
+        child: const CameraDetectionPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
@@ -129,51 +130,6 @@ final GoRouter appRouter = GoRouter(
 // ═══════════════════════════════════════════════════════════════════════════════
 // PÁGINAS PLACEHOLDER (Se reemplazarán con implementaciones reales)
 // ═══════════════════════════════════════════════════════════════════════════════
-
-/// Página placeholder para detección con cámara.
-class _CameraPlaceholderPage extends StatelessWidget {
-  const _CameraPlaceholderPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detección con Cámara'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.camera_alt_outlined,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary.withAlpha(128),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Próximamente',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Detección en tiempo real desde la cámara',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            OutlinedButton.icon(
-              onPressed: () => context.go(AppConstants.routeHome),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Volver al inicio'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Página placeholder para resultados nutricionales.
 class _ResultsPlaceholderPage extends StatelessWidget {
