@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                        AndroidManifest.xml                                    ║
+║                     NutriVisionAIEPN Mobile                                   ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║  Archivo de configuración principal de la aplicación Android.                 ║
+║  Define: permisos, características del hardware, componentes y metadatos.     ║
+║                                                                               ║
+║  Documentación oficial:                                                       ║
+║  https://developer.android.com/guide/topics/manifest/manifest-intro           ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SECCIÓN 1: PERMISOS (uses-permission)
+         ═══════════════════════════════════════════════════════════════════════
+         Los permisos se dividen en dos categorías:
+
+         1. PERMISOS NORMALES: Se otorgan automáticamente en la instalación.
+            Ejemplo: INTERNET, ACCESS_NETWORK_STATE
+
+         2. PERMISOS PELIGROSOS: Requieren aprobación explícita del usuario
+            en tiempo de ejecución (Android 6.0+ / API 23+).
+            Ejemplo: CAMERA, READ_EXTERNAL_STORAGE, READ_MEDIA_IMAGES
+
+         Referencia: https://developer.android.com/guide/topics/permissions/overview
+    -->
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         PERMISO: CÁMARA
+         ─────────────────────────────────────────────────────────────────────────
+         Tipo: Peligroso (requiere aprobación en runtime)
+         Grupo: android.permission-group.CAMERA
+
+         Necesario para:
+         - Capturar imágenes de platos de comida para detección de ingredientes
+         - Streaming de frames en tiempo real para detección continua
+         - Vista previa de cámara en la interfaz de usuario
+
+         El plugin 'camera' de Flutter requiere este permiso para funcionar.
+         Sin él, CameraController.initialize() lanzará una excepción.
+    -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         PERMISO: ALMACENAMIENTO EXTERNO (LECTURA) - Android 12 y anterior
+         ─────────────────────────────────────────────────────────────────────────
+         Tipo: Peligroso (requiere aprobación en runtime)
+         Grupo: android.permission-group.STORAGE
+
+         IMPORTANTE: Este permiso está DEPRECADO en Android 13 (API 33+)
+
+         El atributo maxSdkVersion="32" limita este permiso a:
+         - Android 12L (API 32) y versiones anteriores
+
+         En Android 13+ se debe usar READ_MEDIA_IMAGES en su lugar.
+
+         Necesario para:
+         - Seleccionar imágenes desde la galería (image_picker)
+         - Acceder a fotos guardadas en almacenamiento externo
+
+         Referencia: https://developer.android.com/about/versions/13/behavior-changes-13#granular-media-permissions
+    -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         PERMISO: IMÁGENES DE MEDIOS - Android 13+ (API 33+)
+         ─────────────────────────────────────────────────────────────────────────
+         Tipo: Peligroso (requiere aprobación en runtime)
+         Grupo: android.permission-group.READ_MEDIA_VISUAL
+
+         NUEVO en Android 13: Permisos granulares de medios
+
+         Android 13 introdujo permisos separados para diferentes tipos de medios:
+         - READ_MEDIA_IMAGES: Solo imágenes (fotos, capturas)
+         - READ_MEDIA_VIDEO: Solo videos
+         - READ_MEDIA_AUDIO: Solo audio (música, grabaciones)
+
+         Esto mejora la privacidad del usuario al solicitar solo lo necesario.
+         Para NutriVision solo necesitamos acceso a IMÁGENES.
+
+         Necesario para:
+         - Seleccionar fotos de comida desde la galería en Android 13+
+         - El plugin image_picker detecta automáticamente qué permiso solicitar
+
+         Referencia: https://developer.android.com/about/versions/13/behavior-changes-13
+    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SECCIÓN 2: CARACTERÍSTICAS DEL HARDWARE (uses-feature)
+         ═══════════════════════════════════════════════════════════════════════
+         Declara qué características de hardware utiliza la aplicación.
+
+         android:required="true"  → La app NO se instala si falta el hardware
+         android:required="false" → La app funciona sin el hardware (degradación graceful)
+
+         Google Play usa esta información para filtrar dispositivos compatibles.
+
+         Referencia: https://developer.android.com/guide/topics/manifest/uses-feature-element
+    -->
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         FEATURE: CÁMARA (hardware.camera)
+         ─────────────────────────────────────────────────────────────────────────
+         required="false" permite instalar la app en:
+         - Tablets sin cámara trasera
+         - Dispositivos con solo cámara frontal
+         - Emuladores sin cámara configurada
+
+         La app puede funcionar con imágenes de galería si no hay cámara.
+         En código, verificar disponibilidad con: availableCameras()
+    -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         FEATURE: AUTOFOCUS DE CÁMARA
+         ─────────────────────────────────────────────────────────────────────────
+         required="false" porque:
+         - Cámaras frontales generalmente no tienen autofocus
+         - Algunos dispositivos económicos carecen de autofocus
+         - La detección YOLO funciona razonablemente sin enfoque perfecto
+
+         El autofocus mejora la calidad de imagen pero no es estrictamente necesario.
+    -->
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SECCIÓN 3: COMPONENTE APPLICATION
+         ═══════════════════════════════════════════════════════════════════════
+         Define la configuración global de la aplicación y sus componentes.
+
+         Atributos principales:
+         - android:label → Nombre visible de la app en el launcher
+         - android:name  → Clase Application personalizada (Flutter usa ${applicationName})
+         - android:icon  → Icono de la app (referencia a mipmap)
+
+         Referencia: https://developer.android.com/guide/topics/manifest/application-element
+    -->
+    <application
+        android:label="NutriVision AI"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECCIÓN 3.1: ACTIVITY PRINCIPAL (MainActivity)
+             ═══════════════════════════════════════════════════════════════════
+             FlutterActivity que hospeda la aplicación Flutter.
+
+             Atributos importantes:
+
+             android:exported="true"
+                 Permite que otras apps (como el launcher) inicien esta Activity.
+                 OBLIGATORIO para Activities con intent-filter MAIN/LAUNCHER.
+                 (Requerido desde Android 12 / API 31)
+
+             android:launchMode="singleTop"
+                 Si la Activity ya está en el tope del stack, no crea una nueva
+                 instancia. Evita múltiples instancias de la app.
+
+             android:taskAffinity=""
+                 String vacío significa que esta Activity no tiene afinidad con
+                 ninguna tarea específica. Comportamiento estándar de Flutter.
+
+             android:hardwareAccelerated="true"
+                 Habilita aceleración por GPU para renderizado.
+                 CRÍTICO para rendimiento de Flutter y visualización de cámara.
+
+             android:configChanges="..."
+                 Lista de cambios de configuración que la Activity manejará
+                 SIN recrearse. Flutter maneja estos cambios internamente:
+                 - orientation: Rotación del dispositivo
+                 - keyboardHidden/keyboard: Teclado aparece/desaparece
+                 - screenSize: Cambio de tamaño (split-screen, etc.)
+                 - locale: Cambio de idioma
+                 - density: Cambio de densidad de pantalla
+                 - uiMode: Cambio de modo UI (modo oscuro/claro)
+
+             android:windowSoftInputMode="adjustResize"
+                 Cuando aparece el teclado, redimensiona la ventana en lugar
+                 de hacer pan (scroll). Mejor UX para formularios.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <!-- ───────────────────────────────────────────────────────────────
+                 META-DATA: Tema Normal de Flutter
+                 ───────────────────────────────────────────────────────────────
+                 Define el tema que se aplica DESPUÉS de que Flutter inicializa.
+
+                 Flujo de temas:
+                 1. App inicia → Se muestra LaunchTheme (splash screen)
+                 2. Flutter engine carga → Se aplica NormalTheme
+                 3. Flutter UI renderiza → El tema de Flutter toma control
+
+                 NormalTheme típicamente tiene un fondo blanco/negro que
+                 coincide con el tema de la app Flutter para transición suave.
+            -->
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+
+            <!-- ───────────────────────────────────────────────────────────────
+                 INTENT-FILTER: Punto de entrada principal
+                 ───────────────────────────────────────────────────────────────
+                 Define esta Activity como el punto de entrada de la aplicación.
+
+                 MAIN: Esta es la acción principal (punto de entrada)
+                 LAUNCHER: Mostrar en el launcher del sistema (cajón de apps)
+
+                 Sin este intent-filter, la app no aparecería en el launcher
+                 y no podría iniciarse de forma normal.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             META-DATA: Versión de Flutter Embedding
+             ═══════════════════════════════════════════════════════════════════
+             Indica la versión del sistema de embedding de Flutter.
+
+             Valor "2" = Flutter embedding v2 (introducido en Flutter 1.12)
+
+             NO ELIMINAR: El tooling de Flutter usa este valor para generar
+             automáticamente GeneratedPluginRegistrant.java, que registra
+             todos los plugins nativos (camera, tflite_flutter, etc.).
+
+             Si se elimina, los plugins no funcionarán correctamente.
+        -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+    </application>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SECCIÓN 4: QUERIES (Visibilidad de paquetes)
+         ═══════════════════════════════════════════════════════════════════════
+         A partir de Android 11 (API 30), las apps tienen visibilidad limitada
+         de otras apps instaladas por razones de privacidad.
+
+         El elemento <queries> declara qué tipos de apps/intents necesitamos
+         poder "ver" o interactuar.
+
+         Referencia: https://developer.android.com/training/package-visibility
+    -->
+    <queries>
+        <!-- ───────────────────────────────────────────────────────────────────
+             QUERY: Procesamiento de texto
+             ───────────────────────────────────────────────────────────────────
+             Permite interactuar con apps que procesan texto.
+
+             Usado por Flutter engine en io.flutter.plugin.text.ProcessTextPlugin
+             para funcionalidades como:
+             - Traducir texto seleccionado
+             - Buscar texto en otras apps
+             - Compartir texto con procesadores externos
+
+             mimeType="text/plain" especifica que solo nos interesan
+             apps que manejan texto plano (no HTML, RTF, etc.).
+        -->
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+
+        <!-- ───────────────────────────────────────────────────────────────────
+             QUERY: Ver URLs HTTPS
+             ───────────────────────────────────────────────────────────────────
+             Permite detectar y abrir navegadores web instalados.
+
+             Necesario para:
+             - Abrir enlaces externos (documentación, ayuda)
+             - Plugin url_launcher (si se usa en el futuro)
+             - Verificar si hay navegador disponible antes de abrir URL
+
+             scheme="https" limita a URLs seguras (no http).
+        -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+
+        <!-- ───────────────────────────────────────────────────────────────────
+             QUERY: Compartir contenido
+             ───────────────────────────────────────────────────────────────────
+             Permite detectar apps que pueden recibir contenido compartido.
+
+             Necesario para:
+             - Plugin share_plus: compartir resultados de detección
+             - Enviar imágenes analizadas a WhatsApp, Gmail, etc.
+             - Compartir información nutricional con otras apps
+
+             El mimeType "*/*" permite compartir cualquier tipo de contenido
+             (imágenes, texto, archivos).
+        -->
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+    </queries>
+
+</manifest>
+
+    <!--
+    ╔═══════════════════════════════════════════════════════════════════════════════╗
+    ║                          NOTAS TÉCNICAS ADICIONALES                           ║
+    ╠═══════════════════════════════════════════════════════════════════════════════╣
+    ║                                                                               ║
+    ║  1. MANEJO DE PERMISOS EN CÓDIGO DART:                                        ║
+    ║     Los permisos peligrosos (CAMERA, READ_MEDIA_IMAGES) deben solicitarse     ║
+    ║     en runtime usando el plugin permission_handler:                           ║
+    ║                                                                               ║
+    ║     final status = await Permission.camera.request();                         ║
+    ║     if (status.isGranted) {                                                   ║
+    ║       // Inicializar cámara                                                   ║
+    ║     } else if (status.isPermanentlyDenied) {                                  ║
+    ║       openAppSettings(); // Abrir configuración del sistema                   ║
+    ║     }                                                                         ║
+    ║                                                                               ║
+    ║  2. COMPATIBILIDAD CON ANDROID 13+:                                           ║
+    ║     Usar device_info_plus para detectar versión de Android:                   ║
+    ║                                                                               ║
+    ║     final androidInfo = await DeviceInfoPlugin().androidInfo;                 ║
+    ║     if (androidInfo.version.sdkInt >= 33) {                                   ║
+    ║       // Usar Permission.photos (READ_MEDIA_IMAGES)                           ║
+    ║     } else {                                                                  ║
+    ║       // Usar Permission.storage (READ_EXTERNAL_STORAGE)                      ║
+    ║     }                                                                         ║
+    ║                                                                               ║
+    ║  3. PERMISOS NO INCLUIDOS (no necesarios para esta app):                      ║
+    ║     - INTERNET: No requerido (inferencia 100% offline)                        ║
+    ║     - WRITE_EXTERNAL_STORAGE: No guardamos en almacenamiento externo          ║
+    ║     - ACCESS_FINE_LOCATION: No usamos ubicación                               ║
+    ║     - RECORD_AUDIO: No grabamos audio                                         ║
+    ║                                                                               ║
+    ║  4. DEBUGGING DE PERMISOS:                                                    ║
+    ║     Si los permisos no funcionan, verificar:                                  ║
+    ║     a) flutter clean && flutter pub get                                       ║
+    ║     b) Desinstalar app del dispositivo y reinstalar                           ║
+    ║     c) Verificar que minSdkVersion >= 26 en build.gradle                      ║
+    ║                                                                               ║
+    ╚═══════════════════════════════════════════════════════════════════════════════╝
+    -->
