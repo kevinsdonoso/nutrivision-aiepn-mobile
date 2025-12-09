@@ -53,6 +53,10 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
   /// Tiempo de inferencia (para métricas)
   int _inferenceTimeMs = 0;
 
+  /// Dimensiones de la imagen original (para escalar bounding boxes)
+  int _imageWidth = 0;
+  int _imageHeight = 0;
+
   // ═══════════════════════════════════════════════════════════════════════════
   // LIFECYCLE
   // ═══════════════════════════════════════════════════════════════════════════
@@ -154,6 +158,8 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
       setState(() {
         _detections = detections;
         _inferenceTimeMs = stopwatch.elapsedMilliseconds;
+        _imageWidth = image.width;
+        _imageHeight = image.height;
         _statusMessage = 'Detectados: ${detections.length} ingredientes (${_inferenceTimeMs}ms)';
       });
 
@@ -281,30 +287,31 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
             if (_selectedImage != null) ...[
               Card(
                 clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  children: [
-                    // Imagen
-                    Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                    ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        // Imagen
+                        Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                        ),
 
-                    // Overlay con bounding boxes
-                    if (_detections.isNotEmpty)
-                      Positioned.fill(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return CustomPaint(
+                        // Overlay con bounding boxes
+                        if (_detections.isNotEmpty && _imageWidth > 0 && _imageHeight > 0)
+                          Positioned.fill(
+                            child: CustomPaint(
                               painter: BoundingBoxPainter(
                                 detections: _detections,
-                                imageFile: _selectedImage!,
+                                imageWidth: _imageWidth,
+                                imageHeight: _imageHeight,
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                  ],
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
 
@@ -387,55 +394,103 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Dibuja los bounding boxes sobre la imagen.
+///
+/// Escala las coordenadas de detección (en píxeles de imagen original)
+/// al tamaño del widget donde se renderiza.
 class BoundingBoxPainter extends CustomPainter {
   final List<Detection> detections;
-  final File imageFile;
+  final int imageWidth;
+  final int imageHeight;
 
   BoundingBoxPainter({
     required this.detections,
-    required this.imageFile,
+    required this.imageWidth,
+    required this.imageHeight,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Necesitamos conocer las dimensiones originales de la imagen
-    // Para escalar correctamente los bounding boxes
-    // Este es un placeholder - en producción usaríamos las dimensiones reales
+    if (detections.isEmpty) return;
+
+    // Calcular factores de escala
+    final double scaleX = size.width / imageWidth;
+    final double scaleY = size.height / imageHeight;
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 2.5;
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final backgroundPaint = Paint()
+      ..style = PaintingStyle.fill;
 
     for (final detection in detections) {
       // Color según confianza
-      paint.color = detection.isHighConfidence
+      final Color boxColor = detection.isHighConfidence
           ? Colors.green
           : detection.isMediumConfidence
-          ? Colors.orange
-          : Colors.red;
+              ? Colors.orange
+              : Colors.red;
 
-      // Nota: Aquí deberíamos escalar las coordenadas según el tamaño del widget
-      // Por ahora solo dibujamos un placeholder
-      // En la implementación real, necesitamos las dimensiones de la imagen
+      paint.color = boxColor;
+      backgroundPaint.color = boxColor.withAlpha(38); // 0.15 * 255 ≈ 38
 
-      // Dibujar etiqueta
-      textPainter.text = TextSpan(
-        text: '${detection.label} ${detection.confidenceFormatted}',
-        style: TextStyle(
-          color: paint.color,
-          fontSize: 12,
+      // Escalar coordenadas al tamaño del widget
+      final double x1 = detection.x1 * scaleX;
+      final double y1 = detection.y1 * scaleY;
+      final double x2 = detection.x2 * scaleX;
+      final double y2 = detection.y2 * scaleY;
+
+      final rect = Rect.fromLTRB(x1, y1, x2, y2);
+
+      // Dibujar fondo semi-transparente
+      canvas.drawRect(rect, backgroundPaint);
+
+      // Dibujar borde del rectángulo
+      canvas.drawRect(rect, paint);
+
+      // Preparar etiqueta
+      final String labelText = '${detection.label} ${detection.confidenceFormatted}';
+
+      final textSpan = TextSpan(
+        text: labelText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
-          backgroundColor: Colors.black54,
         ),
       );
+
+      final textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr,
+      );
       textPainter.layout();
+
+      // Calcular posición del fondo de la etiqueta
+      final double labelWidth = textPainter.width + 8;
+      final double labelHeight = textPainter.height + 4;
+      final double labelX = x1;
+      final double labelY = y1 > labelHeight ? y1 - labelHeight : y1;
+
+      // Dibujar fondo de la etiqueta
+      final labelBackground = RRect.fromRectAndRadius(
+        Rect.fromLTWH(labelX, labelY, labelWidth, labelHeight),
+        const Radius.circular(4),
+      );
+      canvas.drawRRect(
+        labelBackground,
+        Paint()..color = boxColor.withAlpha(217), // 0.85 * 255 ≈ 217
+      );
+
+      // Dibujar texto de la etiqueta
+      textPainter.paint(canvas, Offset(labelX + 4, labelY + 2));
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant BoundingBoxPainter oldDelegate) {
+    return oldDelegate.detections != detections ||
+        oldDelegate.imageWidth != imageWidth ||
+        oldDelegate.imageHeight != imageHeight;
+  }
 }

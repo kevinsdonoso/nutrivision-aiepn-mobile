@@ -10,14 +10,22 @@
 // ║  Output: [1, 87, 8400] - 4 bbox + 83 clases × 8400 predicciones               ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
-import 'dart:typed_data';
 import 'dart:math';
+
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 import '../data/models/detection.dart';
+
+/// Log condicional solo en modo debug
+void _debugLog(String message) {
+  if (kDebugMode) {
+    debugPrint(message);
+  }
+}
 
 /// Detector de ingredientes alimenticios usando YOLO11n.
 ///
@@ -118,12 +126,12 @@ class YoloDetector {
   Future<void> initialize() async {
     // Evitar reinicialización
     if (_isInitialized) {
-      print('⚠️ YoloDetector ya está inicializado');
+      _debugLog('⚠️ YoloDetector ya está inicializado');
       return;
     }
 
     try {
-      print('🔄 Inicializando YoloDetector...');
+      _debugLog('🔄 Inicializando YoloDetector...');
 
       // ─────────────────────────────────────────────────────────────────────
       // PASO 1: Configurar opciones del intérprete
@@ -139,7 +147,7 @@ class YoloDetector {
       // Mejora el rendimiento 2-3x en operaciones de convolución
       options.addDelegate(XNNPackDelegate());
 
-      print('   ├─ Configuración: 4 threads + XNNPack delegate');
+      _debugLog('   ├─ Configuración: 4 threads + XNNPack delegate');
 
       // ─────────────────────────────────────────────────────────────────────
       // PASO 2: Cargar modelo TFLite
@@ -156,9 +164,9 @@ class YoloDetector {
       final inputShape = _interpreter!.getInputTensor(0).shape;
       final outputShape = _interpreter!.getOutputTensor(0).shape;
 
-      print('   ├─ Modelo cargado: $modelPath');
-      print('   │  ├─ Input shape:  $inputShape');
-      print('   │  └─ Output shape: $outputShape');
+      _debugLog('   ├─ Modelo cargado: $modelPath');
+      _debugLog('   │  ├─ Input shape:  $inputShape');
+      _debugLog('   │  └─ Output shape: $outputShape');
 
       // ─────────────────────────────────────────────────────────────────────
       // PASO 3: Cargar etiquetas
@@ -170,11 +178,11 @@ class YoloDetector {
           .where((line) => line.isNotEmpty)
           .toList();
 
-      print('   ├─ Labels cargados: ${_labels.length} clases');
+      _debugLog('   ├─ Labels cargados: ${_labels.length} clases');
 
       // Verificar que el número de clases coincide
       if (_labels.length != numClasses) {
-        print('   ⚠️ ADVERTENCIA: Se esperaban $numClasses clases, se encontraron ${_labels.length}');
+        _debugLog('   ⚠️ ADVERTENCIA: Se esperaban $numClasses clases, se encontraron ${_labels.length}');
       }
 
       // ─────────────────────────────────────────────────────────────────────
@@ -183,11 +191,11 @@ class YoloDetector {
       _preallocateTensors();
 
       _isInitialized = true;
-      print('   └─ ✅ YoloDetector inicializado correctamente');
+      _debugLog('   └─ ✅ YoloDetector inicializado correctamente');
 
     } catch (e, stackTrace) {
-      print('   └─ ❌ Error inicializando YoloDetector: $e');
-      print(stackTrace);
+      _debugLog('   └─ ❌ Error inicializando YoloDetector: $e');
+      _debugLog(stackTrace.toString());
       rethrow;
     }
   }
@@ -505,7 +513,7 @@ class YoloDetector {
     _outputTensor = null;
     _labels = [];
     _isInitialized = false;
-    print('🧹 YoloDetector disposed');
+    _debugLog('🧹 YoloDetector disposed');
   }
 }
 
