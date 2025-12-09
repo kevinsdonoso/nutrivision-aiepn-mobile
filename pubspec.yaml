@@ -1,0 +1,250 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                     NutriVisionAIEPN Mobile                               ║
+# ║         Detección de Ingredientes Alimenticios con YOLO11n                ║
+# ╠═══════════════════════════════════════════════════════════════════════════╣
+# ║  Trabajo de Integración Curricular — Escuela Politécnica Nacional (EPN)   ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+name: nutrivision_aiepn_mobile
+
+description: >
+  Aplicación móvil Flutter para reconocimiento automático de alimentos 
+  mediante visión por computador usando YOLO11n (TensorFlow Lite) ejecutado 
+  on-device. Estima macronutrientes consultando una base de datos SQLite local.
+  Proyecto de Trabajo de Integración Curricular — EPN.
+
+# Previene publicación accidental a pub.dev (proyecto académico privado)
+publish_to: 'none'
+
+# Versionado semántico: MAJOR.MINOR.PATCH+BUILD
+# - MAJOR: Cambios incompatibles en la API
+# - MINOR: Nuevas funcionalidades compatibles hacia atrás  
+# - PATCH: Correcciones de bugs compatibles hacia atrás
+# - BUILD: Número incremental para cada build (versionCode en Android)
+version: 1.0.0+1
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ENTORNO DE DESARROLLO
+# ═══════════════════════════════════════════════════════════════════════════
+# SDK de Dart requerido. Flutter 3.27.x incluye Dart 3.6.x
+# Referencia: https://docs.flutter.dev/release/archive
+environment:
+  sdk: ^3.6.0
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DEPENDENCIAS DE PRODUCCIÓN
+# ═══════════════════════════════════════════════════════════════════════════
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # UI & DISEÑO
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Iconos estilo iOS/Cupertino para consistencia multiplataforma
+  cupertino_icons: ^1.0.8
+  
+  # Tipografías de Google Fonts (Roboto, Poppins, etc.)
+  # Uso: GoogleFonts.poppins(fontSize: 16)
+  google_fonts: ^6.2.1
+  
+  # Renderizado de gráficos SVG vectoriales
+  # Útil para iconos de ingredientes y assets escalables
+  flutter_svg: ^2.0.10+1
+  
+  # Efecto shimmer para estados de carga (skeleton loading)
+  # Mejora UX mientras se procesa la inferencia ML
+  shimmer: ^3.0.0
+  
+  # Librería de gráficos para visualización de macronutrientes
+  # Soporta: PieChart, BarChart, LineChart, RadarChart
+  fl_chart: ^0.69.0
+  
+  # Animaciones Lottie (After Effects → JSON)
+  # Para animaciones de onboarding, éxito de detección, etc.
+  lottie: ^3.1.3
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # MACHINE LEARNING - TensorFlow Lite
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Plugin oficial de TensorFlow Lite para Flutter
+  # Soporta delegados: XNNPack (CPU), GPU, NNAPI (Android)
+  # Incluye IsolateInterpreter para inferencia en background sin bloquear UI
+  # Documentación: https://pub.dev/packages/tflite_flutter
+  # NOTA: Versión 0.11.0 es la última estable compatible con Flutter 3.27.x
+  tflite_flutter: ^0.11.0
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # CÁMARA & PROCESAMIENTO DE IMÁGENES
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Plugin oficial de cámara con soporte para:
+  # - Streaming de frames en tiempo real (startImageStream)
+  # - Formato YUV420 en Android para procesamiento eficiente
+  # - Control de flash, zoom, exposición
+  # Documentación: https://pub.dev/packages/camera
+  camera: ^0.11.0+2
+  
+  # Selector de imágenes desde galería y cámara
+  # Alternativa simple cuando no se requiere streaming en tiempo real
+  image_picker: ^1.1.2
+  
+  # Librería de procesamiento de imágenes en Dart puro
+  # Uso: letterbox resize, conversión YUV→RGB, normalización
+  # CRÍTICO para preprocesamiento compatible con YOLO
+  image: ^4.3.0
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PERMISOS & INFORMACIÓN DEL DISPOSITIVO
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Manejo unificado de permisos en runtime (Android 6.0+)
+  # Soporta: camera, storage, photos (Android 13+), microphone
+  # IMPORTANTE: Android 13+ requiere READ_MEDIA_IMAGES en lugar de READ_EXTERNAL_STORAGE
+  permission_handler: ^11.3.1
+  
+  # Información del dispositivo (modelo, versión de Android, SDK level)
+  # Necesario para lógica condicional de permisos según API level
+  device_info_plus: ^11.1.0
+  
+  # Acceso a directorios del sistema de archivos
+  # getApplicationDocumentsDirectory(), getTemporaryDirectory(), etc.
+  path_provider: ^2.1.5
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # BASE DE DATOS LOCAL
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # SQLite para Flutter - Base de datos relacional local
+  # Uso: almacenar información nutricional de ingredientes,
+  #      historial de análisis, preferencias del usuario
+  sqflite: ^2.4.1
+  
+  # Librerías nativas SQLite precompiladas
+  # Requerido por sqflite para operaciones de bajo nivel
+  sqlite3_flutter_libs: ^0.5.28
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # GESTIÓN DE ESTADO & ARQUITECTURA
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Riverpod - Gestión de estado reactiva y type-safe
+  # Ventajas sobre Provider:
+  # - No requiere BuildContext para acceder al estado
+  # - Mejor soporte para testing y dependency injection
+  # - autoDispose para limpieza automática de recursos (cámara, ML)
+  # Documentación: https://riverpod.dev
+  flutter_riverpod: ^2.6.1
+  
+  # Anotaciones para generación de código Riverpod
+  # Permite usar @riverpod en lugar de escribir providers manualmente
+  riverpod_annotation: ^2.6.1
+  
+  # Navegación declarativa basada en URLs
+  # Simplifica deep linking y navegación compleja
+  go_router: ^14.6.2
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # UTILIDADES GENERALES
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  # Internacionalización: formateo de fechas, números, monedas
+  # DateFormat('dd/MM/yyyy'), NumberFormat.compact()
+  intl: ^0.19.0
+  
+  # Extensiones de colecciones (groupBy, sortedBy, firstOrNull, etc.)
+  # Útil para agrupar detecciones por categoría
+  collection: ^1.18.0
+  
+  # Generación de identificadores únicos (UUID v4)
+  # Para IDs de sesiones de análisis, registros en BD
+  uuid: ^4.5.1
+  
+  # Compartir contenido con otras apps (resultados, imágenes)
+  share_plus: ^10.1.2
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DEPENDENCIAS DE DESARROLLO
+# ═══════════════════════════════════════════════════════════════════════════
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Reglas de linting recomendadas por el equipo de Flutter
+  # Configuración en analysis_options.yaml
+  flutter_lints: ^5.0.0
+  
+  # Generador de código para Riverpod, JSON serialization, etc.
+  # Ejecutar: dart run build_runner build --delete-conflicting-outputs
+  build_runner: ^2.4.13
+  
+  # Generador específico para providers de Riverpod
+  riverpod_generator: ^2.6.2
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE FLUTTER
+# ═══════════════════════════════════════════════════════════════════════════
+flutter:
+  # Habilita iconos de Material Design (Icons.camera, Icons.restaurant, etc.)
+  uses-material-design: true
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ASSETS - Archivos incluidos en el bundle de la app
+  # ─────────────────────────────────────────────────────────────────────────
+  # IMPORTANTE: Los archivos TFLite NO deben comprimirse (configurado en build.gradle)
+  # 
+  # Estructura esperada:
+  #   assets/
+  #   ├── models/
+  #   │   └── yolov11n_float32.tflite  (10.27 MB) - Modelo YOLO11n exportado
+  #   ├── labels/
+  #   │   └── labels.txt               (83 clases de ingredientes)
+  #   ├── database/
+  #   │   └── nutrients.db             (BD SQLite de nutrientes - opcional)
+  #   └── images/
+  #       └── ...                      (Iconos, fondos, etc.)
+  
+  assets:
+    # Modelo TensorFlow Lite entrenado en Kaggle
+    # Input: [1, 640, 640, 3] (RGB normalizado 0-1)
+    # Output: [1, 87, 8400] (4 bbox + 83 clases × 8400 predicciones)
+    - assets/models/
+    
+    # Archivo de etiquetas (una clase por línea, 83 total)
+    # Orden DEBE coincidir con el entrenamiento del modelo
+    - assets/labels/
+    
+    # Base de datos precargada con información nutricional (opcional)
+    # Se copia a documents directory en el primer inicio
+    - assets/database/
+    
+    # Recursos visuales de la aplicación
+    - assets/images/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NOTAS TÉCNICAS IMPORTANTES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# 1. COMPATIBILIDAD TFLITE:
+#    - minSdkVersion debe ser >= 26 para GPU delegate
+#    - Agregar en android/app/build.gradle:
+#      aaptOptions { noCompress 'tflite' }
+#
+# 2. PERMISOS ANDROID 13+:
+#    - READ_EXTERNAL_STORAGE está deprecated
+#    - Usar READ_MEDIA_IMAGES para acceso a galería
+#    - Verificar SDK version con device_info_plus
+#
+# 3. RENDIMIENTO ML:
+#    - XNNPackDelegate: mejor compatibilidad (funciona en todos los dispositivos)
+#    - GpuDelegate: 2-5x más rápido pero falla en dispositivos budget
+#    - Procesar cada 2-3 frames, no cada frame de cámara
+#
+# 4. MEMORIA:
+#    - Usar ResolutionPreset.medium para cámara (no high/max)
+#    - Llamar dispose() en interpreter al salir
+#    - IsolateInterpreter para no bloquear UI thread
+#
+# ═══════════════════════════════════════════════════════════════════════════
