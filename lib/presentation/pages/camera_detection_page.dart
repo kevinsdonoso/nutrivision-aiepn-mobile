@@ -105,26 +105,18 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
       return;
     }
 
-    // 2. Inicializar detector YOLO
-    final detectorAsync = ref.read(yoloDetectorProvider);
-    await detectorAsync.when(
-      data: (detector) async {
-        _frameProcessor = CameraFrameProcessor(detector);
-        await _initializeCamera();
-      },
-      loading: () async {
-        // Esperar a que el detector se inicialice
-        await Future.delayed(const Duration(milliseconds: 100));
-        _initializeAll();
-      },
-      error: (e, st) {
-        setState(() {
-          _isInitializing = false;
-          _errorMessage = 'Error cargando modelo: $e';
-        });
-        notifier.setError('Error cargando modelo');
-      },
-    );
+    // 2. Esperar e inicializar detector YOLO
+    try {
+      final detector = await ref.read(yoloDetectorProvider.future);
+      _frameProcessor = CameraFrameProcessor(detector);
+      await _initializeCamera();
+    } catch (e) {
+      setState(() {
+        _isInitializing = false;
+        _errorMessage = 'Error cargando modelo: $e';
+      });
+      notifier.setError('Error cargando modelo');
+    }
   }
 
   Future<bool> _requestCameraPermission() async {

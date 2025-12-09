@@ -21,7 +21,7 @@ import '../../ml/yolo_detector.dart';
 ///   error: (e, st) => Text('Error: $e'),
 /// );
 /// ```
-final yoloDetectorProvider = FutureProvider.autoDispose<YoloDetector>((ref) async {
+final yoloDetectorProvider = FutureProvider<YoloDetector>((ref) async {
   final detector = YoloDetector();
   await detector.initialize();
 
@@ -36,7 +36,7 @@ final yoloDetectorProvider = FutureProvider.autoDispose<YoloDetector>((ref) asyn
 /// Provider para verificar si el detector está inicializado.
 ///
 /// Útil para mostrar estados de carga en la UI.
-final isDetectorReadyProvider = Provider.autoDispose<bool>((ref) {
+final isDetectorReadyProvider = Provider<bool>((ref) {
   final detectorAsync = ref.watch(yoloDetectorProvider);
   return detectorAsync.maybeWhen(
     data: (detector) => detector.isInitialized,
@@ -47,7 +47,7 @@ final isDetectorReadyProvider = Provider.autoDispose<bool>((ref) {
 /// Provider que expone las etiquetas del modelo.
 ///
 /// Retorna lista vacía si el detector no está listo.
-final detectorLabelsProvider = Provider.autoDispose<List<String>>((ref) {
+final detectorLabelsProvider = Provider<List<String>>((ref) {
   final detectorAsync = ref.watch(yoloDetectorProvider);
   return detectorAsync.maybeWhen(
     data: (detector) => detector.labels,
@@ -56,7 +56,7 @@ final detectorLabelsProvider = Provider.autoDispose<List<String>>((ref) {
 });
 
 /// Provider para obtener el número de clases del modelo.
-final detectorClassCountProvider = Provider.autoDispose<int>((ref) {
+final detectorClassCountProvider = Provider<int>((ref) {
   final labels = ref.watch(detectorLabelsProvider);
   return labels.length;
 });
