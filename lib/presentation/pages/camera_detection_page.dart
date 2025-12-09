@@ -50,7 +50,11 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeAll();
+    // Diferir inicialización hasta después del primer frame
+    // para evitar modificar providers durante build del widget tree
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAll();
+    });
   }
 
   @override
