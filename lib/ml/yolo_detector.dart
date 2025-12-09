@@ -171,6 +171,7 @@ class YoloDetector {
       img.Image image, {
         double confidenceThreshold = defaultConfidenceThreshold,
         double iouThreshold = defaultIouThreshold,
+        bool verbose = true,
       }) async {
     if (_isDisposed) {
       throw ModelDisposedException();
@@ -181,17 +182,21 @@ class YoloDetector {
     }
 
     try {
-      _debugLog('🔍 Ejecutando detección...');
-      _debugLog('   ├─ Imagen original: ${image.width}x${image.height}');
+      if (verbose) {
+        _debugLog('🔍 Ejecutando detección...');
+        _debugLog('   ├─ Imagen original: ${image.width}x${image.height}');
+      }
 
       final preprocessResult = _preprocess(image);
-      _debugLog('   ├─ Preprocesamiento:');
-      _debugLog('   │  ├─ Scale: ${preprocessResult.scale.toStringAsFixed(4)}');
-      _debugLog('   │  ├─ PadLeft: ${preprocessResult.padLeft}');
-      _debugLog('   │  └─ PadTop: ${preprocessResult.padTop}');
+      if (verbose) {
+        _debugLog('   ├─ Preprocesamiento:');
+        _debugLog('   │  ├─ Scale: ${preprocessResult.scale.toStringAsFixed(4)}');
+        _debugLog('   │  ├─ PadLeft: ${preprocessResult.padLeft}');
+        _debugLog('   │  └─ PadTop: ${preprocessResult.padTop}');
+      }
 
       _interpreter!.run(_inputTensor!, _outputTensor!);
-      _debugLog('   ├─ Inferencia completada');
+      if (verbose) _debugLog('   ├─ Inferencia completada');
 
       final detections = _postprocess(
         _outputTensor!,
@@ -200,16 +205,19 @@ class YoloDetector {
         image.height,
         confidenceThreshold,
         iouThreshold,
+        verbose: verbose,
       );
 
-      _debugLog('   └─ ✅ Detecciones: ${detections.length}');
+      if (verbose) {
+        _debugLog('   └─ ✅ Detecciones: ${detections.length}');
 
-      if (kDebugMode && detections.isNotEmpty) {
-        _debugLog('   📦 Primeras detecciones:');
-        for (int i = 0; i < min(3, detections.length); i++) {
-          final d = detections[i];
-          _debugLog('      ${i + 1}. ${d.label}: ${d.confidenceFormatted}');
-          _debugLog('         bbox: [${d.x1.toInt()}, ${d.y1.toInt()}, ${d.x2.toInt()}, ${d.y2.toInt()}]');
+        if (kDebugMode && detections.isNotEmpty) {
+          _debugLog('   📦 Primeras detecciones:');
+          for (int i = 0; i < min(3, detections.length); i++) {
+            final d = detections[i];
+            _debugLog('      ${i + 1}. ${d.label}: ${d.confidenceFormatted}');
+            _debugLog('         bbox: [${d.x1.toInt()}, ${d.y1.toInt()}, ${d.x2.toInt()}, ${d.y2.toInt()}]');
+          }
         }
       }
 
@@ -297,8 +305,9 @@ class YoloDetector {
       int origWidth,
       int origHeight,
       double confidenceThreshold,
-      double iouThreshold,
-      ) {
+      double iouThreshold, {
+      bool verbose = true,
+      }) {
     try {
       List<Detection> detections = [];
       int validDetections = 0;
@@ -340,7 +349,7 @@ class YoloDetector {
         }
 
         // Debug para las primeras detecciones válidas
-        if (kDebugMode && validDetections < 3) {
+        if (verbose && kDebugMode && validDetections < 3) {
           _debugLog('   📍 Detección #${validDetections + 1}:');
           _debugLog('      Normalized: cx=$cxNorm, cy=$cyNorm, w=$wNorm, h=$hNorm');
           _debugLog('      Pixels (640): cx=$cx, cy=$cy, w=$w, h=$h');
@@ -370,7 +379,7 @@ class YoloDetector {
         final double x2Clamped = x2.clamp(0.0, origWidth.toDouble());
         final double y2Clamped = y2.clamp(0.0, origHeight.toDouble());
 
-        if (kDebugMode && validDetections < 3) {
+        if (verbose && kDebugMode && validDetections < 3) {
           _debugLog('      Box model: ($x1Model, $y1Model) -> ($x2Model, $y2Model)');
           _debugLog('      Original coords: ($x1, $y1) -> ($x2, $y2)');
           _debugLog('      Clamped: (${x1Clamped.toInt()}, ${y1Clamped.toInt()}) -> (${x2Clamped.toInt()}, ${y2Clamped.toInt()})');
@@ -402,14 +411,16 @@ class YoloDetector {
         validDetections++;
       }
 
-      _debugLog('   📊 Estadísticas de postprocesamiento:');
-      _debugLog('      Total predicciones: $numPredictions');
-      _debugLog('      Filtradas por confianza: $filteredByConfidence');
-      _debugLog('      Filtradas por bbox inválido: $filteredByInvalidBox');
-      _debugLog('      Válidas antes de NMS: ${detections.length}');
+      if (verbose) {
+        _debugLog('   📊 Estadísticas de postprocesamiento:');
+        _debugLog('      Total predicciones: $numPredictions');
+        _debugLog('      Filtradas por confianza: $filteredByConfidence');
+        _debugLog('      Filtradas por bbox inválido: $filteredByInvalidBox');
+        _debugLog('      Válidas antes de NMS: ${detections.length}');
+      }
 
       final result = _nonMaxSuppression(detections, iouThreshold);
-      _debugLog('      Después de NMS: ${result.length}');
+      if (verbose) _debugLog('      Después de NMS: ${result.length}');
 
       return result;
     } catch (e, stackTrace) {

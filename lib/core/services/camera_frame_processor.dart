@@ -111,10 +111,11 @@ class CameraFrameProcessor {
           ? img.flipHorizontal(rotatedImage)
           : rotatedImage;
 
-      // Ejecutar detección
+      // Ejecutar detección (verbose: false para evitar logs en tiempo real)
       final detections = await _detector.detect(
         finalImage,
         confidenceThreshold: AppConstants.realtimeConfidenceThreshold,
+        verbose: false,
       );
 
       stopwatch.stop();
