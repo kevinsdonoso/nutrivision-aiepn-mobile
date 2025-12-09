@@ -8,17 +8,19 @@
 // ║  Modelo: YOLO11n (Ultralytics) exportado a TFLite FP32                        ║
 // ║  Input:  [1, 640, 640, 3] - Imagen RGB normalizada                            ║
 // ║  Output: [1, 87, 8400] - 4 bbox + 83 clases × 8400 predicciones               ║
+// ║                                                                               ║
+// ║  v3.0 - CORREGIDO: Desnormalización de coordenadas (0-1 → 0-640)              ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:math';
 
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 import '../data/models/detection.dart';
+import '../core/exceptions/app_exceptions.dart';
 
 /// Log condicional solo en modo debug
 void _debugLog(String message) {
@@ -28,103 +30,48 @@ void _debugLog(String message) {
 }
 
 /// Detector de ingredientes alimenticios usando YOLO11n.
-///
-/// Esta clase encapsula toda la lógica de:
-/// 1. Carga del modelo TFLite y etiquetas
-/// 2. Preprocesamiento de imágenes (letterbox resize, normalización)
-/// 3. Ejecución de inferencia con TFLite
-/// 4. Postprocesamiento (parsing de output, NMS)
-///
-/// Ejemplo de uso:
-/// ```dart
-/// final detector = YoloDetector();
-/// await detector.initialize();
-///
-/// final image = img.decodeImage(bytes)!;
-/// final detections = await detector.detect(image);
-///
-/// for (final det in detections) {
-///   print('${det.label}: ${det.confidenceFormatted}');
-/// }
-///
-/// detector.dispose();
-/// ```
 class YoloDetector {
   // ═══════════════════════════════════════════════════════════════════════════
   // CONSTANTES DEL MODELO
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Tamaño de entrada del modelo (640x640 píxeles)
-  /// YOLO11n fue entrenado con esta resolución
   static const int inputSize = 640;
-
-  /// Número de clases de ingredientes (83 en NutriVisionAIEPN)
   static const int numClasses = 83;
-
-  /// Número total de predicciones por imagen
-  /// YOLO11n genera 8400 anchor boxes en total (diferentes escalas)
   static const int numPredictions = 8400;
-
-  /// Umbral de confianza mínimo para considerar una detección válida
-  /// Valores más altos = menos detecciones pero más precisas
   static const double defaultConfidenceThreshold = 0.40;
-
-  /// Umbral de IoU para Non-Maximum Suppression
-  /// Si dos cajas tienen IoU > este valor, se elimina la de menor confianza
   static const double defaultIouThreshold = 0.45;
-
-  /// Ruta al modelo TFLite en assets
   static const String modelPath = 'assets/models/yolov11n_float32.tflite';
-
-  /// Ruta al archivo de etiquetas en assets
   static const String labelsPath = 'assets/labels/labels.txt';
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES PRIVADAS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Intérprete de TensorFlow Lite
   Interpreter? _interpreter;
-
-  /// Lista de etiquetas de clases (ingredientes)
   List<String> _labels = [];
-
-  /// Indica si el detector está inicializado y listo
   bool _isInitialized = false;
+  bool _isDisposed = false;
 
-  /// Tensor de entrada reutilizable (evita realocaciones)
   List<List<List<List<double>>>>? _inputTensor;
-
-  /// Tensor de salida reutilizable
   List<List<List<double>>>? _outputTensor;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES PÚBLICAS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Indica si el detector está listo para realizar inferencias
   bool get isInitialized => _isInitialized;
-
-  /// Lista de etiquetas de ingredientes cargadas
   List<String> get labels => List.unmodifiable(_labels);
-
-  /// Número de clases cargadas
   int get labelCount => _labels.length;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // INICIALIZACIÓN
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Inicializa el detector cargando el modelo y las etiquetas.
-  ///
-  /// Debe llamarse antes de cualquier operación de detección.
-  /// Es seguro llamar múltiples veces (solo inicializa una vez).
-  ///
-  /// Throws:
-  /// - [Exception] si el modelo no puede cargarse
-  /// - [Exception] si las etiquetas no pueden leerse
   Future<void> initialize() async {
-    // Evitar reinicialización
+    if (_isDisposed) {
+      throw ModelDisposedException();
+    }
+
     if (_isInitialized) {
       _debugLog('⚠️ YoloDetector ya está inicializado');
       return;
@@ -133,34 +80,28 @@ class YoloDetector {
     try {
       _debugLog('🔄 Inicializando YoloDetector...');
 
-      // ─────────────────────────────────────────────────────────────────────
-      // PASO 1: Configurar opciones del intérprete
-      // ─────────────────────────────────────────────────────────────────────
       final options = InterpreterOptions();
-
-      // Usar múltiples threads para operaciones paralelas
-      // 4 threads es un buen balance para la mayoría de dispositivos
       options.threads = 4;
-
-      // XNNPack proporciona optimizaciones SIMD para CPU
-      // Funciona en TODOS los dispositivos (a diferencia de GPU delegate)
-      // Mejora el rendimiento 2-3x en operaciones de convolución
       options.addDelegate(XNNPackDelegate());
 
       _debugLog('   ├─ Configuración: 4 threads + XNNPack delegate');
 
-      // ─────────────────────────────────────────────────────────────────────
-      // PASO 2: Cargar modelo TFLite
-      // ─────────────────────────────────────────────────────────────────────
-      _interpreter = await Interpreter.fromAsset(
-        modelPath,
-        options: options,
-      );
+      try {
+        _interpreter = await Interpreter.fromAsset(
+          modelPath,
+          options: options,
+        );
+      } catch (e, stackTrace) {
+        throw ModelLoadException(
+          message: 'No se pudo cargar el modelo TFLite: $e',
+          modelPath: modelPath,
+          originalError: e,
+          stackTrace: stackTrace,
+        );
+      }
 
-      // Preasignar tensores para mejor rendimiento
       _interpreter!.allocateTensors();
 
-      // Verificar shapes del modelo
       final inputShape = _interpreter!.getInputTensor(0).shape;
       final outputShape = _interpreter!.getOutputTensor(0).shape;
 
@@ -168,41 +109,42 @@ class YoloDetector {
       _debugLog('   │  ├─ Input shape:  $inputShape');
       _debugLog('   │  └─ Output shape: $outputShape');
 
-      // ─────────────────────────────────────────────────────────────────────
-      // PASO 3: Cargar etiquetas
-      // ─────────────────────────────────────────────────────────────────────
-      final labelsData = await rootBundle.loadString(labelsPath);
-      _labels = labelsData
-          .split('\n')
-          .map((line) => line.trim())
-          .where((line) => line.isNotEmpty)
-          .toList();
+      try {
+        final labelsData = await rootBundle.loadString(labelsPath);
+        _labels = labelsData
+            .split('\n')
+            .map((line) => line.trim())
+            .where((line) => line.isNotEmpty)
+            .toList();
+      } catch (e, stackTrace) {
+        throw LabelsLoadException(
+          message: 'No se pudo cargar el archivo de etiquetas: $e',
+          labelsPath: labelsPath,
+          originalError: e,
+          stackTrace: stackTrace,
+        );
+      }
 
       _debugLog('   ├─ Labels cargados: ${_labels.length} clases');
 
-      // Verificar que el número de clases coincide
       if (_labels.length != numClasses) {
         _debugLog('   ⚠️ ADVERTENCIA: Se esperaban $numClasses clases, se encontraron ${_labels.length}');
       }
 
-      // ─────────────────────────────────────────────────────────────────────
-      // PASO 4: Preasignar tensores
-      // ─────────────────────────────────────────────────────────────────────
       _preallocateTensors();
 
       _isInitialized = true;
       _debugLog('   └─ ✅ YoloDetector inicializado correctamente');
-
-    } catch (e, stackTrace) {
-      _debugLog('   └─ ❌ Error inicializando YoloDetector: $e');
-      _debugLog(stackTrace.toString());
-      rethrow;
+    } catch (e) {
+      if (e is NutriVisionException) rethrow;
+      throw ModelException(
+        message: 'Error inicializando YoloDetector: $e',
+        originalError: e,
+      );
     }
   }
 
-  /// Preasigna los tensores de entrada/salida para evitar realocaciones.
   void _preallocateTensors() {
-    // Input: [1, 640, 640, 3]
     _inputTensor = List.generate(
       1,
           (_) => List.generate(
@@ -214,12 +156,11 @@ class YoloDetector {
       ),
     );
 
-    // Output: [1, 87, 8400] donde 87 = 4 (bbox) + 83 (clases)
     _outputTensor = List.generate(
       1,
           (_) => List.generate(
-        4 + numClasses, // 87
-            (_) => List.filled(numPredictions, 0.0), // 8400
+        4 + numClasses,
+            (_) => List.filled(numPredictions, 0.0),
       ),
     );
   }
@@ -228,144 +169,130 @@ class YoloDetector {
   // DETECCIÓN PRINCIPAL
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Ejecuta detección de ingredientes sobre una imagen.
-  ///
-  /// [image] Imagen a analizar (cualquier tamaño, se redimensiona internamente)
-  /// [confidenceThreshold] Umbral mínimo de confianza (default: 0.40)
-  /// [iouThreshold] Umbral de IoU para NMS (default: 0.45)
-  ///
-  /// Returns: Lista de detecciones ordenadas por confianza (mayor a menor)
-  ///
-  /// Throws:
-  /// - [StateError] si el detector no está inicializado
   Future<List<Detection>> detect(
       img.Image image, {
         double confidenceThreshold = defaultConfidenceThreshold,
         double iouThreshold = defaultIouThreshold,
       }) async {
-    // Verificar inicialización
-    if (!_isInitialized || _interpreter == null) {
-      throw StateError(
-        'YoloDetector no está inicializado. Llama a initialize() primero.',
-      );
+    if (_isDisposed) {
+      throw ModelDisposedException();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 1: Preprocesamiento
-    // ─────────────────────────────────────────────────────────────────────────
-    final preprocessResult = _preprocess(image);
+    if (!_isInitialized || _interpreter == null) {
+      throw ModelNotInitializedException();
+    }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 2: Inferencia
-    // ─────────────────────────────────────────────────────────────────────────
-    _interpreter!.run(_inputTensor!, _outputTensor!);
+    try {
+      _debugLog('🔍 Ejecutando detección...');
+      _debugLog('   ├─ Imagen original: ${image.width}x${image.height}');
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 3: Postprocesamiento
-    // ─────────────────────────────────────────────────────────────────────────
-    final detections = _postprocess(
-      _outputTensor!,
-      preprocessResult,
-      image.width,
-      image.height,
-      confidenceThreshold,
-      iouThreshold,
-    );
+      final preprocessResult = _preprocess(image);
+      _debugLog('   ├─ Preprocesamiento:');
+      _debugLog('   │  ├─ Scale: ${preprocessResult.scale.toStringAsFixed(4)}');
+      _debugLog('   │  ├─ PadLeft: ${preprocessResult.padLeft}');
+      _debugLog('   │  └─ PadTop: ${preprocessResult.padTop}');
 
-    return detections;
+      _interpreter!.run(_inputTensor!, _outputTensor!);
+      _debugLog('   ├─ Inferencia completada');
+
+      final detections = _postprocess(
+        _outputTensor!,
+        preprocessResult,
+        image.width,
+        image.height,
+        confidenceThreshold,
+        iouThreshold,
+      );
+
+      _debugLog('   └─ ✅ Detecciones: ${detections.length}');
+
+      if (kDebugMode && detections.isNotEmpty) {
+        _debugLog('   📦 Primeras detecciones:');
+        for (int i = 0; i < min(3, detections.length); i++) {
+          final d = detections[i];
+          _debugLog('      ${i + 1}. ${d.label}: ${d.confidenceFormatted}');
+          _debugLog('         bbox: [${d.x1.toInt()}, ${d.y1.toInt()}, ${d.x2.toInt()}, ${d.y2.toInt()}]');
+        }
+      }
+
+      return detections;
+    } on NutriVisionException {
+      rethrow;
+    } catch (e, stackTrace) {
+      throw InferenceException(
+        message: 'Error durante la inferencia: $e',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PREPROCESAMIENTO
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Preprocesa la imagen para el modelo YOLO.
-  ///
-  /// Operaciones:
-  /// 1. Letterbox resize: Redimensiona manteniendo aspect ratio, padding gris
-  /// 2. Normalización: Convierte píxeles de [0,255] a [0,1]
-  /// 3. Conversión a tensor: Formato [1, H, W, C]
   _PreprocessResult _preprocess(img.Image image) {
-    final int origWidth = image.width;
-    final int origHeight = image.height;
+    try {
+      final int origWidth = image.width;
+      final int origHeight = image.height;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 1: Calcular escala para letterbox
-    // ─────────────────────────────────────────────────────────────────────────
-    // Letterbox mantiene el aspect ratio original de la imagen
-    // La dimensión más grande se ajusta a inputSize, la otra se centra con padding
+      final double scaleWidth = inputSize / origWidth;
+      final double scaleHeight = inputSize / origHeight;
+      final double scale = min(scaleWidth, scaleHeight);
 
-    final double scaleWidth = inputSize / origWidth;
-    final double scaleHeight = inputSize / origHeight;
-    final double scale = min(scaleWidth, scaleHeight);
+      final int newWidth = (origWidth * scale).round();
+      final int newHeight = (origHeight * scale).round();
 
-    final int newWidth = (origWidth * scale).round();
-    final int newHeight = (origHeight * scale).round();
+      final img.Image resized = img.copyResize(
+        image,
+        width: newWidth,
+        height: newHeight,
+        interpolation: img.Interpolation.linear,
+      );
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 2: Redimensionar imagen
-    // ─────────────────────────────────────────────────────────────────────────
-    final img.Image resized = img.copyResize(
-      image,
-      width: newWidth,
-      height: newHeight,
-      interpolation: img.Interpolation.linear,
-    );
+      final int padLeft = (inputSize - newWidth) ~/ 2;
+      final int padTop = (inputSize - newHeight) ~/ 2;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 3: Crear canvas con padding gris (114, 114, 114)
-    // ─────────────────────────────────────────────────────────────────────────
-    // El valor 114 es el estándar de Ultralytics YOLO
-    // Representa un gris neutro que no interfiere con la detección
+      const double padValue = 114.0 / 255.0;
 
-    final int padLeft = (inputSize - newWidth) ~/ 2;
-    final int padTop = (inputSize - newHeight) ~/ 2;
+      for (int y = 0; y < inputSize; y++) {
+        for (int x = 0; x < inputSize; x++) {
+          final int srcX = x - padLeft;
+          final int srcY = y - padTop;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 4: Llenar tensor de entrada con imagen normalizada
-    // ─────────────────────────────────────────────────────────────────────────
-    // Valor de padding normalizado: 114/255 ≈ 0.447
-    const double padValue = 114.0 / 255.0;
-
-    for (int y = 0; y < inputSize; y++) {
-      for (int x = 0; x < inputSize; x++) {
-        // Verificar si estamos en la región de la imagen o en el padding
-        final int srcX = x - padLeft;
-        final int srcY = y - padTop;
-
-        if (srcX >= 0 && srcX < newWidth && srcY >= 0 && srcY < newHeight) {
-          // Región de la imagen: obtener píxel y normalizar
-          final pixel = resized.getPixel(srcX, srcY);
-          _inputTensor![0][y][x][0] = pixel.r / 255.0; // R
-          _inputTensor![0][y][x][1] = pixel.g / 255.0; // G
-          _inputTensor![0][y][x][2] = pixel.b / 255.0; // B
-        } else {
-          // Región de padding: gris 114
-          _inputTensor![0][y][x][0] = padValue;
-          _inputTensor![0][y][x][1] = padValue;
-          _inputTensor![0][y][x][2] = padValue;
+          if (srcX >= 0 && srcX < newWidth && srcY >= 0 && srcY < newHeight) {
+            final pixel = resized.getPixel(srcX, srcY);
+            _inputTensor![0][y][x][0] = pixel.r / 255.0;
+            _inputTensor![0][y][x][1] = pixel.g / 255.0;
+            _inputTensor![0][y][x][2] = pixel.b / 255.0;
+          } else {
+            _inputTensor![0][y][x][0] = padValue;
+            _inputTensor![0][y][x][1] = padValue;
+            _inputTensor![0][y][x][2] = padValue;
+          }
         }
       }
-    }
 
-    return _PreprocessResult(
-      scale: scale,
-      padLeft: padLeft,
-      padTop: padTop,
-    );
+      return _PreprocessResult(
+        scale: scale,
+        padLeft: padLeft,
+        padTop: padTop,
+        newWidth: newWidth,
+        newHeight: newHeight,
+      );
+    } catch (e, stackTrace) {
+      throw PreprocessingException(
+        message: 'Error en preprocesamiento de imagen: $e',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // POSTPROCESAMIENTO
+  // POSTPROCESAMIENTO - CORREGIDO
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Postprocesa la salida del modelo para obtener detecciones.
-  ///
-  /// Operaciones:
-  /// 1. Parsear output tensor [1, 87, 8400]
-  /// 2. Filtrar por umbral de confianza
-  /// 3. Convertir coordenadas de modelo a imagen original
-  /// 4. Aplicar Non-Maximum Suppression (NMS)
   List<Detection> _postprocess(
       List<List<List<double>>> output,
       _PreprocessResult preprocess,
@@ -374,98 +301,134 @@ class YoloDetector {
       double confidenceThreshold,
       double iouThreshold,
       ) {
-    List<Detection> detections = [];
+    try {
+      List<Detection> detections = [];
+      int validDetections = 0;
+      int filteredByConfidence = 0;
+      int filteredByInvalidBox = 0;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 1: Parsear cada predicción
-    // ─────────────────────────────────────────────────────────────────────────
-    // Output shape: [1, 87, 8400]
-    // - Índices 0-3: cx, cy, w, h (centro x, centro y, ancho, alto)
-    // - Índices 4-86: scores de las 83 clases
+      for (int i = 0; i < numPredictions; i++) {
+        // ═══════════════════════════════════════════════════════════════════
+        // IMPORTANTE: El modelo devuelve coordenadas NORMALIZADAS (0-1)
+        // Debemos multiplicar por inputSize (640) para obtener píxeles
+        // ═══════════════════════════════════════════════════════════════════
+        final double cxNorm = output[0][0][i];
+        final double cyNorm = output[0][1][i];
+        final double wNorm = output[0][2][i];
+        final double hNorm = output[0][3][i];
 
-    for (int i = 0; i < numPredictions; i++) {
-      // Extraer bounding box (en coordenadas del modelo 640x640)
-      final double cx = output[0][0][i]; // Centro X
-      final double cy = output[0][1][i]; // Centro Y
-      final double w = output[0][2][i];  // Ancho
-      final double h = output[0][3][i];  // Alto
+        // Desnormalizar: convertir de rango [0,1] a [0,640]
+        final double cx = cxNorm * inputSize;
+        final double cy = cyNorm * inputSize;
+        final double w = wNorm * inputSize;
+        final double h = hNorm * inputSize;
 
-      // Encontrar la clase con mayor score
-      double maxScore = 0;
-      int maxClassId = 0;
+        // Encontrar la clase con mayor score
+        double maxScore = 0;
+        int maxClassId = 0;
 
-      for (int c = 0; c < numClasses; c++) {
-        final double score = output[0][4 + c][i];
-        if (score > maxScore) {
-          maxScore = score;
-          maxClassId = c;
+        for (int c = 0; c < numClasses; c++) {
+          final double score = output[0][4 + c][i];
+          if (score > maxScore) {
+            maxScore = score;
+            maxClassId = c;
+          }
         }
+
+        // Filtrar por umbral de confianza
+        if (maxScore < confidenceThreshold) {
+          filteredByConfidence++;
+          continue;
+        }
+
+        // Debug para las primeras detecciones válidas
+        if (kDebugMode && validDetections < 3) {
+          _debugLog('   📍 Detección #${validDetections + 1}:');
+          _debugLog('      Normalized: cx=$cxNorm, cy=$cyNorm, w=$wNorm, h=$hNorm');
+          _debugLog('      Pixels (640): cx=$cx, cy=$cy, w=$w, h=$h');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CONVERSIÓN DE COORDENADAS
+        // ═══════════════════════════════════════════════════════════════════
+
+        // 1. Convertir de (cx, cy, w, h) a (x1, y1, x2, y2) en espacio 640x640
+        final double x1Model = cx - w / 2;
+        final double y1Model = cy - h / 2;
+        final double x2Model = cx + w / 2;
+        final double y2Model = cy + h / 2;
+
+        // 2. Convertir de espacio del modelo (con padding) a imagen original
+        //    - Restar el padding
+        //    - Dividir por la escala
+        final double x1 = (x1Model - preprocess.padLeft) / preprocess.scale;
+        final double y1 = (y1Model - preprocess.padTop) / preprocess.scale;
+        final double x2 = (x2Model - preprocess.padLeft) / preprocess.scale;
+        final double y2 = (y2Model - preprocess.padTop) / preprocess.scale;
+
+        // 3. Clampear a los límites de la imagen original
+        final double x1Clamped = x1.clamp(0.0, origWidth.toDouble());
+        final double y1Clamped = y1.clamp(0.0, origHeight.toDouble());
+        final double x2Clamped = x2.clamp(0.0, origWidth.toDouble());
+        final double y2Clamped = y2.clamp(0.0, origHeight.toDouble());
+
+        if (kDebugMode && validDetections < 3) {
+          _debugLog('      Box model: ($x1Model, $y1Model) -> ($x2Model, $y2Model)');
+          _debugLog('      Original coords: ($x1, $y1) -> ($x2, $y2)');
+          _debugLog('      Clamped: (${x1Clamped.toInt()}, ${y1Clamped.toInt()}) -> (${x2Clamped.toInt()}, ${y2Clamped.toInt()})');
+        }
+
+        // Verificar que el bounding box es válido
+        if (x2Clamped <= x1Clamped || y2Clamped <= y1Clamped) {
+          filteredByInvalidBox++;
+          continue;
+        }
+
+        // Obtener etiqueta
+        final String label = maxClassId < _labels.length
+            ? _labels[maxClassId]
+            : 'clase_$maxClassId';
+
+        detections.add(Detection.fromModelOutput(
+          x1: x1Clamped,
+          y1: y1Clamped,
+          x2: x2Clamped,
+          y2: y2Clamped,
+          confidence: maxScore,
+          classId: maxClassId,
+          label: label,
+          imageWidth: origWidth,
+          imageHeight: origHeight,
+        ));
+
+        validDetections++;
       }
 
-      // Filtrar por umbral de confianza
-      if (maxScore < confidenceThreshold) continue;
+      _debugLog('   📊 Estadísticas de postprocesamiento:');
+      _debugLog('      Total predicciones: $numPredictions');
+      _debugLog('      Filtradas por confianza: $filteredByConfidence');
+      _debugLog('      Filtradas por bbox inválido: $filteredByInvalidBox');
+      _debugLog('      Válidas antes de NMS: ${detections.length}');
 
-      // ─────────────────────────────────────────────────────────────────────
-      // PASO 2: Convertir coordenadas a imagen original
-      // ─────────────────────────────────────────────────────────────────────
-      // 1. Convertir de centro a esquinas
-      // 2. Quitar padding
-      // 3. Escalar a dimensiones originales
+      final result = _nonMaxSuppression(detections, iouThreshold);
+      _debugLog('      Después de NMS: ${result.length}');
 
-      // Convertir de (cx, cy, w, h) a (x1, y1, x2, y2) en espacio del modelo
-      final double x1Model = cx - w / 2;
-      final double y1Model = cy - h / 2;
-      final double x2Model = cx + w / 2;
-      final double y2Model = cy + h / 2;
-
-      // Quitar padding y escalar a imagen original
-      final double x1 = ((x1Model - preprocess.padLeft) / preprocess.scale)
-          .clamp(0, origWidth.toDouble());
-      final double y1 = ((y1Model - preprocess.padTop) / preprocess.scale)
-          .clamp(0, origHeight.toDouble());
-      final double x2 = ((x2Model - preprocess.padLeft) / preprocess.scale)
-          .clamp(0, origWidth.toDouble());
-      final double y2 = ((y2Model - preprocess.padTop) / preprocess.scale)
-          .clamp(0, origHeight.toDouble());
-
-      // Verificar que el bounding box es válido
-      if (x2 <= x1 || y2 <= y1) continue;
-
-      // Obtener etiqueta
-      final String label = maxClassId < _labels.length
-          ? _labels[maxClassId]
-          : 'clase_$maxClassId';
-
-      detections.add(Detection(
-        x1: x1,
-        y1: y1,
-        x2: x2,
-        y2: y2,
-        confidence: maxScore,
-        classId: maxClassId,
-        label: label,
-      ));
+      return result;
+    } catch (e, stackTrace) {
+      throw PostprocessingException(
+        message: 'Error en postprocesamiento: $e',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // PASO 3: Aplicar Non-Maximum Suppression
-    // ─────────────────────────────────────────────────────────────────────────
-    return _nonMaxSuppression(detections, iouThreshold);
   }
 
-  /// Aplica Non-Maximum Suppression para eliminar detecciones duplicadas.
-  ///
-  /// NMS funciona así:
-  /// 1. Ordenar detecciones por confianza (mayor a menor)
-  /// 2. Para cada detección, eliminar las que tienen IoU > umbral
-  /// 3. Solo se comparan detecciones de la MISMA clase
   List<Detection> _nonMaxSuppression(
       List<Detection> detections,
       double iouThreshold,
       ) {
     if (detections.isEmpty) return [];
 
-    // Ordenar por confianza descendente
     detections.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     List<Detection> result = [];
@@ -474,20 +437,13 @@ class YoloDetector {
     for (int i = 0; i < detections.length; i++) {
       if (suppressed[i]) continue;
 
-      // Esta detección no está suprimida, agregarla al resultado
       result.add(detections[i]);
 
-      // Suprimir detecciones de la misma clase con alto IoU
       for (int j = i + 1; j < detections.length; j++) {
         if (suppressed[j]) continue;
-
-        // Solo comparar si son de la misma clase
         if (detections[i].classId != detections[j].classId) continue;
 
-        // Calcular IoU
         final double iou = detections[i].calculateIoU(detections[j]);
-
-        // Suprimir si IoU es mayor al umbral
         if (iou >= iouThreshold) {
           suppressed[j] = true;
         }
@@ -501,9 +457,6 @@ class YoloDetector {
   // LIMPIEZA
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Libera los recursos del detector.
-  ///
-  /// Debe llamarse cuando el detector ya no se necesita para evitar memory leaks.
   void dispose() {
     if (_interpreter != null) {
       _interpreter!.close();
@@ -513,29 +466,30 @@ class YoloDetector {
     _outputTensor = null;
     _labels = [];
     _isInitialized = false;
+    _isDisposed = true;
     _debugLog('🧹 YoloDetector disposed');
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// CLASES AUXILIARES PRIVADAS
+// CLASES AUXILIARES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Resultado del preprocesamiento, contiene información para
-/// convertir coordenadas del modelo a la imagen original.
 class _PreprocessResult {
-  /// Factor de escala aplicado a la imagen
   final double scale;
-
-  /// Padding izquierdo agregado (en píxeles del modelo)
   final int padLeft;
-
-  /// Padding superior agregado (en píxeles del modelo)
   final int padTop;
+  final int newWidth;
+  final int newHeight;
 
   const _PreprocessResult({
     required this.scale,
     required this.padLeft,
     required this.padTop,
+    required this.newWidth,
+    required this.newHeight,
   });
+
+  @override
+  String toString() => '_PreprocessResult(scale: $scale, padLeft: $padLeft, padTop: $padTop)';
 }

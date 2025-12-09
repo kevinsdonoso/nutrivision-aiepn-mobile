@@ -9,7 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'presentation/pages/detection_test_screen.dart';
+import 'presentation/pages/gallery_detection_page.dart';
 
 void main() {
   // Asegurar que Flutter esté inicializado antes de cualquier operación
@@ -98,9 +98,9 @@ class NutriVisionApp extends StatelessWidget {
       // ═══════════════════════════════════════════════════════════════════════
       // PANTALLA INICIAL
       // ═══════════════════════════════════════════════════════════════════════
-      // Por ahora usamos la pantalla de prueba de detección
+      // Pantalla de detección desde galería
       // Después se reemplazará por la navegación completa con go_router
-      home: const DetectionTestScreen(),
+      home: const GalleryDetectionPage(),
     );
   }
 }

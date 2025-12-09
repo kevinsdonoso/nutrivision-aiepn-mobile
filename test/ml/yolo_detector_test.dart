@@ -6,6 +6,8 @@
 // ║  Usa las imágenes de prueba en test/test_assets/test_images/                  ║
 // ║                                                                               ║
 // ║  Ejecutar con: flutter test test/ml/yolo_detector_test.dart                   ║
+// ║                                                                               ║
+// ║  v2.0 - Actualizado para usar excepciones personalizadas                      ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:io';
@@ -15,6 +17,7 @@ import 'package:image/image.dart' as img;
 
 import 'package:nutrivision_aiepn_mobile/ml/yolo_detector.dart';
 import 'package:nutrivision_aiepn_mobile/data/models/detection.dart';
+import 'package:nutrivision_aiepn_mobile/core/exceptions/app_exceptions.dart';
 
 /// Configuración del test
 class TestConfig {
@@ -109,13 +112,46 @@ void main() {
       testDetector.dispose();
     });
 
-    test('Detectar sin inicializar lanza StateError', () async {
+    // ═══════════════════════════════════════════════════════════════════════
+    // ✅ CORREGIDO: Ahora espera ModelNotInitializedException
+    // ═══════════════════════════════════════════════════════════════════════
+    test('Detectar sin inicializar lanza ModelNotInitializedException', () async {
       final testDetector = YoloDetector();
       final dummyImage = img.Image(width: 100, height: 100);
 
       expect(
             () async => await testDetector.detect(dummyImage),
-        throwsA(isA<StateError>()),
+        throwsA(isA<ModelNotInitializedException>()),
+      );
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ✅ NUEVO: Test para ModelDisposedException
+    // ═══════════════════════════════════════════════════════════════════════
+    test('Detectar después de dispose lanza ModelDisposedException', () async {
+      final testDetector = YoloDetector();
+      await testDetector.initialize();
+      testDetector.dispose();
+
+      final dummyImage = img.Image(width: 100, height: 100);
+
+      expect(
+            () async => await testDetector.detect(dummyImage),
+        throwsA(isA<ModelDisposedException>()),
+      );
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ✅ NUEVO: Test para inicializar después de dispose
+    // ═══════════════════════════════════════════════════════════════════════
+    test('Inicializar después de dispose lanza ModelDisposedException', () async {
+      final testDetector = YoloDetector();
+      await testDetector.initialize();
+      testDetector.dispose();
+
+      expect(
+            () async => await testDetector.initialize(),
+        throwsA(isA<ModelDisposedException>()),
       );
     });
   });
@@ -254,6 +290,102 @@ void main() {
       expect(scaled.x2, equals(100));
       expect(scaled.y2, equals(400));
     });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ✅ NUEVOS: Tests para validaciones de Detection
+    // ═══════════════════════════════════════════════════════════════════════
+    test('Constructor lanza InvalidBoundingBoxException si x2 <= x1', () {
+      expect(
+            () => Detection(
+          x1: 100, y1: 0, x2: 50, y2: 100, // x2 < x1
+          confidence: 0.8, classId: 0, label: 'test',
+        ),
+        throwsA(isA<InvalidBoundingBoxException>()),
+      );
+    });
+
+    test('Constructor lanza InvalidBoundingBoxException si y2 <= y1', () {
+      expect(
+            () => Detection(
+          x1: 0, y1: 100, x2: 100, y2: 50, // y2 < y1
+          confidence: 0.8, classId: 0, label: 'test',
+        ),
+        throwsA(isA<InvalidBoundingBoxException>()),
+      );
+    });
+
+    test('Constructor lanza InvalidConfidenceException si confianza fuera de rango', () {
+      expect(
+            () => Detection(
+          x1: 0, y1: 0, x2: 100, y2: 100,
+          confidence: 1.5, // > 1.0
+          classId: 0, label: 'test',
+        ),
+        throwsA(isA<InvalidConfidenceException>()),
+      );
+
+      expect(
+            () => Detection(
+          x1: 0, y1: 0, x2: 100, y2: 100,
+          confidence: -0.1, // < 0.0
+          classId: 0, label: 'test',
+        ),
+        throwsA(isA<InvalidConfidenceException>()),
+      );
+    });
+
+    test('Constructor lanza InvalidClassIdException si classId negativo', () {
+      expect(
+            () => Detection(
+          x1: 0, y1: 0, x2: 100, y2: 100,
+          confidence: 0.8,
+          classId: -1, // negativo
+          label: 'test',
+        ),
+        throwsA(isA<InvalidClassIdException>()),
+      );
+    });
+
+    test('Detection.fromModelOutput normaliza valores inválidos', () {
+      // Valores que serían inválidos en el constructor normal
+      final detection = Detection.fromModelOutput(
+        x1: -10, // negativo
+        y1: -5,  // negativo
+        x2: 100,
+        y2: 200,
+        confidence: 1.5, // > 1.0
+        classId: -1,     // negativo
+        label: '',       // vacío
+        imageWidth: 640,
+        imageHeight: 480,
+      );
+
+      // Debe normalizar a valores válidos
+      expect(detection.x1, greaterThanOrEqualTo(0));
+      expect(detection.y1, greaterThanOrEqualTo(0));
+      expect(detection.confidence, lessThanOrEqualTo(1.0));
+      expect(detection.classId, greaterThanOrEqualTo(0));
+      expect(detection.label, isNotEmpty);
+    });
+
+    test('Detection.tryCreate retorna null para datos inválidos', () {
+      final result = Detection.tryCreate(
+        x1: 100, y1: 0, x2: 50, y2: 100, // x2 < x1 - inválido
+        confidence: 0.8, classId: 0, label: 'test',
+      );
+
+      expect(result, isNull);
+    });
+
+    test('Detection.tryCreate retorna Detection para datos válidos', () {
+      final result = Detection.tryCreate(
+        x1: 0, y1: 0, x2: 100, y2: 100,
+        confidence: 0.8, classId: 0, label: 'test',
+      );
+
+      expect(result, isNotNull);
+      expect(result!.label, equals('test'));
+    });
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -309,6 +441,27 @@ void main() {
       final grouped = testDetections.groupByLabel();
       expect(grouped.keys.length, equals(3));
       expect(grouped['tomate']!.length, equals(2));
+    });
+
+    test('mostConfident retorna la detección con mayor confianza', () {
+      final most = testDetections.mostConfident;
+      expect(most, isNotNull);
+      expect(most!.confidence, equals(0.90));
+      expect(most.label, equals('tomate'));
+    });
+
+    test('averageConfidence calcula el promedio', () {
+      final avg = testDetections.averageConfidence;
+      expect(avg, closeTo(0.625, 0.001)); // (0.90 + 0.50 + 0.80 + 0.30) / 4
+    });
+
+    test('stats retorna estadísticas correctas', () {
+      final stats = testDetections.stats;
+      expect(stats.total, equals(4));
+      expect(stats.uniqueIngredients, equals(3));
+      expect(stats.highConfidence, equals(2)); // 0.90 y 0.80
+      expect(stats.mediumConfidence, equals(1)); // 0.50
+      expect(stats.lowConfidence, equals(1)); // 0.30
     });
   });
 
@@ -517,6 +670,43 @@ void main() {
       print('   ⏱️ Tiempo: ${stopwatch.elapsedMilliseconds}ms');
 
       expect(stopwatch.elapsedMilliseconds, lessThan(10000));
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GRUPO 8: EXCEPCIONES PERSONALIZADAS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  group('Excepciones - Comportamiento', () {
+    test('NutriVisionException.toString incluye código y mensaje', () {
+      const exception = ModelNotInitializedException();
+      final str = exception.toString();
+
+      expect(str, contains('MODEL_NOT_INITIALIZED'));
+      expect(str, contains('inicializado'));
+    });
+
+    test('ExceptionHandler.wrap envuelve excepciones genéricas', () {
+      final genericError = Exception('Error genérico');
+      final wrapped = ExceptionHandler.wrap(genericError);
+
+      expect(wrapped, isA<NutriVisionGenericException>());
+      expect(wrapped.originalError, equals(genericError));
+    });
+
+    test('ExceptionHandler.wrap no re-envuelve NutriVisionException', () {
+      const original = ModelLoadException(message: 'Test');
+      final wrapped = ExceptionHandler.wrap(original);
+
+      expect(wrapped, same(original));
+    });
+
+    test('ExceptionHandler.getUserMessage retorna mensaje amigable', () {
+      const exception = ImageDecodeException(message: 'Technical error details');
+      final userMessage = ExceptionHandler.getUserMessage(exception);
+
+      expect(userMessage, isNot(contains('Technical')));
+      expect(userMessage, contains('imagen'));
     });
   });
 }
