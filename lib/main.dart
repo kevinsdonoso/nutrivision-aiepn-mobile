@@ -3,13 +3,16 @@
 // ║                     NutriVisionAIEPN Mobile                                   ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Punto de entrada de la aplicación Flutter.                                   ║
-// ║  Configura el tema, navegación y pantalla inicial.                            ║
+// ║  Configura el tema, navegación con go_router y Riverpod.                      ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'presentation/pages/gallery_detection_page.dart';
+import 'core/constants/app_constants.dart';
+import 'core/theme/app_theme.dart';
+import 'core/router/app_router.dart';
 
 void main() {
   // Asegurar que Flutter esté inicializado antes de cualquier operación
@@ -29,7 +32,12 @@ void main() {
     ),
   );
 
-  runApp(const NutriVisionApp());
+  // Ejecutar la aplicación envuelta en ProviderScope para Riverpod
+  runApp(
+    const ProviderScope(
+      child: NutriVisionApp(),
+    ),
+  );
 }
 
 /// Aplicación principal NutriVisionAIEPN
@@ -38,69 +46,24 @@ class NutriVisionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       // ═══════════════════════════════════════════════════════════════════════
       // CONFIGURACIÓN BÁSICA
       // ═══════════════════════════════════════════════════════════════════════
-      title: 'NutriVision AI',
-      debugShowCheckedModeBanner: false, // Ocultar banner de debug
+      title: AppConstants.appName,
+      debugShowCheckedModeBanner: false,
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // NAVEGACIÓN CON GO_ROUTER
+      // ═══════════════════════════════════════════════════════════════════════
+      routerConfig: appRouter,
 
       // ═══════════════════════════════════════════════════════════════════════
       // TEMA DE LA APLICACIÓN
       // ═══════════════════════════════════════════════════════════════════════
-      theme: ThemeData(
-        // Esquema de colores basado en verde (nutrición/salud)
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50), // Verde Material
-          brightness: Brightness.light,
-        ),
-
-        // Usar Material Design 3
-        useMaterial3: true,
-
-        // Configuración de AppBar
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-        ),
-
-        // Configuración de Cards
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-
-        // Configuración de botones elevados
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ),
-
-      // Tema oscuro (opcional, para futuro)
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-
-      // Usar tema del sistema
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // PANTALLA INICIAL
-      // ═══════════════════════════════════════════════════════════════════════
-      // Pantalla de detección desde galería
-      // Después se reemplazará por la navegación completa con go_router
-      home: const GalleryDetectionPage(),
     );
   }
 }
