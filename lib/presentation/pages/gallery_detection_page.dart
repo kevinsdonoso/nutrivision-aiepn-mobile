@@ -2,7 +2,8 @@
 // ║                      gallery_detection_page.dart                              ║
 // ║          Pantalla de detección de ingredientes desde galería                  ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
-// ║  v4.0 - Renombrado para reflejar funcionalidad real (no es test)              ║
+// ║  Permite seleccionar imágenes de la galería y ejecutar detección YOLO.        ║
+// ║  Muestra resultados con bounding boxes y lista de ingredientes detectados.    ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:io';

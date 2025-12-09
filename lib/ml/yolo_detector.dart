@@ -8,8 +8,6 @@
 // ║  Modelo: YOLO11n (Ultralytics) exportado a TFLite FP32                        ║
 // ║  Input:  [1, 640, 640, 3] - Imagen RGB normalizada                            ║
 // ║  Output: [1, 87, 8400] - 4 bbox + 83 clases × 8400 predicciones               ║
-// ║                                                                               ║
-// ║  v3.0 - CORREGIDO: Desnormalización de coordenadas (0-1 → 0-640)              ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:math';

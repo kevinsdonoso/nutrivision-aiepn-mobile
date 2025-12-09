@@ -4,7 +4,7 @@
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Representa una detección individual de ingrediente alimenticio.              ║
 // ║  Contiene: bounding box, confianza, clase detectada y etiqueta.               ║
-// ║  v2.0 - Agregado validaciones y manejo de excepciones                         ║
+// ║  Incluye validaciones y factory methods para creación segura.                 ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import '../../../core/exceptions/app_exceptions.dart';
