@@ -165,103 +165,75 @@ flutter doctor -v
 
 ## 📁 Estructura del Proyecto
 
+### Estado Actual (Implementado)
+
 ```
 nutrivision_aiepn_mobile/
 │
-├── android/                          # Configuración nativa Android
+├── android/                          # ✅ Configuración nativa Android
 │   ├── app/
-│   │   ├── build.gradle             # Configuración de build Android
+│   │   ├── build.gradle.kts         # Configuración de build Android
 │   │   ├── proguard-rules.pro       # Reglas ProGuard para TFLite
 │   │   └── src/main/
 │   │       ├── AndroidManifest.xml  # Permisos de la app
-│   │       └── res/                 # Recursos Android (iconos, etc.)
-│   └── build.gradle                 # Configuración Gradle del proyecto
+│   │       └── res/                 # Recursos Android
+│   └── build.gradle.kts             # Configuración Gradle del proyecto
 │
-├── assets/                          # Recursos de la app
+├── assets/                          # ✅ Recursos de la app
 │   ├── models/
-│   │   └── yolov11n_float32.tflite # Modelo YOLO11n exportado
-│   ├── labels/
-│   │   └── labels.txt              # 83 clases de ingredientes
-│   └── database/
-│       └── nutrients.db            # Base de datos SQLite de nutrientes
+│   │   └── yolov11n_float32.tflite # Modelo YOLO11n exportado (~10 MB)
+│   └── labels/
+│       └── labels.txt              # 83 clases de ingredientes
 │
 ├── lib/                             # Código fuente Dart/Flutter
-│   ├── main.dart                    # Punto de entrada de la app
+│   ├── main.dart                   # ✅ Punto de entrada de la app
 │   │
-│   ├── core/                        # Núcleo compartido
-│   │   ├── constants/
-│   │   │   ├── app_constants.dart   # Constantes globales
-│   │   │   ├── ml_constants.dart    # Constantes del modelo ML
-│   │   │   └── theme_constants.dart # Colores y estilos
-│   │   ├── utils/
-│   │   │   ├── image_utils.dart     # Utilidades de procesamiento de imagen
-│   │   │   └── permission_utils.dart# Manejo de permisos
-│   │   └── exceptions/
-│   │       └── app_exceptions.dart  # Excepciones personalizadas
+│   ├── data/models/
+│   │   └── detection.dart          # ✅ Modelo de detección + extensiones
 │   │
-│   ├── data/                        # Capa de datos
-│   │   ├── models/
-│   │   │   ├── detection.dart           # ✅ Modelo de detección (implementado)
-│   │   │   ├── ingredient.dart          # Modelo de ingrediente
-│   │   │   └── nutritional_info.dart    # Modelo de información nutricional
-│   │   ├── repositories/
-│   │   │   ├── detection_repository.dart
-│   │   │   └── nutrition_repository.dart
-│   │   └── datasources/
-│   │       ├── ml_local_datasource.dart # Inferencia TFLite
-│   │       └── db_local_datasource.dart # Acceso SQLite
+│   ├── presentation/pages/
+│   │   └── detection_test_screen.dart  # ✅ Pantalla de pruebas con bounding boxes
 │   │
-│   ├── domain/                      # Capa de dominio (lógica de negocio)
-│   │   ├── entities/
-│   │   │   └── meal_analysis.dart   # Entidad de análisis completo
-│   │   ├── usecases/
-│   │   │   ├── detect_ingredients.dart
-│   │   │   ├── calculate_nutrients.dart
-│   │   │   └── save_meal_history.dart
-│   │   └── repositories/
-│   │       └── i_detection_repository.dart  # Interfaces
-│   │
-│   ├── presentation/                # Capa de presentación (UI)
-│   │   ├── providers/               # Estado con Riverpod
-│   │   │   ├── camera_provider.dart
-│   │   │   ├── detection_provider.dart
-│   │   │   └── nutrition_provider.dart
-│   │   ├── pages/
-│   │   │   ├── home_page.dart
-│   │   │   ├── camera_page.dart
-│   │   │   ├── results_page.dart
-│   │   │   ├── history_page.dart
-│   │   │   ├── settings_page.dart
-│   │   │   └── detection_test_screen.dart  # ✅ Pantalla de pruebas manuales
-│   │   └── widgets/
-│   │       ├── camera_preview.dart
-│   │       ├── bounding_box_painter.dart
-│   │       ├── ingredient_card.dart
-│   │       ├── nutrient_chart.dart
-│   │       └── loading_overlay.dart
-│   │
-│   └── ml/                          # ✅ Módulo de Machine Learning (implementado)
-│       └── yolo_detector.dart       # Detector YOLO con preprocesamiento y NMS
+│   └── ml/
+│       └── yolo_detector.dart      # ✅ Detector YOLO completo (letterbox + NMS)
 │
-├── test/                            # Tests automatizados
+├── test/                            # ✅ Tests automatizados
 │   ├── ml/
-│   │   └── yolo_detector_test.dart  # ✅ Tests del detector YOLO
-│   ├── unit/
-│   │   ├── preprocessor_test.dart
-│   │   └── postprocessor_test.dart
-│   ├── widget/
-│   │   └── camera_preview_test.dart
-│   └── test_assets/                 # Assets para testing
-│       └── test_images/             # Imágenes de prueba de Kaggle
-│           └── *.jpg
+│   │   └── yolo_detector_test.dart # 26 tests pasando
+│   └── test_assets/test_images/    # 51 imágenes de prueba
 │
-├── integration_test/                # Tests de integración
-│   └── detection_flow_test.dart
-│
-├── pubspec.yaml                     # Dependencias del proyecto
-├── analysis_options.yaml            # Reglas de linting
-├── .gitignore                       # Archivos ignorados por Git
+├── pubspec.yaml                     # ✅ Dependencias configuradas
+├── analysis_options.yaml            # ✅ Reglas de linting
+├── .gitignore                       # ✅ Archivos ignorados
 └── README.md                        # Este archivo
+```
+
+### Estructura Planeada (Pendiente)
+
+```
+lib/
+├── core/                            # ❌ Pendiente
+│   ├── constants/                   # Constantes de app, ML, tema
+│   ├── utils/                       # Utilidades de imagen, permisos
+│   └── exceptions/                  # Excepciones personalizadas
+│
+├── data/                            # ⚠️ Parcial
+│   ├── models/                      # ✅ detection.dart
+│   ├── repositories/                # ❌ Pendiente
+│   └── datasources/                 # ❌ Pendiente
+│
+├── domain/                          # ❌ Pendiente
+│   ├── entities/                    # Entidades de dominio
+│   ├── usecases/                    # Casos de uso
+│   └── repositories/                # Interfaces
+│
+├── presentation/                    # ⚠️ Parcial
+│   ├── providers/                   # ❌ Riverpod (pendiente)
+│   ├── pages/                       # ✅ detection_test_screen.dart
+│   └── widgets/                     # ❌ Widgets reutilizables (pendiente)
+│
+└── ml/                              # ✅ Completo
+    └── yolo_detector.dart
 ```
 
 ---
@@ -1205,31 +1177,34 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 
 ## 🗺️ Roadmap de Desarrollo
 
-### Fase 1: Setup Inicial ✅
+### Fase 1: Setup Inicial ✅ (100%)
 - [x] Crear proyecto Flutter
 - [x] Configurar estructura de carpetas
 - [x] Agregar dependencias en pubspec.yaml
 - [x] Configurar Android (permisos, gradle)
 - [x] Copiar modelo TFLite y labels
 
-### Fase 2: ML Core ✅
+### Fase 2: ML Core ✅ (100%)
 - [x] Implementar `YoloDetector`
 - [x] Implementar preprocesamiento (letterbox)
-- [x] Implementar postprocesamiento (NMS)
+- [x] Implementar postprocesamiento (NMS por clase)
 - [x] Probar inferencia con imagen estática
 - [x] Crear modelo `Detection` con métodos auxiliares
 - [x] Implementar pantalla de pruebas (`DetectionTestScreen`)
+- [x] Implementar `BoundingBoxPainter` para visualizar detecciones
 
-### Fase 3: Testing 🔄
+### Fase 3: Testing ✅ (90%)
 - [x] Crear estructura de tests automatizados
-- [ ] Implementar tests unitarios completos
-- [ ] Probar con múltiples imágenes de Kaggle
+- [x] Implementar 26 tests unitarios (YoloDetector + Detection)
+- [x] Probar con 51 imágenes de Kaggle (6 platos)
+- [x] Tests de rendimiento (< 600ms inferencia)
+- [ ] Tests de widgets
 
 ### Fase 4: Cámara (Pendiente)
-- [ ] Implementar captura desde galería
-- [ ] Implementar preview de cámara
+- [x] Implementar captura desde galería (ImagePicker)
+- [ ] Implementar preview de cámara en tiempo real
 - [ ] Integrar detección con cámara
-- [ ] Dibujar bounding boxes en overlay
+- [x] Dibujar bounding boxes en overlay
 
 ### Fase 5: UI/UX (Pendiente)
 - [ ] Diseñar pantalla principal
