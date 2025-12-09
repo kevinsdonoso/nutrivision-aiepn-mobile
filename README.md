@@ -190,17 +190,24 @@ nutrivision_aiepn_mobile/
 │       └── labels.txt              # 83 clases de ingredientes
 │
 ├── lib/                             # Código fuente Dart/Flutter
-│   ├── main.dart                   # ✅ Punto de entrada de la app
+│   ├── main.dart                   # ✅ Punto de entrada con Riverpod y go_router
 │   │
 │   ├── core/                       # ✅ Núcleo de la aplicación
+│   │   ├── constants/
+│   │   │   └── app_constants.dart  # ✅ Constantes globales
+│   │   ├── theme/
+│   │   │   └── app_theme.dart      # ✅ Sistema de temas (claro/oscuro)
+│   │   ├── router/
+│   │   │   └── app_router.dart     # ✅ Navegación con go_router
 │   │   └── exceptions/
-│   │       └── app_exceptions.dart # Sistema completo de excepciones
+│   │       └── app_exceptions.dart # ✅ Sistema completo de excepciones
 │   │
 │   ├── data/models/
 │   │   └── detection.dart          # ✅ Modelo de detección con validaciones
 │   │
 │   ├── presentation/pages/
-│   │   └── gallery_detection_page.dart  # ✅ Pantalla de detección desde galería
+│   │   ├── home_page.dart          # ✅ Pantalla principal
+│   │   └── gallery_detection_page.dart  # ✅ Detección desde galería
 │   │
 │   └── ml/
 │       └── yolo_detector.dart      # ✅ Detector YOLO con desnormalización
@@ -212,6 +219,7 @@ nutrivision_aiepn_mobile/
 │
 ├── pubspec.yaml                     # ✅ Dependencias configuradas
 ├── analysis_options.yaml            # ✅ Reglas de linting
+├── CLAUDE.md                        # ✅ Contexto para asistencia IA
 ├── .gitignore                       # ✅ Archivos ignorados
 └── README.md                        # Este archivo
 ```
@@ -221,7 +229,9 @@ nutrivision_aiepn_mobile/
 ```
 lib/
 ├── core/                            # ✅ Implementado
-│   ├── constants/                   # ❌ Pendiente
+│   ├── constants/                   # ✅ app_constants.dart
+│   ├── theme/                       # ✅ app_theme.dart
+│   ├── router/                      # ✅ app_router.dart
 │   ├── utils/                       # ❌ Pendiente
 │   └── exceptions/                  # ✅ app_exceptions.dart
 │
@@ -236,8 +246,8 @@ lib/
 │   └── repositories/                # Interfaces
 │
 ├── presentation/                    # ⚠️ Parcial
-│   ├── providers/                   # ❌ Riverpod (pendiente)
-│   ├── pages/                       # ✅ gallery_detection_page.dart
+│   ├── providers/                   # ❌ Riverpod providers (pendiente)
+│   ├── pages/                       # ✅ home_page, gallery_detection_page
 │   └── widgets/                     # ❌ Widgets reutilizables (pendiente)
 │
 └── ml/                              # ✅ Completo
@@ -1203,17 +1213,21 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Tests con 51 imágenes de Kaggle
 - [x] Tests de rendimiento (< 600ms inferencia)
 
-### Fase 5: Cámara (Pendiente)
+### Fase 5: Cámara (En progreso - 50%)
 - [x] Implementar captura desde galería (ImagePicker)
 - [ ] Implementar preview de cámara en tiempo real
 - [ ] Integrar detección con cámara
 - [x] Dibujar bounding boxes en overlay
+- [x] Placeholder de página de cámara
 
-### Fase 6: UI/UX (Pendiente)
-- [ ] Diseñar pantalla principal
+### Fase 6: UI/UX (En progreso - 70%)
+- [x] Crear sistema de tema (AppTheme, AppColors)
+- [x] Crear constantes globales (AppConstants)
+- [x] Configurar navegación con go_router
+- [x] Diseñar pantalla principal (HomePage)
 - [ ] Diseñar pantalla de resultados
-- [ ] Implementar cards de ingredientes
-- [ ] Agregar animaciones y transiciones
+- [ ] Implementar cards de ingredientes detallados
+- [x] Agregar animaciones y transiciones
 
 ### Fase 7: Base de Datos (Pendiente)
 - [ ] Crear schema SQLite de nutrientes
