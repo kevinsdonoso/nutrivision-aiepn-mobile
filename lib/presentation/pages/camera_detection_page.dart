@@ -60,7 +60,12 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopImageStream();
+    // Detener stream directamente SIN usar provider (evita error de ref)
+    // No llamar _stopImageStream() porque usa ref.read() que ya está invalidado
+    if (_cameraController != null &&
+        _cameraController!.value.isStreamingImages) {
+      _cameraController!.stopImageStream();
+    }
     _cameraController?.dispose();
     super.dispose();
   }
@@ -185,7 +190,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
       _cameraController = CameraController(
         camera,
-        ResolutionPreset.medium,
+        ResolutionPreset.low, // Reducido para mejorar rendimiento (320x240 vs 720x480)
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -233,7 +238,10 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
     if (_cameraController != null &&
         _cameraController!.value.isStreamingImages) {
       _cameraController!.stopImageStream();
-      ref.read(cameraStateProvider.notifier).stopStreaming();
+      // Evitar usar ref si el widget ya fue dispuesto
+      if (mounted) {
+        ref.read(cameraStateProvider.notifier).stopStreaming();
+      }
     }
   }
 

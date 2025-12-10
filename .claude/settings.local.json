@@ -14,7 +14,9 @@
       "Bash(git mv:*)",
       "Bash(flutter clean:*)",
       "Bash(git filter-branch:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(wc:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
