@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../data/models/detection.dart';
+import '../../../data/models/detection.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ENUMS Y ESTADOS
