@@ -13,7 +13,7 @@ import 'package:image/image.dart' as img;
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
 import '../../data/models/detection.dart';
-import '../../ml/yolo_detector.dart';
+import '../../features/detection/services/yolo_detector.dart';
 
 /// Procesador de frames de cámara para detección en tiempo real.
 ///

@@ -15,7 +15,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
-import 'package:nutrivision_aiepn_mobile/ml/yolo_detector.dart';
+import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_detector.dart';
 import 'package:nutrivision_aiepn_mobile/data/models/detection.dart';
 import 'package:nutrivision_aiepn_mobile/core/exceptions/app_exceptions.dart';
 

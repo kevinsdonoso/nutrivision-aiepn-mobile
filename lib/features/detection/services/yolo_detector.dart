@@ -17,8 +17,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-import '../data/models/detection.dart';
-import '../core/exceptions/app_exceptions.dart';
+import '../../../data/models/detection.dart';
+import '../../../core/exceptions/app_exceptions.dart';
 
 /// Log condicional solo en modo debug
 void _debugLog(String message) {
