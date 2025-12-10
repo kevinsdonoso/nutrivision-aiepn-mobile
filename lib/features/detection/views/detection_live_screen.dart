@@ -13,7 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/services/camera_frame_processor.dart';
+import '../services/camera_frame_processor.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/camera_provider.dart';
 import '../providers/detector_provider.dart';
