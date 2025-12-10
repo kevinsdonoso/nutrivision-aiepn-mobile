@@ -18,7 +18,7 @@ import '../../core/theme/app_theme.dart';
 import '../providers/camera_provider.dart';
 import '../providers/detector_provider.dart';
 import '../../features/detection/widgets/camera_controls.dart';
-import '../widgets/camera/detection_overlay.dart';
+import '../../features/detection/widgets/detection_overlay.dart';
 
 /// Pantalla de detección de ingredientes en tiempo real desde cámara.
 class CameraDetectionPage extends ConsumerStatefulWidget {
