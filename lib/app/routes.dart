@@ -12,7 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../core/constants/app_constants.dart';
 import '../features/home/views/home_screen.dart';
 import '../features/detection/views/detection_gallery_screen.dart';
-import '../presentation/pages/camera_detection_page.dart';
+import '../features/detection/views/detection_live_screen.dart';
 
 /// Configuración del router de la aplicación.
 ///
