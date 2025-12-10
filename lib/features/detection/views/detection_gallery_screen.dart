@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
-import '../../../ml/yolo_detector.dart';
+import '../services/yolo_detector.dart';
 import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
 

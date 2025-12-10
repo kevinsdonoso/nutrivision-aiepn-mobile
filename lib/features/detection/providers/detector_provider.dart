@@ -8,7 +8,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../ml/yolo_detector.dart';
+import '../services/yolo_detector.dart';
 
 /// Provider que gestiona la instancia única del detector YOLO.
 ///
