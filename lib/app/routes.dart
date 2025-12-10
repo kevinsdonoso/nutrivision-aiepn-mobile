@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                         app_router.dart                                       ║
+// ║                             routes.dart                                       ║
 // ║              Sistema de navegación con go_router                              ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Configura la navegación declarativa de la aplicación.                        ║
@@ -9,10 +9,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../constants/app_constants.dart';
-import '../../presentation/pages/home_page.dart';
-import '../../presentation/pages/gallery_detection_page.dart';
-import '../../presentation/pages/camera_detection_page.dart';
+import '../core/constants/app_constants.dart';
+import '../presentation/pages/home_page.dart';
+import '../presentation/pages/gallery_detection_page.dart';
+import '../presentation/pages/camera_detection_page.dart';
 
 /// Configuración del router de la aplicación.
 ///
