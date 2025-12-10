@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                      gallery_detection_page.dart                              ║
+// ║                    detection_gallery_screen.dart                              ║
 // ║          Pantalla de detección de ingredientes desde galería                  ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Permite seleccionar imágenes de la galería y ejecutar detección YOLO.        ║
@@ -12,9 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
-import '../../ml/yolo_detector.dart';
-import '../../data/models/detection.dart';
-import '../../core/exceptions/app_exceptions.dart';
+import '../../../ml/yolo_detector.dart';
+import '../../../data/models/detection.dart';
+import '../../../core/exceptions/app_exceptions.dart';
 
 class GalleryDetectionPage extends StatefulWidget {
   const GalleryDetectionPage({super.key});
