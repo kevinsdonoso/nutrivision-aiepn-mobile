@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                         camera_detection_page.dart                            ║
+// ║                       detection_live_screen.dart                              ║
 // ║              Pantalla de detección de ingredientes en tiempo real             ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Implementa detección usando la cámara del dispositivo.                       ║
@@ -12,13 +12,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../core/constants/app_constants.dart';
-import '../../core/services/camera_frame_processor.dart';
-import '../../core/theme/app_theme.dart';
-import '../providers/camera_provider.dart';
-import '../providers/detector_provider.dart';
-import '../../features/detection/widgets/camera_controls.dart';
-import '../../features/detection/widgets/detection_overlay.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/services/camera_frame_processor.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../presentation/providers/camera_provider.dart';
+import '../../../presentation/providers/detector_provider.dart';
+import '../widgets/camera_controls.dart';
+import '../widgets/detection_overlay.dart';
 
 /// Pantalla de detección de ingredientes en tiempo real desde cámara.
 class CameraDetectionPage extends ConsumerStatefulWidget {
