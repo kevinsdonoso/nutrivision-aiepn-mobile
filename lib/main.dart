@@ -3,16 +3,14 @@
 // ║                     NutriVisionAIEPN Mobile                                   ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Punto de entrada de la aplicación Flutter.                                   ║
-// ║  Configura el tema, navegación con go_router y Riverpod.                      ║
+// ║  Configura orientación, barra de estado y lanza la app con Riverpod.          ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/constants/app_constants.dart';
-import 'core/theme/app_theme.dart';
-import 'core/router/app_router.dart';
+import 'app/app.dart';
 
 void main() {
   // Asegurar que Flutter esté inicializado antes de cualquier operación
@@ -38,32 +36,4 @@ void main() {
       child: NutriVisionApp(),
     ),
   );
-}
-
-/// Aplicación principal NutriVisionAIEPN
-class NutriVisionApp extends StatelessWidget {
-  const NutriVisionApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      // ═══════════════════════════════════════════════════════════════════════
-      // CONFIGURACIÓN BÁSICA
-      // ═══════════════════════════════════════════════════════════════════════
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // NAVEGACIÓN CON GO_ROUTER
-      // ═══════════════════════════════════════════════════════════════════════
-      routerConfig: appRouter,
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // TEMA DE LA APLICACIÓN
-      // ═══════════════════════════════════════════════════════════════════════
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-    );
-  }
 }
