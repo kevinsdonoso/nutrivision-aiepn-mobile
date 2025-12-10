@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                         home_page.dart                                        ║
+// ║                         home_screen.dart                                      ║
 // ║              Pantalla principal de NutriVisionAIEPN                           ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Punto de entrada visual de la aplicación.                                    ║
@@ -9,8 +9,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_constants.dart';
-import '../../core/theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_theme.dart';
 
 /// Pantalla principal de la aplicación.
 class HomePage extends StatelessWidget {
