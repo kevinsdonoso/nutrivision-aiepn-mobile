@@ -10,10 +10,10 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 
-import '../constants/app_constants.dart';
-import '../exceptions/app_exceptions.dart';
-import '../../data/models/detection.dart';
-import '../../features/detection/services/yolo_detector.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/exceptions/app_exceptions.dart';
+import '../../../data/models/detection.dart';
+import 'yolo_detector.dart';
 
 /// Procesador de frames de cámara para detección en tiempo real.
 ///
