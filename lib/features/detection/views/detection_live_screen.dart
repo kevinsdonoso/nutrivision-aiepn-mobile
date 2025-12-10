@@ -16,7 +16,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/services/camera_frame_processor.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../presentation/providers/camera_provider.dart';
-import '../../../presentation/providers/detector_provider.dart';
+import '../providers/detector_provider.dart';
 import '../widgets/camera_controls.dart';
 import '../widgets/detection_overlay.dart';
 
