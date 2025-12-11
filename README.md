@@ -199,7 +199,10 @@ nutrivision_aiepn_mobile/
 │   ├── core/                            # ✅ Núcleo compartido
 │   │   ├── constants/app_constants.dart # Constantes globales
 │   │   ├── theme/app_theme.dart         # Sistema de temas
-│   │   └── exceptions/app_exceptions.dart # Excepciones personalizadas
+│   │   ├── exceptions/app_exceptions.dart # Excepciones personalizadas
+│   │   ├── logging/                     # Sistema de logging centralizado
+│   │   ├── security/input_validator.dart # Validación de inputs
+│   │   └── session/session_manager.dart # Gestión de sesión
 │   │
 │   ├── data/                            # ✅ Capa de datos
 │   │   ├── models/
@@ -235,14 +238,24 @@ nutrivision_aiepn_mobile/
 │       │       ├── nutrient_bar.dart        # Barra de progreso nutriente
 │       │       ├── nutrition_card.dart      # Card de información nutricional
 │       │       └── nutrition_summary.dart   # Resumen total de nutrientes
+│       ├── auth/                        # ✅ Autenticación Firebase
+│       │   ├── services/                # Firebase Auth + Firestore
+│       │   ├── repositories/            # Auth repository
+│       │   ├── providers/               # Auth state providers
+│       │   └── views/                   # Login, Register, Profile Setup
+│       ├── onboarding/                  # ✅ Onboarding
+│       │   └── views/                   # Splash, Welcome screens
+│       ├── profile/                     # ✅ Perfil de usuario
+│       │   └── views/                   # Profile, Edit Profile screens
 │       └── home/
 │           └── views/
 │               └── home_screen.dart         # Pantalla principal
 │
-├── test/                                 # ✅ Tests automatizados (92 tests)
-│   ├── ml/yolo_detector_test.dart
+├── test/                                 # ✅ Tests automatizados (114 tests)
+│   ├── ml/yolo_detector_test.dart       # 42 tests del detector
 │   ├── data/models/nutrition_test.dart  # 33 tests de nutrición
-│   └── test_assets/test_images/         # 51 imágenes de prueba
+│   ├── core/logging/                    # 39 tests de logging
+│   └── test_assets/test_images/         # 54 imágenes de prueba
 │
 ├── pubspec.yaml                          # Dependencias
 ├── CLAUDE.md                             # Contexto para IA
@@ -268,27 +281,32 @@ cd nutrivision_aiepn_mobile
 
 ```powershell
 # Ejecutar desde la raíz del proyecto (PowerShell en Windows)
+# Estructura Feature-First (ya implementada)
 New-Item -ItemType Directory -Force -Path "assets\models"
 New-Item -ItemType Directory -Force -Path "assets\labels"
-New-Item -ItemType Directory -Force -Path "assets\database"
+New-Item -ItemType Directory -Force -Path "assets\data"
 New-Item -ItemType Directory -Force -Path "lib\core\constants"
-New-Item -ItemType Directory -Force -Path "lib\core\utils"
 New-Item -ItemType Directory -Force -Path "lib\core\exceptions"
+New-Item -ItemType Directory -Force -Path "lib\core\logging"
+New-Item -ItemType Directory -Force -Path "lib\core\security"
+New-Item -ItemType Directory -Force -Path "lib\core\session"
+New-Item -ItemType Directory -Force -Path "lib\core\theme"
 New-Item -ItemType Directory -Force -Path "lib\data\models"
 New-Item -ItemType Directory -Force -Path "lib\data\repositories"
 New-Item -ItemType Directory -Force -Path "lib\data\datasources"
-New-Item -ItemType Directory -Force -Path "lib\domain\entities"
-New-Item -ItemType Directory -Force -Path "lib\domain\usecases"
-New-Item -ItemType Directory -Force -Path "lib\domain\repositories"
-New-Item -ItemType Directory -Force -Path "lib\presentation\providers"
-New-Item -ItemType Directory -Force -Path "lib\presentation\pages"
-New-Item -ItemType Directory -Force -Path "lib\presentation\widgets"
-New-Item -ItemType Directory -Force -Path "lib\ml"
+New-Item -ItemType Directory -Force -Path "lib\features\detection\services"
+New-Item -ItemType Directory -Force -Path "lib\features\detection\views"
+New-Item -ItemType Directory -Force -Path "lib\features\detection\widgets"
+New-Item -ItemType Directory -Force -Path "lib\features\detection\providers"
+New-Item -ItemType Directory -Force -Path "lib\features\nutrition"
+New-Item -ItemType Directory -Force -Path "lib\features\auth"
+New-Item -ItemType Directory -Force -Path "lib\features\profile"
+New-Item -ItemType Directory -Force -Path "lib\features\onboarding"
+New-Item -ItemType Directory -Force -Path "lib\features\home"
 New-Item -ItemType Directory -Force -Path "test\ml"
-New-Item -ItemType Directory -Force -Path "test\unit"
-New-Item -ItemType Directory -Force -Path "test\widget"
+New-Item -ItemType Directory -Force -Path "test\core\logging"
+New-Item -ItemType Directory -Force -Path "test\data\models"
 New-Item -ItemType Directory -Force -Path "test\test_assets\test_images"
-New-Item -ItemType Directory -Force -Path "integration_test"
 ```
 
 ### Paso 3: Copiar archivos del modelo
@@ -1022,17 +1040,10 @@ class BoundingBoxPainter extends CustomPainter {
 
 | Grupo | Tests | Estado |
 |-------|-------|--------|
-| YoloDetector - Inicialización | 5 | ✅ |
-| Detection - Propiedades | 14 | ✅ |
-| DetectionListExtension | 10 | ✅ |
-| YoloDetector - Detección | 3 | ✅ |
-| YoloDetector - Consistencia | 1 | ✅ |
-| YoloDetector - Imágenes Kaggle | 2 | ✅ |
-| YoloDetector - Rendimiento | 1 | ✅ |
-| Excepciones - Comportamiento | 6 | ✅ |
-| Logging (LogLevel, LogConfig, AppLogger) | 17 | ✅ |
-| **Nutrición (NutrientsPer100g, NutritionInfo, NutritionData)** | **33** | ✅ |
-| **TOTAL** | **92** | ✅ |
+| YoloDetector (Inicialización, Detección, Consistencia, Rendimiento) | 42 | ✅ |
+| Logging (LogLevel, LogConfig, AppLogger) | 39 | ✅ |
+| Nutrición (NutrientsPer100g, NutritionInfo, NutritionData) | 33 | ✅ |
+| **TOTAL** | **114** | ✅ |
 
 ### Ejecutar Tests
 
@@ -1254,14 +1265,14 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 
 ### Fase 4: Testing ✅ (100%)
 - [x] Crear estructura de tests automatizados
-- [x] Implementar 42 tests unitarios
+- [x] Implementar 114 tests unitarios
 - [x] Tests de YoloDetector (inicialización, detección, consistencia)
 - [x] Tests de Detection (propiedades, validaciones, serialización)
 - [x] Tests de excepciones
-- [x] Tests con 51 imágenes de Kaggle
+- [x] Tests con 54 imágenes de Kaggle
 - [x] Tests de rendimiento (< 600ms inferencia)
 
-### Fase 5: Cámara en Tiempo Real ✅ (90%)
+### Fase 5: Cámara en Tiempo Real ✅ (85%)
 - [x] Implementar captura desde galería (ImagePicker)
 - [x] Implementar preview de cámara en tiempo real
 - [x] Integrar detección con streaming de cámara
@@ -1284,7 +1295,7 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Migrar a arquitectura Feature-First
 - [x] Reorganizar carpetas lib/
 - [x] Actualizar imports
-- [x] Verificar 42 tests pasando
+- [x] Verificar 114 tests pasando
 
 ### ═══════════════════════════════════════════════════════════════
 ### PLAN DE EVOLUCIÓN - FASES PENDIENTES
@@ -1294,7 +1305,7 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Ejecutar `flutter clean`
 - [x] Ejecutar `flutter pub get`
 - [x] Ejecutar `flutter analyze` → 0 issues
-- [x] Ejecutar `flutter test` → 59 tests pasando
+- [x] Ejecutar `flutter test` → 114 tests pasando
 
 ### FASE 1: Crear Estructura de Carpetas ✅
 | Carpeta | Estado | Descripción |
@@ -1332,7 +1343,7 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Crear `assets/data/nutrition_fdc.json` - Datos USDA (80 ingredientes, 6 platos)
 - [x] Widgets UI: nutrient_bar, nutrition_card, nutrition_summary
 - [x] Integración con detection_gallery_screen
-- [x] Verificar: `flutter analyze` y `flutter test` → 92 tests pasando
+- [x] Verificar: `flutter analyze` y `flutter test` → 114 tests pasando
 
 ### FASE 5: Firebase Auth, Onboarding y Profile ✅ (100%)
 #### 5.1 Onboarding
@@ -1352,13 +1363,17 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 
 #### 5.3 Profile
 - [x] Crear `lib/features/profile/views/profile_screen.dart`
-- [x] Agregar ruta en `routes.dart`
+- [x] Crear `lib/features/profile/views/edit_profile_screen.dart`
+- [x] Agregar rutas en `routes.dart`
 
 #### 5.4 Session Manager
 - [x] Crear `lib/core/session/session_manager.dart` - Gestión de sesión
 - [x] Integrar en `routes.dart` (navegación condicional basada en auth)
 
-#### 5.5 Modelos de Auth
+#### 5.5 Seguridad
+- [x] Crear `lib/core/security/input_validator.dart` - Validación de inputs
+
+#### 5.6 Modelos de Auth
 - [x] Crear `lib/data/models/user_profile.dart`
 - [x] Crear `lib/data/models/auth_state.dart`
 
@@ -1596,10 +1611,10 @@ flutter build apk --no-tree-shake-icons
 
 | Módulo | Tests | Cobertura |
 |--------|-------|-----------|
-| `yolo_detector.dart` | 12 | ~95% |
-| `detection.dart` | 24 | ~98% |
-| `app_exceptions.dart` | 6 | ~90% |
-| **Total** | **42** | **~94%** |
+| YoloDetector | 42 | ~95% |
+| Logging | 39 | ~95% |
+| Nutrition | 33 | ~95% |
+| **Total** | **114** | **~94%** |
 
 ### Rendimiento
 
@@ -1633,7 +1648,7 @@ Este proyecto es parte de un Trabajo de Integración Curricular y su uso está s
 
 *Detección inteligente de ingredientes alimenticios con información nutricional*
 
-✅ 92 tests pasando | ✅ 0 issues en flutter analyze | ✅ Sistema nutricional integrado
+✅ 114 tests pasando | ✅ 0 issues en flutter analyze | ✅ Firebase Auth integrado
 
 Made with ❤️ and Flutter
 
