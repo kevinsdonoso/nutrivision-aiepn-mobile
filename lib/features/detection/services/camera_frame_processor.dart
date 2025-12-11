@@ -12,6 +12,7 @@ import 'package:image/image.dart' as img;
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/exceptions/app_exceptions.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../data/models/detection.dart';
 import 'image_processing_isolate.dart';
 import 'native_image_processor.dart';
@@ -25,6 +26,12 @@ import 'yolo_detector.dart';
 /// - Throttling para evitar sobrecarga
 /// - Invocación del detector YOLO
 class CameraFrameProcessor {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONSTANTES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const String _tag = 'CameraProcessor';
+
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES
   // ═══════════════════════════════════════════════════════════════════════════
@@ -100,7 +107,7 @@ class CameraFrameProcessor {
 
       // Fallback a isolate si nativo no disponible/falló
       if (finalImage == null) {
-        _debugLog('📦 Usando fallback ISOLATE (nativo no disponible/falló)');
+        AppLogger.debug('Usando fallback Isolate', tag: _tag);
         final isolateResult = await _convertWithIsolate(
           cameraImage,
           sensorOrientation,
@@ -112,8 +119,7 @@ class CameraFrameProcessor {
           outputHeight = isolateResult.height;
         }
       } else {
-        _debugLog('⚡ Usando conversión NATIVA C++');
-        // Ajustar dimensiones según rotación
+        // Ajustar dimensiones según rotación (nativo exitoso)
         if (sensorOrientation == 90 || sensorOrientation == 270) {
           final temp = outputWidth;
           outputWidth = outputHeight;
@@ -122,7 +128,7 @@ class CameraFrameProcessor {
       }
 
       if (finalImage == null) {
-        _debugLog('⚠️ No se pudo convertir el frame');
+        AppLogger.warning('No se pudo convertir el frame', tag: _tag);
         return null;
       }
 
@@ -208,7 +214,7 @@ class CameraFrameProcessor {
       // Espejo para cámara frontal
       return isFrontCamera ? img.flipHorizontal(rotatedImage) : rotatedImage;
     } catch (e) {
-      _debugLog('⚠️ Error en conversión nativa: $e');
+      AppLogger.warning('Error en conversión nativa: $e', tag: _tag);
       return null;
     }
   }
@@ -233,7 +239,7 @@ class CameraFrameProcessor {
     );
 
     if (!conversionResult.isSuccess || conversionResult.rgbBytes == null) {
-      _debugLog('⚠️ Conversión en isolate falló: ${conversionResult.error}');
+      AppLogger.warning('Conversión en isolate falló: ${conversionResult.error}', tag: _tag);
       return null;
     }
 
@@ -261,7 +267,7 @@ class CameraFrameProcessor {
   ) {
     try {
       if (cameraImage.planes.length < 3) {
-        _debugLog('⚠️ Frame no tiene 3 planos YUV');
+        AppLogger.warning('Frame no tiene 3 planos YUV', tag: _tag);
         return null;
       }
 
@@ -282,7 +288,7 @@ class CameraFrameProcessor {
         flipHorizontal: isFrontCamera,
       );
     } catch (e) {
-      _debugLog('❌ Error preparando input para isolate: $e');
+      AppLogger.error('Error preparando input para isolate', tag: _tag, error: e);
       return null;
     }
   }
@@ -294,13 +300,6 @@ class CameraFrameProcessor {
   /// Resetea el contador de frames.
   void resetCounter() {
     _frameCounter = 0;
-  }
-
-  /// Log condicional solo en modo debug.
-  void _debugLog(String message) {
-    if (kDebugMode) {
-      debugPrint('[CameraFrameProcessor] $message');
-    }
   }
 }
 

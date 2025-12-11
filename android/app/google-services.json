@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "631462712412",
+    "project_id": "nutrivisionaiepn",
+    "storage_bucket": "nutrivisionaiepn.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:631462712412:android:8066012879df9961b84299",
+        "android_client_info": {
+          "package_name": "edu.epn.nutrivision.nutrivision_aiepn_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZbt6jxINdYjXPpWfDVdSaQb69cETzqLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1334,29 +1334,35 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Integración con detection_gallery_screen
 - [x] Verificar: `flutter analyze` y `flutter test` → 92 tests pasando
 
-### FASE 5: Features Nuevas ⏳
+### FASE 5: Firebase Auth, Onboarding y Profile ✅ (100%)
 #### 5.1 Onboarding
-- [ ] Crear `lib/features/onboarding/splash_screen.dart`
-- [ ] Crear `lib/features/onboarding/welcome_screen.dart`
-- [ ] Agregar rutas en `routes.dart`
+- [x] Crear `lib/features/onboarding/views/splash_screen.dart`
+- [x] Crear `lib/features/onboarding/views/welcome_screen.dart`
+- [x] Agregar rutas en `routes.dart`
 
-#### 5.2 Auth (Demo)
-- [ ] Crear `lib/features/auth/login_screen.dart`
-- [ ] Crear `lib/features/auth/signup_screen.dart`
-- [ ] Agregar rutas en `routes.dart`
+#### 5.2 Auth (Firebase)
+- [x] Crear `lib/features/auth/services/firebase_auth_service.dart`
+- [x] Crear `lib/features/auth/services/firestore_user_service.dart`
+- [x] Crear `lib/features/auth/repositories/auth_repository.dart`
+- [x] Crear `lib/features/auth/providers/auth_provider.dart`
+- [x] Crear `lib/features/auth/views/login_screen.dart`
+- [x] Crear `lib/features/auth/views/register_screen.dart`
+- [x] Crear `lib/features/auth/views/profile_setup_screen.dart`
+- [x] Agregar rutas en `routes.dart`
 
 #### 5.3 Profile
-- [ ] Crear `lib/features/profile/views/profile_screen.dart`
-- [ ] Agregar ruta en `routes.dart`
+- [x] Crear `lib/features/profile/views/profile_screen.dart`
+- [x] Agregar ruta en `routes.dart`
 
-### FASE 6: Session Manager ⏳
-- [ ] Crear `lib/core/session/session_manager.dart` - Flags de sesión
-- [ ] Crear `lib/core/session/user_profile_storage.dart` - Persistencia
-- [ ] Integrar en `routes.dart` (navegación condicional)
-- [ ] Tests para session
-- [ ] Verificar: `flutter analyze` y `flutter test`
+#### 5.4 Session Manager
+- [x] Crear `lib/core/session/session_manager.dart` - Gestión de sesión
+- [x] Integrar en `routes.dart` (navegación condicional basada en auth)
 
-### FASE 7: Widgets Compartidos ⏳
+#### 5.5 Modelos de Auth
+- [x] Crear `lib/data/models/user_profile.dart`
+- [x] Crear `lib/data/models/auth_state.dart`
+
+### FASE 6: Widgets Compartidos ⏳
 - [ ] Crear `lib/shared/widgets/gradient_app_bar.dart`
 - [ ] Crear `lib/shared/widgets/macro_card.dart`
 - [ ] Crear `lib/features/home/widgets/action_button.dart`
@@ -1367,7 +1373,7 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [ ] Crear `lib/features/home/viewmodels/home_viewmodel.dart`
 - [ ] Verificar: `flutter analyze` y `flutter test`
 
-### FASE 8: Renombrado de Servicios ⚠️ (AL FINAL)
+### FASE 7: Renombrado de Servicios ⚠️ (AL FINAL)
 > **IMPORTANTE:** Esta fase solo debe ejecutarse cuando todo lo anterior esté funcionando.
 
 - [ ] Renombrar `yolo_detector.dart` → `yolo_service.dart`
@@ -1395,13 +1401,11 @@ FASE 3 (Modelos)          ✅ COMPLETADO (33 tests nuevos)
        ↓
 FASE 4 (Base de datos)    ✅ COMPLETADO (sistema nutricional completo)
        ↓
-FASE 5 (Auth/Onboarding)  ← SIGUIENTE PASO
+FASE 5 (Auth/Onboarding)  ✅ COMPLETADO (Firebase Auth + Profile + Session)
        ↓
-FASE 6 (Session)          ← Navegación condicional
+FASE 6 (Widgets)          ← SIGUIENTE PASO - Refactorizar componentes
        ↓
-FASE 7 (Widgets)          ← Refactorizar componentes
-       ↓
-FASE 8 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
+FASE 7 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
 ```
 
 ### ═══════════════════════════════════════════════════════════════

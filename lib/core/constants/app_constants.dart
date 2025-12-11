@@ -196,6 +196,47 @@ abstract class AppConstants {
 
   /// Ruta de configuración
   static const String routeSettings = '/settings';
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RUTAS DE AUTENTICACIÓN
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Ruta de splash/carga inicial
+  static const String routeSplash = '/splash';
+
+  /// Ruta de bienvenida (onboarding)
+  static const String routeWelcome = '/welcome';
+
+  /// Ruta de inicio de sesión
+  static const String routeLogin = '/login';
+
+  /// Ruta de registro
+  static const String routeRegister = '/register';
+
+  /// Ruta de recuperar contraseña
+  static const String routeForgotPassword = '/forgot-password';
+
+  /// Ruta de configuración de perfil (post-registro)
+  static const String routeProfileSetup = '/profile-setup';
+
+  /// Ruta de perfil de usuario
+  static const String routeProfile = '/profile';
+
+  /// Ruta de editar perfil
+  static const String routeEditProfile = '/edit-profile';
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // VALIDACIÓN DE AUTENTICACIÓN
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Longitud mínima de contraseña
+  static const int minPasswordLength = 6;
+
+  /// Longitud mínima de nombre
+  static const int minNameLength = 2;
+
+  /// Longitud máxima de nombre
+  static const int maxNameLength = 50;
 }
 
 /// Constantes específicas para desarrollo y debugging.

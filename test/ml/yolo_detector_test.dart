@@ -15,9 +15,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
-import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_detector.dart';
-import 'package:nutrivision_aiepn_mobile/data/models/detection.dart';
 import 'package:nutrivision_aiepn_mobile/core/exceptions/app_exceptions.dart';
+import 'package:nutrivision_aiepn_mobile/core/logging/log_config.dart';
+import 'package:nutrivision_aiepn_mobile/data/models/detection.dart';
+import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_detector.dart';
 
 /// Configuración del test
 class TestConfig {
@@ -45,6 +46,9 @@ void main() {
   late bool hasTestImages;
 
   setUpAll(() async {
+    // Silenciar logs durante tests
+    LogConfig.configureForTests();
+
     // Verificar si existen las imágenes de prueba
     final testDir = Directory(TestConfig.testImagesPath);
     hasTestImages = await testDir.exists();
@@ -67,6 +71,7 @@ void main() {
 
   tearDownAll(() {
     detector.dispose();
+    LogConfig.reset();
   });
 
   // ═══════════════════════════════════════════════════════════════════════════

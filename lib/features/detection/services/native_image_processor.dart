@@ -6,14 +6,17 @@
 // ║  Provee conversión YUV→RGB ~10x más rápida que Dart puro.                     ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+import '../../../core/logging/app_logger.dart';
 
 /// Cliente para procesamiento de imágenes nativo.
 ///
 /// Usa código C++ optimizado con NEON (ARM SIMD) para conversión
 /// de color YUV420 a RGB significativamente más rápida.
 class NativeImageProcessor {
+  static const String _tag = 'NativeProcessor';
+
   /// Canal de comunicación con código nativo.
   static const _channel = MethodChannel('edu.epn.nutrivision/native_image_processor');
 
@@ -34,7 +37,7 @@ class NativeImageProcessor {
       _neonSupported = await _channel.invokeMethod<bool>('isNeonSupported') ?? false;
       return _neonSupported!;
     } catch (e) {
-      _debugLog('⚠️ Error verificando NEON: $e');
+      AppLogger.warning('Error verificando NEON: $e', tag: _tag);
       _neonSupported = false;
       return false;
     }
@@ -79,23 +82,16 @@ class NativeImageProcessor {
 
       return result;
     } on PlatformException catch (e) {
-      _debugLog('⚠️ Error en conversión nativa: ${e.message}');
+      AppLogger.warning('Error en conversión nativa: ${e.message}', tag: _tag);
       return null;
     } on MissingPluginException {
       // El plugin nativo no está disponible (debug sin NDK?)
       _available = false;
-      _debugLog('⚠️ Procesador nativo no disponible');
+      AppLogger.debug('Procesador nativo no disponible', tag: _tag);
       return null;
     } catch (e) {
-      _debugLog('⚠️ Error inesperado: $e');
+      AppLogger.warning('Error inesperado: $e', tag: _tag);
       return null;
-    }
-  }
-
-  /// Log condicional solo en modo debug.
-  static void _debugLog(String message) {
-    if (kDebugMode) {
-      debugPrint('[NativeImageProcessor] $message');
     }
   }
 }

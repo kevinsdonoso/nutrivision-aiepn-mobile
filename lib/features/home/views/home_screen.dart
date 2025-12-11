@@ -7,17 +7,22 @@
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/providers/auth_provider.dart';
 
 /// Pantalla principal de la aplicación.
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(currentUserProfileProvider);
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -28,6 +33,24 @@ class HomePage extends StatelessWidget {
               floating: false,
               pinned: true,
               backgroundColor: AppColors.primaryGreen,
+              actions: [
+                // Botón de perfil/avatar
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _ProfileButton(
+                    isAuthenticated: isAuthenticated,
+                    photoUrl: profile?.photoUrl,
+                    initials: profile?.initials ?? '?',
+                    onTap: () {
+                      if (isAuthenticated) {
+                        context.push(AppConstants.routeProfile);
+                      } else {
+                        context.push(AppConstants.routeLogin);
+                      }
+                    },
+                  ),
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 title: Text(
@@ -58,13 +81,24 @@ class HomePage extends StatelessWidget {
                           color: Colors.white,
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          AppConstants.appDescription,
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(230),
-                            fontSize: 14,
+                        // Saludo personalizado si está autenticado
+                        if (isAuthenticated && profile != null)
+                          Text(
+                            'Hola, ${profile.displayName.split(' ').first}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          )
+                        else
+                          Text(
+                            AppConstants.appDescription,
+                            style: TextStyle(
+                              color: Colors.white.withAlpha(230),
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -368,6 +402,79 @@ class _InfoRow extends StatelessWidget {
                 ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Botón de perfil/avatar en el AppBar.
+class _ProfileButton extends StatelessWidget {
+  final bool isAuthenticated;
+  final String? photoUrl;
+  final String initials;
+  final VoidCallback onTap;
+
+  const _ProfileButton({
+    required this.isAuthenticated,
+    required this.photoUrl,
+    required this.initials,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withAlpha(51),
+            border: Border.all(
+              color: Colors.white.withAlpha(128),
+              width: 2,
+            ),
+          ),
+          child: isAuthenticated
+              ? _buildAvatar()
+              : const Icon(
+                  Icons.person_outline,
+                  color: Colors.white,
+                  size: 22,
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return ClipOval(
+        child: Image.network(
+          photoUrl!,
+          width: 36,
+          height: 36,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildInitials(),
+        ),
+      );
+    }
+    return _buildInitials();
+  }
+
+  Widget _buildInitials() {
+    return Center(
+      child: Text(
+        initials,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
       ),
     );
   }

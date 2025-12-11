@@ -8,6 +8,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'log_colors.dart';
 import 'log_config.dart';
 import 'log_level.dart';
 
@@ -18,10 +19,14 @@ import 'log_level.dart';
 /// - [info]: Información general de operaciones
 /// - [warning]: Situaciones inesperadas pero manejables
 /// - [error]: Errores que afectan funcionalidad
+/// - [tree]: Formato de árbol visual para información estructurada
 ///
 /// Características:
 /// - Respeta nivel mínimo configurado en [LogConfig]
 /// - Formatea mensajes con timestamp, tag y emoji
+/// - Soporte de colores ANSI para terminal
+/// - Filtrado por tags (ocultar/mostrar específicos)
+/// - Modo silencioso para tests
 /// - Trunca mensajes largos
 /// - Solo imprime en modo debug (producción silencioso por defecto)
 ///
@@ -31,6 +36,13 @@ import 'log_level.dart';
 /// AppLogger.info('Modelo cargado exitosamente');
 /// AppLogger.warning('Usando fallback para nutrientes');
 /// AppLogger.error('Error en inferencia', error: e, stackTrace: s);
+///
+/// // Formato de árbol visual
+/// AppLogger.tree(
+///   'YoloDetector inicializado',
+///   ['Config: 4 threads', 'Modelo: yolov11n.tflite', 'Labels: 83 clases'],
+///   tag: 'YoloDetector',
+/// );
 /// ```
 class AppLogger {
   AppLogger._(); // Constructor privado para prevenir instanciación
@@ -104,6 +116,119 @@ class AppLogger {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // MÉTODOS DE FORMATO ESTRUCTURADO
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Log con formato de árbol visual.
+  ///
+  /// Útil para mostrar información estructurada de forma legible.
+  /// Cada item se muestra con prefijo de árbol (├─ o └─).
+  ///
+  /// [header] - Línea principal del árbol
+  /// [items] - Lista de items hijos
+  /// [tag] - Componente/clase que origina el log (opcional)
+  /// [level] - Nivel de log (por defecto DEBUG)
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// AppLogger.tree(
+  ///   'Inicializando YoloDetector',
+  ///   [
+  ///     'Config: 4 threads + XNNPack',
+  ///     'Modelo: yolov11n_float32.tflite',
+  ///     'Labels: 83 clases',
+  ///   ],
+  ///   tag: 'YoloDetector',
+  /// );
+  /// // Output:
+  /// // 🔍 [DEBUG] [YoloDetector] Inicializando YoloDetector
+  /// //    ├─ Config: 4 threads + XNNPack
+  /// //    ├─ Modelo: yolov11n_float32.tflite
+  /// //    └─ Labels: 83 clases
+  /// ```
+  static void tree(
+    String header,
+    List<String> items, {
+    String? tag,
+    LogLevel level = LogLevel.debug,
+  }) {
+    if (!_shouldLog(level, tag)) return;
+
+    assert(() {
+      // Header principal
+      final formattedHeader = _formatMessage(level, header, tag: tag);
+      debugPrint(formattedHeader);
+
+      // Items con formato de árbol
+      final color = LogConfig.enableColors ? LogColors.forLevel(level) : '';
+      final reset = LogConfig.enableColors ? LogColors.reset : '';
+
+      for (int i = 0; i < items.length; i++) {
+        final isLast = i == items.length - 1;
+        final prefix = isLast ? '└─' : '├─';
+        debugPrint('$color   $prefix ${items[i]}$reset');
+      }
+
+      return true;
+    }());
+  }
+
+  /// Log con formato de subárbol (secciones anidadas).
+  ///
+  /// Útil para mostrar información con subsecciones.
+  ///
+  /// [header] - Línea principal
+  /// [sections] - Mapa de sección → lista de items
+  /// [tag] - Componente/clase que origina el log (opcional)
+  /// [level] - Nivel de log (por defecto DEBUG)
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// AppLogger.subtree(
+  ///   'Modelo cargado',
+  ///   {
+  ///     'Input shape': ['[1, 640, 640, 3]', 'RGB normalizado'],
+  ///     'Output shape': ['[1, 87, 8400]', '83 clases + 4 coords'],
+  ///   },
+  ///   tag: 'YoloDetector',
+  /// );
+  /// ```
+  static void subtree(
+    String header,
+    Map<String, List<String>> sections, {
+    String? tag,
+    LogLevel level = LogLevel.debug,
+  }) {
+    if (!_shouldLog(level, tag)) return;
+
+    assert(() {
+      // Header principal
+      final formattedHeader = _formatMessage(level, header, tag: tag);
+      debugPrint(formattedHeader);
+
+      final color = LogConfig.enableColors ? LogColors.forLevel(level) : '';
+      final reset = LogConfig.enableColors ? LogColors.reset : '';
+
+      final keys = sections.keys.toList();
+      for (int i = 0; i < keys.length; i++) {
+        final isLastSection = i == keys.length - 1;
+        final sectionPrefix = isLastSection ? '└─' : '├─';
+        debugPrint('$color   $sectionPrefix ${keys[i]}$reset');
+
+        final items = sections[keys[i]]!;
+        for (int j = 0; j < items.length; j++) {
+          final isLastItem = j == items.length - 1;
+          final connector = isLastSection ? '   ' : '│  ';
+          final itemPrefix = isLastItem ? '└─' : '├─';
+          debugPrint('$color   $connector $itemPrefix ${items[j]}$reset');
+        }
+      }
+
+      return true;
+    }());
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // MÉTODOS INTERNOS
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -115,33 +240,51 @@ class AppLogger {
     Object? error,
     StackTrace? stackTrace,
   }) {
-    // Verificar si el nivel está habilitado
-    if (!_shouldLog(level)) return;
+    // Verificar si debe mostrarse (nivel, quietMode, filtros de tag)
+    if (!_shouldLog(level, tag)) return;
 
     // Solo imprimir en modo debug (assert se elimina en release)
     assert(() {
       final formattedMessage = _formatMessage(level, message, tag: tag);
       debugPrint(formattedMessage);
 
+      // Colores para error y stack trace
+      final color = LogConfig.enableColors ? LogColors.forLevel(level) : '';
+      final reset = LogConfig.enableColors ? LogColors.reset : '';
+
       // Imprimir error si existe
       if (error != null) {
-        debugPrint('  └─ Error: $error');
+        debugPrint('$color  └─ Error: $error$reset');
       }
 
       // Imprimir stack trace si existe
       if (stackTrace != null) {
-        final truncatedStack = _truncateStackTrace(stackTrace);
-        debugPrint('  └─ Stack:\n$truncatedStack');
+        final truncatedStack = _truncateStackTrace(stackTrace, color, reset);
+        debugPrint('$color  └─ Stack:$reset\n$truncatedStack');
       }
 
       return true;
     }());
   }
 
-  /// Verifica si un nivel de log debe ser mostrado.
-  static bool _shouldLog(LogLevel level) {
+  /// Verifica si un log debe ser mostrado.
+  ///
+  /// Considera:
+  /// - Modo silencioso (quietMode)
+  /// - Nivel mínimo de log
+  /// - Filtros de tags
+  static bool _shouldLog(LogLevel level, [String? tag]) {
+    // Modo silencioso suprime todo
+    if (LogConfig.quietMode) return false;
+
+    // Verificar nivel mínimo
     if (LogConfig.minLevel == LogLevel.none) return false;
-    return level.isAtLeast(LogConfig.minLevel);
+    if (!level.isAtLeast(LogConfig.minLevel)) return false;
+
+    // Verificar filtros de tag
+    if (!LogConfig.shouldShowTag(tag)) return false;
+
+    return true;
   }
 
   /// Formatea el mensaje de log según la configuración.
@@ -152,6 +295,11 @@ class AppLogger {
   }) {
     final buffer = StringBuffer();
 
+    // Obtener colores
+    final color = LogConfig.enableColors ? LogColors.forLevel(level) : '';
+    final bold = LogConfig.enableColors ? LogColors.bold : '';
+    final reset = LogConfig.enableColors ? LogColors.reset : '';
+
     // Emoji
     if (LogConfig.showEmoji) {
       buffer.write('${level.emoji} ');
@@ -160,16 +308,17 @@ class AppLogger {
     // Timestamp
     if (LogConfig.showTimestamp) {
       final now = DateTime.now();
-      final timestamp = '${_pad(now.hour)}:${_pad(now.minute)}:${_pad(now.second)}.${_pad(now.millisecond, 3)}';
-      buffer.write('[$timestamp] ');
+      final timestamp =
+          '${_pad(now.hour)}:${_pad(now.minute)}:${_pad(now.second)}.${_pad(now.millisecond, 3)}';
+      buffer.write('$color[$timestamp]$reset ');
     }
 
-    // Level
-    buffer.write('[${level.label}]');
+    // Level (en negrita y con color)
+    buffer.write('$bold$color[${level.label}]$reset');
 
-    // Tag
+    // Tag (solo color, sin negrita)
     if (LogConfig.showTag && tag != null) {
-      buffer.write(' [$tag]');
+      buffer.write('$color [$tag]$reset');
     }
 
     buffer.write(' ');
@@ -190,17 +339,21 @@ class AppLogger {
   }
 
   /// Trunca el stack trace al número máximo de líneas.
-  static String _truncateStackTrace(StackTrace stackTrace) {
+  static String _truncateStackTrace(
+    StackTrace stackTrace, [
+    String color = '',
+    String reset = '',
+  ]) {
     final lines = stackTrace.toString().split('\n');
     final maxLines = LogConfig.maxStackTraceLines;
 
     if (lines.length <= maxLines) {
-      return lines.map((line) => '      $line').join('\n');
+      return lines.map((line) => '$color      $line$reset').join('\n');
     }
 
     final truncated = lines.take(maxLines).toList();
-    truncated.add('      ... (${lines.length - maxLines} more lines)');
-    return truncated.map((line) => line.startsWith('      ') ? line : '      $line').join('\n');
+    truncated.add('... (${lines.length - maxLines} more lines)');
+    return truncated.map((line) => '$color      $line$reset').join('\n');
   }
 
   /// Agrega ceros a la izquierda para formatear números.

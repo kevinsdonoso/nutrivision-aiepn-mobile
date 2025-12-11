@@ -534,3 +534,176 @@ class NoCameraAvailableException extends NutriVisionException {
   String get userMessage =>
       'No se encontraron cámaras en el dispositivo.';
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXCEPCIONES DE AUTENTICACIÓN
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Excepción base para errores de autenticación.
+class AuthException extends NutriVisionException {
+  const AuthException({
+    required super.message,
+    super.code = 'AUTH_ERROR',
+    super.originalError,
+    super.stackTrace,
+  });
+
+  @override
+  String get userMessage => 'Error de autenticación. Intenta de nuevo.';
+}
+
+/// Excepción cuando las credenciales son inválidas.
+class AuthInvalidCredentialsException extends AuthException {
+  const AuthInvalidCredentialsException({
+    super.message = 'Email o contraseña incorrectos',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_INVALID_CREDENTIALS');
+
+  @override
+  String get userMessage => 'Email o contraseña incorrectos.';
+}
+
+/// Excepción cuando el email ya está registrado.
+class AuthEmailAlreadyInUseException extends AuthException {
+  /// Email que ya está en uso
+  final String? email;
+
+  const AuthEmailAlreadyInUseException({
+    this.email,
+    super.message = 'El email ya está registrado',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_EMAIL_ALREADY_IN_USE');
+
+  @override
+  String get userMessage => 'Este email ya está registrado. ¿Deseas iniciar sesión?';
+}
+
+/// Excepción cuando la contraseña es muy débil.
+class AuthWeakPasswordException extends AuthException {
+  const AuthWeakPasswordException({
+    super.message = 'La contraseña es muy débil',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_WEAK_PASSWORD');
+
+  @override
+  String get userMessage => 'La contraseña debe tener al menos 6 caracteres.';
+}
+
+/// Excepción cuando el email tiene formato inválido.
+class AuthInvalidEmailException extends AuthException {
+  const AuthInvalidEmailException({
+    super.message = 'El formato del email es inválido',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_INVALID_EMAIL');
+
+  @override
+  String get userMessage => 'Por favor ingresa un email válido.';
+}
+
+/// Excepción cuando el usuario no existe.
+class AuthUserNotFoundException extends AuthException {
+  const AuthUserNotFoundException({
+    super.message = 'No existe una cuenta con este email',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_USER_NOT_FOUND');
+
+  @override
+  String get userMessage => 'No existe una cuenta con este email. ¿Deseas registrarte?';
+}
+
+/// Excepción cuando la cuenta está deshabilitada.
+class AuthUserDisabledException extends AuthException {
+  const AuthUserDisabledException({
+    super.message = 'La cuenta ha sido deshabilitada',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_USER_DISABLED');
+
+  @override
+  String get userMessage => 'Tu cuenta ha sido deshabilitada. Contacta soporte.';
+}
+
+/// Excepción cuando hay demasiados intentos de login.
+class AuthTooManyRequestsException extends AuthException {
+  const AuthTooManyRequestsException({
+    super.message = 'Demasiados intentos fallidos',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_TOO_MANY_REQUESTS');
+
+  @override
+  String get userMessage => 'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.';
+}
+
+/// Excepción cuando no hay conexión para autenticación.
+class AuthNetworkException extends AuthException {
+  const AuthNetworkException({
+    super.message = 'Error de conexión durante autenticación',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_NETWORK_ERROR');
+
+  @override
+  String get userMessage => 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+}
+
+/// Excepción cuando la sesión ha expirado.
+class AuthSessionExpiredException extends AuthException {
+  const AuthSessionExpiredException({
+    super.message = 'La sesión ha expirado',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'AUTH_SESSION_EXPIRED');
+
+  @override
+  String get userMessage => 'Tu sesión ha expirado. Por favor inicia sesión de nuevo.';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXCEPCIONES DE PERFIL DE USUARIO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Excepción base para errores de perfil.
+class ProfileException extends NutriVisionException {
+  const ProfileException({
+    required super.message,
+    super.code = 'PROFILE_ERROR',
+    super.originalError,
+    super.stackTrace,
+  });
+
+  @override
+  String get userMessage => 'Error con el perfil de usuario.';
+}
+
+/// Excepción cuando no se puede actualizar el perfil.
+class ProfileUpdateException extends ProfileException {
+  const ProfileUpdateException({
+    super.message = 'No se pudo actualizar el perfil',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'PROFILE_UPDATE_ERROR');
+
+  @override
+  String get userMessage => 'No se pudo guardar los cambios. Intenta de nuevo.';
+}
+
+/// Excepción cuando no se encuentra el perfil.
+class ProfileNotFoundException extends ProfileException {
+  const ProfileNotFoundException({
+    super.message = 'Perfil de usuario no encontrado',
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'PROFILE_NOT_FOUND');
+
+  @override
+  String get userMessage => 'No se encontró tu perfil. Por favor inicia sesión de nuevo.';
+}
+
+// NOTA: ProfilePhotoUploadException removido - Firebase Storage no disponible en plan Spark
+// Los avatares se generan localmente usando las iniciales del usuario
