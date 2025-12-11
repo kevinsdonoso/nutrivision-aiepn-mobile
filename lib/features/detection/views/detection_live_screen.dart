@@ -358,7 +358,8 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.go(AppConstants.routeHome),
+          tooltip: 'Volver',
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Detección en vivo',
