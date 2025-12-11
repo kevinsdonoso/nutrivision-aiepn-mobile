@@ -9,21 +9,25 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 import '../services/yolo_detector.dart';
 import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
+import '../../nutrition/providers/nutrition_provider.dart';
+import '../../nutrition/widgets/nutrition_card.dart';
+import '../../nutrition/widgets/nutrition_summary.dart';
 
-class GalleryDetectionPage extends StatefulWidget {
+class GalleryDetectionPage extends ConsumerStatefulWidget {
   const GalleryDetectionPage({super.key});
 
   @override
-  State<GalleryDetectionPage> createState() => _GalleryDetectionPageState();
+  ConsumerState<GalleryDetectionPage> createState() => _GalleryDetectionPageState();
 }
 
-class _GalleryDetectionPageState extends State<GalleryDetectionPage> {
+class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES
   // ═══════════════════════════════════════════════════════════════════════════
@@ -256,10 +260,105 @@ class _GalleryDetectionPageState extends State<GalleryDetectionPage> {
               _buildImageWithBoundingBoxes(),
               const SizedBox(height: 16),
             ],
-            if (_detections.isNotEmpty) _buildDetectionsList(),
+            if (_detections.isNotEmpty) ...[
+              _buildDetectionsList(),
+              const SizedBox(height: 24),
+              _buildNutritionSection(),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECCIÓN DE NUTRICIÓN
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildNutritionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.restaurant_menu, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(
+              'Información Nutricional',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Resumen total de nutrientes
+        NutritionSummary(detections: _detections),
+        const SizedBox(height: 16),
+        // Lista de cards por ingrediente único
+        _buildNutritionCards(),
+      ],
+    );
+  }
+
+  Widget _buildNutritionCards() {
+    // Obtener labels únicos
+    final uniqueLabels = _detections.uniqueLabels.toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Detalle por ingrediente',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Colors.grey[700],
+              ),
+        ),
+        const SizedBox(height: 8),
+        ...uniqueLabels.map((label) => _buildNutritionCardForLabel(label)),
+      ],
+    );
+  }
+
+  Widget _buildNutritionCardForLabel(String label) {
+    final nutritionAsync = ref.watch(nutritionByLabelProvider(label));
+
+    return nutritionAsync.when(
+      loading: () => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(label.replaceAll('_', ' ')),
+            ],
+          ),
+        ),
+      ),
+      error: (e, _) => NutritionNotFoundCard(label: label),
+      data: (nutrition) {
+        if (nutrition == null) {
+          return NutritionNotFoundCard(label: label);
+        }
+        // Obtener confianza promedio de este ingrediente
+        final detectionsForLabel = _detections.filterByLabel(label);
+        final avgConfidence = detectionsForLabel.isNotEmpty
+            ? detectionsForLabel
+                    .map((d) => d.confidence)
+                    .reduce((a, b) => a + b) /
+                detectionsForLabel.length
+            : null;
+
+        return NutritionCard(
+          nutrition: nutrition,
+          confidence: avgConfidence,
+        );
+      },
     );
   }
 

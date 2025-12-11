@@ -201,8 +201,16 @@ nutrivision_aiepn_mobile/
 │   │   ├── theme/app_theme.dart         # Sistema de temas
 │   │   └── exceptions/app_exceptions.dart # Excepciones personalizadas
 │   │
-│   ├── data/models/
-│   │   └── detection.dart               # ✅ Modelo de detección
+│   ├── data/                            # ✅ Capa de datos
+│   │   ├── models/
+│   │   │   ├── detection.dart           # Modelo de detección YOLO
+│   │   │   ├── nutrients_per_100g.dart  # Nutrientes por 100g
+│   │   │   ├── nutrition_info.dart      # Información nutricional
+│   │   │   └── nutrition_data.dart      # Contenedor de datos
+│   │   ├── datasources/
+│   │   │   └── nutrition_datasource.dart # Carga JSON de assets
+│   │   └── repositories/
+│   │       └── nutrition_repository.dart # Repositorio con cache
 │   │
 │   └── features/                        # ✅ Feature-First Architecture
 │       ├── detection/                   # Feature de detección YOLO
@@ -215,17 +223,25 @@ nutrivision_aiepn_mobile/
 │       │   │   ├── image_processing_isolate.dart # Worker isolate para conversión
 │       │   │   └── native_image_processor.dart   # Cliente Dart para C++ nativo
 │       │   ├── views/
-│       │   │   ├── detection_gallery_screen.dart # Detección desde galería
+│       │   │   ├── detection_gallery_screen.dart # Detección desde galería + nutrición
 │       │   │   └── detection_live_screen.dart    # Detección en tiempo real
 │       │   └── widgets/
 │       │       ├── camera_controls.dart     # Controles de cámara
 │       │       └── detection_overlay.dart   # Overlay con bounding boxes
+│       ├── nutrition/                   # ✅ Sistema nutricional
+│       │   ├── providers/nutrition_provider.dart # Providers Riverpod
+│       │   ├── services/nutrition_service.dart   # Servicio singleton
+│       │   └── widgets/
+│       │       ├── nutrient_bar.dart        # Barra de progreso nutriente
+│       │       ├── nutrition_card.dart      # Card de información nutricional
+│       │       └── nutrition_summary.dart   # Resumen total de nutrientes
 │       └── home/
 │           └── views/
 │               └── home_screen.dart         # Pantalla principal
 │
-├── test/                                 # ✅ Tests automatizados (42 tests)
+├── test/                                 # ✅ Tests automatizados (92 tests)
 │   ├── ml/yolo_detector_test.dart
+│   ├── data/models/nutrition_test.dart  # 33 tests de nutrición
 │   └── test_assets/test_images/         # 51 imágenes de prueba
 │
 ├── pubspec.yaml                          # Dependencias
@@ -385,7 +401,7 @@ flutter:
     - assets/labels/labels.txt
     
     # Base de datos de nutrientes (se copia al primer inicio)
-    - assets/database/
+    - assets/data/
     
     # Imágenes y recursos
     - assets/images/
@@ -1014,7 +1030,9 @@ class BoundingBoxPainter extends CustomPainter {
 | YoloDetector - Imágenes Kaggle | 2 | ✅ |
 | YoloDetector - Rendimiento | 1 | ✅ |
 | Excepciones - Comportamiento | 6 | ✅ |
-| **TOTAL** | **42** | ✅ |
+| Logging (LogLevel, LogConfig, AppLogger) | 17 | ✅ |
+| **Nutrición (NutrientsPer100g, NutritionInfo, NutritionData)** | **33** | ✅ |
+| **TOTAL** | **92** | ✅ |
 
 ### Ejecutar Tests
 
@@ -1276,43 +1294,45 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Ejecutar `flutter clean`
 - [x] Ejecutar `flutter pub get`
 - [x] Ejecutar `flutter analyze` → 0 issues
-- [x] Ejecutar `flutter test` → 42 tests pasando
+- [x] Ejecutar `flutter test` → 59 tests pasando
 
-### FASE 1: Crear Estructura de Carpetas ⏳
+### FASE 1: Crear Estructura de Carpetas ✅
 | Carpeta | Estado | Descripción |
 |---------|--------|-------------|
-| `lib/core/logging/` | ⬜ | Sistema de logging centralizado |
-| `lib/core/session/` | ⬜ | Gestión de sesión de usuario |
-| `lib/data/defaults/` | ⬜ | Datos fallback de nutrientes |
-| `lib/features/auth/` | ⬜ | Autenticación (demo) |
-| `lib/features/onboarding/` | ⬜ | Splash y welcome screens |
-| `lib/features/profile/` | ⬜ | Pantalla de perfil |
-| `lib/features/home/viewmodels/` | ⬜ | ViewModels de home |
-| `lib/features/home/widgets/` | ⬜ | Widgets reutilizables |
-| `lib/shared/widgets/` | ⬜ | Componentes compartidos |
+| `lib/core/logging/` | ✅ | Sistema de logging centralizado |
+| `lib/core/session/` | ✅ | Gestión de sesión de usuario |
+| `lib/data/defaults/` | ✅ | Datos fallback de nutrientes |
+| `lib/features/auth/` | ✅ | Autenticación (demo) |
+| `lib/features/onboarding/` | ✅ | Splash y welcome screens |
+| `lib/features/profile/` | ✅ | Pantalla de perfil |
+| `lib/features/home/viewmodels/` | ✅ | ViewModels de home |
+| `lib/features/home/widgets/` | ✅ | Widgets reutilizables |
+| `lib/shared/widgets/` | ✅ | Componentes compartidos |
 
-### FASE 2: Sistema de Logging ⏳
-- [ ] Crear `lib/core/logging/log_level.dart` - Enum de niveles
-- [ ] Crear `lib/core/logging/log_config.dart` - Configuración
-- [ ] Crear `lib/core/logging/app_logger.dart` - Logger principal
+### FASE 2: Sistema de Logging ✅
+- [x] Crear `lib/core/logging/log_level.dart` - Enum de niveles
+- [x] Crear `lib/core/logging/log_config.dart` - Configuración
+- [x] Crear `lib/core/logging/app_logger.dart` - Logger principal
 - [ ] Crear `lib/core/logging/log_persistence.dart` - Persistencia (opcional)
-- [ ] Tests para logging
-- [ ] Verificar: `flutter analyze` y `flutter test`
+- [x] Tests para logging (17 tests)
+- [x] Verificar: `flutter analyze` y `flutter test`
 
-### FASE 3: Modelos de Datos ⏳
-- [ ] Crear `lib/data/models/food_item.dart` - Modelo de alimento
-- [ ] Crear `lib/data/models/macro_nutrients.dart` - Macronutrientes
-- [ ] Crear `lib/data/models/user_profile.dart` - Perfil de usuario
-- [ ] Tests para modelos
-- [ ] Verificar: `flutter analyze` y `flutter test`
+### FASE 3: Modelos de Datos ✅
+- [x] Crear `lib/data/models/nutrients_per_100g.dart` - Nutrientes por 100g
+- [x] Crear `lib/data/models/nutrition_info.dart` - Información nutricional
+- [x] Crear `lib/data/models/nutrition_data.dart` - Contenedor de datos
+- [x] Tests para modelos de nutrición (33 tests)
+- [x] Verificar: `flutter analyze` y `flutter test`
 
-### FASE 4: Base de Datos Nutricional ⏳
-- [ ] Crear `lib/data/datasources/database_provider.dart` - SQLite config
-- [ ] Crear `lib/data/defaults/food_nutrition_fallback.dart` - Fallbacks
-- [ ] Crear `lib/data/repositories/food_repository.dart` - CRUD
-- [ ] Crear `assets/db/fooddata.db` - Base de datos SQLite
-- [ ] Tests para repositorio
-- [ ] Verificar: `flutter analyze` y `flutter test`
+### FASE 4: Base de Datos Nutricional ✅
+- [x] Crear `lib/data/datasources/nutrition_datasource.dart` - Carga JSON
+- [x] Crear `lib/data/repositories/nutrition_repository.dart` - Repositorio con cache
+- [x] Crear `lib/features/nutrition/services/nutrition_service.dart` - Servicio singleton
+- [x] Crear `lib/features/nutrition/providers/nutrition_provider.dart` - Providers Riverpod
+- [x] Crear `assets/data/nutrition_fdc.json` - Datos USDA (80 ingredientes, 6 platos)
+- [x] Widgets UI: nutrient_bar, nutrition_card, nutrition_summary
+- [x] Integración con detection_gallery_screen
+- [x] Verificar: `flutter analyze` y `flutter test` → 92 tests pasando
 
 ### FASE 5: Features Nuevas ⏳
 #### 5.1 Onboarding
@@ -1365,17 +1385,17 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 ### ═══════════════════════════════════════════════════════════════
 
 ```
-FASE 0 (Verificación)     ✅ Completado
+FASE 0 (Verificación)     ✅ COMPLETADO
        ↓
-FASE 1 (Carpetas)         ← 5 min, riesgo CERO
+FASE 1 (Carpetas)         ✅ COMPLETADO
        ↓
-FASE 2 (Logging)          ← EMPEZAR AQUÍ (útil para debug)
+FASE 2 (Logging)          ✅ COMPLETADO (17 tests nuevos)
        ↓
-FASE 3 (Modelos)          ← Preparar para base de datos
+FASE 3 (Modelos)          ✅ COMPLETADO (33 tests nuevos)
        ↓
-FASE 4 (Base de datos)    ← CORE DEL PROYECTO
+FASE 4 (Base de datos)    ✅ COMPLETADO (sistema nutricional completo)
        ↓
-FASE 5 (Auth/Onboarding)  ← UI nuevas pantallas
+FASE 5 (Auth/Onboarding)  ← SIGUIENTE PASO
        ↓
 FASE 6 (Session)          ← Navegación condicional
        ↓
@@ -1607,9 +1627,9 @@ Este proyecto es parte de un Trabajo de Integración Curricular y su uso está s
 
 **🍽️ NutriVisionAIEPN Mobile v1.0**
 
-*Detección inteligente de ingredientes alimenticios*
+*Detección inteligente de ingredientes alimenticios con información nutricional*
 
-✅ 42 tests pasando | ✅ 0 issues en flutter analyze | ✅ Bounding boxes funcionando
+✅ 92 tests pasando | ✅ 0 issues en flutter analyze | ✅ Sistema nutricional integrado
 
 Made with ❤️ and Flutter
 

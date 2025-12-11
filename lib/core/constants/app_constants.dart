@@ -61,7 +61,7 @@ abstract class AppConstants {
   static const String labelsPath = 'assets/labels/labels.txt';
 
   /// Ruta de la base de datos de nutrientes
-  static const String databasePath = 'assets/database/nutrients.db';
+  static const String databasePath = 'assets/data/nutrients.db';
 
   // ═══════════════════════════════════════════════════════════════════════════
   // DIMENSIONES UI
