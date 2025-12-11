@@ -165,6 +165,44 @@ dependencies:
   # Compartir contenido con otras apps (resultados, imágenes)
   share_plus: ^10.1.2
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # FIREBASE & AUTENTICACIÓN
+  # ─────────────────────────────────────────────────────────────────────────
+
+  # Firebase Core - Inicialización y configuración base
+  # Requerido por todos los plugins de Firebase
+  firebase_core: ^3.8.0
+
+  # Firebase Authentication - Autenticación de usuarios
+  # Soporta: email/password, Google, Apple, etc.
+  firebase_auth: ^5.3.3
+
+  # Cloud Firestore - Base de datos NoSQL en la nube
+  # Uso: almacenar perfiles de usuario, preferencias
+  cloud_firestore: ^5.5.1
+
+  # NOTA: Firebase Storage NO está habilitado (requiere plan Blaze)
+  # Los avatares se generan localmente usando las iniciales del usuario
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ALMACENAMIENTO LOCAL & PREFERENCIAS
+  # ─────────────────────────────────────────────────────────────────────────
+
+  # Shared Preferences - Almacenamiento clave-valor local
+  # Uso: estado de onboarding completado, preferencias del usuario
+  shared_preferences: ^2.3.3
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # IMÁGENES & AVATARES
+  # ─────────────────────────────────────────────────────────────────────────
+
+  # NOTA: image_cropper removido (Storage no disponible en plan Spark)
+  # Los avatares se generan con iniciales del usuario
+
+  # Cached Network Image - Cache de imágenes de red
+  # Uso: cache de imágenes en general (no avatares de perfil)
+  cached_network_image: ^3.4.1
+
 # ═══════════════════════════════════════════════════════════════════════════
 # DEPENDENCIAS DE DESARROLLO
 # ═══════════════════════════════════════════════════════════════════════════

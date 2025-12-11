@@ -12,26 +12,22 @@
 
 import 'dart:math';
 
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
-
-/// Log condicional solo en modo debug
-void _debugLog(String message) {
-  if (kDebugMode) {
-    debugPrint(message);
-  }
-}
+import '../../../core/logging/app_logger.dart';
+import '../../../data/models/detection.dart';
 
 /// Detector de ingredientes alimenticios usando YOLO11n.
 class YoloDetector {
   // ═══════════════════════════════════════════════════════════════════════════
   // CONSTANTES DEL MODELO
   // ═══════════════════════════════════════════════════════════════════════════
+
+  static const String _tag = 'YoloDetector';
 
   static const int inputSize = 640;
   static const int numClasses = 83;
@@ -74,18 +70,14 @@ class YoloDetector {
     }
 
     if (_isInitialized) {
-      _debugLog('⚠️ YoloDetector ya está inicializado');
+      AppLogger.warning('YoloDetector ya está inicializado', tag: _tag);
       return;
     }
 
     try {
-      _debugLog('🔄 Inicializando YoloDetector...');
-
       final options = InterpreterOptions();
       options.threads = 4;
       options.addDelegate(XNNPackDelegate());
-
-      _debugLog('   ├─ Configuración: 4 threads + XNNPack delegate');
 
       try {
         _interpreter = await Interpreter.fromAsset(
@@ -106,10 +98,6 @@ class YoloDetector {
       final inputShape = _interpreter!.getInputTensor(0).shape;
       final outputShape = _interpreter!.getOutputTensor(0).shape;
 
-      _debugLog('   ├─ Modelo cargado: $modelPath');
-      _debugLog('   │  ├─ Input shape:  $inputShape');
-      _debugLog('   │  └─ Output shape: $outputShape');
-
       try {
         final labelsData = await rootBundle.loadString(labelsPath);
         _labels = labelsData
@@ -126,16 +114,29 @@ class YoloDetector {
         );
       }
 
-      _debugLog('   ├─ Labels cargados: ${_labels.length} clases');
-
       if (_labels.length != numClasses) {
-        _debugLog('   ⚠️ ADVERTENCIA: Se esperaban $numClasses clases, se encontraron ${_labels.length}');
+        AppLogger.warning(
+          'Se esperaban $numClasses clases, se encontraron ${_labels.length}',
+          tag: _tag,
+        );
       }
 
       _preallocateTensors();
 
       _isInitialized = true;
-      _debugLog('   └─ ✅ YoloDetector inicializado correctamente');
+
+      // Log estructurado de inicialización
+      AppLogger.tree(
+        'YoloDetector inicializado',
+        [
+          'Config: 4 threads + XNNPack delegate',
+          'Modelo: ${modelPath.split('/').last}',
+          'Input: $inputShape',
+          'Output: $outputShape',
+          'Labels: ${_labels.length} clases',
+        ],
+        tag: _tag,
+      );
     } catch (e) {
       if (e is NutriVisionException) rethrow;
       throw ModelException(
@@ -185,21 +186,9 @@ class YoloDetector {
     }
 
     try {
-      if (verbose) {
-        _debugLog('🔍 Ejecutando detección...');
-        _debugLog('   ├─ Imagen original: ${image.width}x${image.height}');
-      }
-
       final preprocessResult = _preprocess(image);
-      if (verbose) {
-        _debugLog('   ├─ Preprocesamiento:');
-        _debugLog('   │  ├─ Scale: ${preprocessResult.scale.toStringAsFixed(4)}');
-        _debugLog('   │  ├─ PadLeft: ${preprocessResult.padLeft}');
-        _debugLog('   │  └─ PadTop: ${preprocessResult.padTop}');
-      }
 
       _interpreter!.run(_inputTensor!, _outputTensor!);
-      if (verbose) _debugLog('   ├─ Inferencia completada');
 
       final detections = _postprocess(
         _outputTensor!,
@@ -212,16 +201,22 @@ class YoloDetector {
       );
 
       if (verbose) {
-        _debugLog('   └─ ✅ Detecciones: ${detections.length}');
+        // Log resumido de detección
+        final items = <String>[
+          'Imagen: ${image.width}x${image.height}',
+          'Scale: ${preprocessResult.scale.toStringAsFixed(3)}',
+          'Detecciones: ${detections.length}',
+        ];
 
+        // Agregar primeras detecciones si hay
         if (kDebugMode && detections.isNotEmpty) {
-          _debugLog('   📦 Primeras detecciones:');
           for (int i = 0; i < min(3, detections.length); i++) {
             final d = detections[i];
-            _debugLog('      ${i + 1}. ${d.label}: ${d.confidenceFormatted}');
-            _debugLog('         bbox: [${d.x1.toInt()}, ${d.y1.toInt()}, ${d.x2.toInt()}, ${d.y2.toInt()}]');
+            items.add('${d.label}: ${d.confidenceFormatted}');
           }
         }
+
+        AppLogger.tree('Detección completada', items, tag: _tag);
       }
 
       return detections;
@@ -313,25 +308,14 @@ class YoloDetector {
       }) {
     try {
       List<Detection> detections = [];
-      int validDetections = 0;
-      int filteredByConfidence = 0;
-      int filteredByInvalidBox = 0;
-      int skippedByLimit = 0;
 
       for (int i = 0; i < numPredictions; i++) {
-        // ═══════════════════════════════════════════════════════════════════
-        // OPTIMIZACIÓN: Early exit si ya tenemos suficientes detecciones
-        // Reduce NMS de O(8400²) a O(maxDetectionsBeforeNms²)
-        // ═══════════════════════════════════════════════════════════════════
+        // Optimización: Early exit si ya tenemos suficientes detecciones
         if (detections.length >= maxDetectionsBeforeNms) {
-          skippedByLimit = numPredictions - i;
           break;
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // IMPORTANTE: El modelo devuelve coordenadas NORMALIZADAS (0-1)
-        // Debemos multiplicar por inputSize (640) para obtener píxeles
-        // ═══════════════════════════════════════════════════════════════════
+        // Coordenadas normalizadas (0-1)
         final double cxNorm = output[0][0][i];
         final double cyNorm = output[0][1][i];
         final double wNorm = output[0][2][i];
@@ -357,50 +341,29 @@ class YoloDetector {
 
         // Filtrar por umbral de confianza
         if (maxScore < confidenceThreshold) {
-          filteredByConfidence++;
           continue;
         }
 
-        // Debug para las primeras detecciones válidas
-        if (verbose && kDebugMode && validDetections < 3) {
-          _debugLog('   📍 Detección #${validDetections + 1}:');
-          _debugLog('      Normalized: cx=$cxNorm, cy=$cyNorm, w=$wNorm, h=$hNorm');
-          _debugLog('      Pixels (640): cx=$cx, cy=$cy, w=$w, h=$h');
-        }
-
-        // ═══════════════════════════════════════════════════════════════════
-        // CONVERSIÓN DE COORDENADAS
-        // ═══════════════════════════════════════════════════════════════════
-
-        // 1. Convertir de (cx, cy, w, h) a (x1, y1, x2, y2) en espacio 640x640
+        // Convertir de (cx, cy, w, h) a (x1, y1, x2, y2) en espacio 640x640
         final double x1Model = cx - w / 2;
         final double y1Model = cy - h / 2;
         final double x2Model = cx + w / 2;
         final double y2Model = cy + h / 2;
 
-        // 2. Convertir de espacio del modelo (con padding) a imagen original
-        //    - Restar el padding
-        //    - Dividir por la escala
+        // Convertir de espacio del modelo (con padding) a imagen original
         final double x1 = (x1Model - preprocess.padLeft) / preprocess.scale;
         final double y1 = (y1Model - preprocess.padTop) / preprocess.scale;
         final double x2 = (x2Model - preprocess.padLeft) / preprocess.scale;
         final double y2 = (y2Model - preprocess.padTop) / preprocess.scale;
 
-        // 3. Clampear a los límites de la imagen original
+        // Clampear a los límites de la imagen original
         final double x1Clamped = x1.clamp(0.0, origWidth.toDouble());
         final double y1Clamped = y1.clamp(0.0, origHeight.toDouble());
         final double x2Clamped = x2.clamp(0.0, origWidth.toDouble());
         final double y2Clamped = y2.clamp(0.0, origHeight.toDouble());
 
-        if (verbose && kDebugMode && validDetections < 3) {
-          _debugLog('      Box model: ($x1Model, $y1Model) -> ($x2Model, $y2Model)');
-          _debugLog('      Original coords: ($x1, $y1) -> ($x2, $y2)');
-          _debugLog('      Clamped: (${x1Clamped.toInt()}, ${y1Clamped.toInt()}) -> (${x2Clamped.toInt()}, ${y2Clamped.toInt()})');
-        }
-
         // Verificar que el bounding box es válido
         if (x2Clamped <= x1Clamped || y2Clamped <= y1Clamped) {
-          filteredByInvalidBox++;
           continue;
         }
 
@@ -420,25 +383,9 @@ class YoloDetector {
           imageWidth: origWidth,
           imageHeight: origHeight,
         ));
-
-        validDetections++;
       }
 
-      if (verbose) {
-        _debugLog('   📊 Estadísticas de postprocesamiento:');
-        _debugLog('      Total predicciones: $numPredictions');
-        _debugLog('      Filtradas por confianza: $filteredByConfidence');
-        _debugLog('      Filtradas por bbox inválido: $filteredByInvalidBox');
-        if (skippedByLimit > 0) {
-          _debugLog('      Omitidas por límite ($maxDetectionsBeforeNms): $skippedByLimit');
-        }
-        _debugLog('      Válidas antes de NMS: ${detections.length}');
-      }
-
-      final result = _nonMaxSuppression(detections, iouThreshold);
-      if (verbose) _debugLog('      Después de NMS: ${result.length}');
-
-      return result;
+      return _nonMaxSuppression(detections, iouThreshold);
     } catch (e, stackTrace) {
       throw PostprocessingException(
         message: 'Error en postprocesamiento: $e',
@@ -492,7 +439,7 @@ class YoloDetector {
     _labels = [];
     _isInitialized = false;
     _isDisposed = true;
-    _debugLog('🧹 YoloDetector disposed');
+    AppLogger.debug('YoloDetector disposed', tag: _tag);
   }
 }
 

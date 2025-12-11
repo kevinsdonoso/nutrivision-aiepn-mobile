@@ -3,21 +3,25 @@
 // ║                     NutriVisionAIEPN Mobile                                   ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Punto de entrada de la aplicación Flutter.                                   ║
-// ║  Configura orientación, barra de estado y lanza la app con Riverpod.          ║
+// ║  Configura Firebase, orientación, barra de estado y lanza la app con Riverpod.║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 
-void main() {
+Future<void> main() async {
   // Asegurar que Flutter esté inicializado antes de cualquier operación
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inicializar Firebase (usa google-services.json en Android)
+  await Firebase.initializeApp();
+
   // Configurar orientación preferida (solo portrait para esta app)
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);

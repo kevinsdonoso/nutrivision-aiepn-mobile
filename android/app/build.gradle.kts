@@ -25,6 +25,9 @@ plugins {
     // El plugin de Flutter DEBE aplicarse después de los plugins de Android y Kotlin
     // para que pueda acceder a las configuraciones definidas por ellos
     id("dev.flutter.flutter-gradle-plugin")
+    // Firebase - Google Services Plugin
+    // IMPORTANTE: Requiere google-services.json en android/app/
+    id("com.google.gms.google-services")
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -197,14 +200,14 @@ android {
         debug {
             // Debug usa firma automática (debug.keystore)
             // No requiere configuración adicional
-            
+
             // Deshabilitamos minificación para debugging más fácil
             isMinifyEnabled = false
             isShrinkResources = false
-            
-            // Sufijo para diferenciar debug de release en el dispositivo
-            // Permite tener ambas versiones instaladas simultáneamente
-            applicationIdSuffix = ".debug"
+
+            // Sufijo de versión para diferenciar en logs/about
+            // NOTA: applicationIdSuffix removido para compatibilidad con Firebase
+            // (google-services.json solo tiene el package name base registrado)
             versionNameSuffix = "-debug"
         }
         
