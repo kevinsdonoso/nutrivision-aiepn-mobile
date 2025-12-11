@@ -190,7 +190,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
       _cameraController = CameraController(
         camera,
-        ResolutionPreset.low, // Reducido para mejorar rendimiento (320x240 vs 720x480)
+        ResolutionPreset.medium, // 720x480 - balance entre calidad y rendimiento
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -347,7 +347,9 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
   @override
   Widget build(BuildContext context) {
-    final cameraState = ref.watch(cameraStateProvider);
+    // OPTIMIZACIÓN: Usar providers granulares para evitar rebuilds innecesarios
+    // Solo el AppBar necesita FPS, el body se reconstruye por separado
+    final cameraStatus = ref.watch(cameraStatusProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -363,37 +365,16 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
           style: TextStyle(color: Colors.white),
         ),
         actions: [
-          if (AppConstants.showDebugFps && cameraState.lastInferenceTimeMs != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '${cameraState.estimatedFps.toStringAsFixed(1)} FPS',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // FPS Badge separado para no reconstruir todo el scaffold
+          if (AppConstants.showDebugFps) const _FpsBadge(),
         ],
       ),
       extendBodyBehindAppBar: true,
-      body: _buildBody(cameraState),
+      body: _buildBody(cameraStatus),
     );
   }
 
-  Widget _buildBody(CameraState cameraState) {
+  Widget _buildBody(CameraStatus cameraStatus) {
     // Estado de inicialización
     if (_isInitializing) {
       return _buildLoadingState();
@@ -405,7 +386,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
     }
 
     // Permiso denegado
-    if (cameraState.status == CameraStatus.permissionDenied) {
+    if (cameraStatus == CameraStatus.permissionDenied) {
       return _buildPermissionDeniedState();
     }
 
@@ -414,67 +395,40 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
       return _buildLoadingState();
     }
 
-    // Vista de cámara con overlay
-    return _buildCameraView(cameraState);
+    // Vista de cámara con overlay - usa widgets optimizados
+    return _buildCameraView();
   }
 
-  Widget _buildCameraView(CameraState cameraState) {
+  Widget _buildCameraView() {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Preview de cámara
+        // Preview de cámara (no depende del estado)
         _buildCameraPreview(),
 
-        // Overlay de detecciones
-        if (cameraState.detections.isNotEmpty)
-          DetectionOverlay(
-            detections: cameraState.detections,
-            previewSize: MediaQuery.of(context).size,
-            imageWidth: _cameraController!.value.previewSize?.height.toInt() ?? 640,
-            imageHeight: _cameraController!.value.previewSize?.width.toInt() ?? 480,
-            isFrontCamera: cameraState.isFrontCamera,
-          ),
+        // Overlay de detecciones - Widget separado que escucha solo detections
+        _DetectionOverlayWrapper(
+          previewSize: MediaQuery.of(context).size,
+          imageWidth: _cameraController!.value.previewSize?.height.toInt() ?? 640,
+          imageHeight: _cameraController!.value.previewSize?.width.toInt() ?? 480,
+        ),
 
-        // Controles
+        // Controles - Widget separado con su propio estado
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: CameraControls(
+          child: _CameraControlsWrapper(
             onCapture: _captureAndAnalyze,
             onToggleFlash: _toggleFlash,
             onSwitchCamera: _cameras != null && _cameras!.length > 1
                 ? _switchCamera
                 : null,
-            isProcessing: cameraState.isProcessingFrame,
-            flashEnabled: cameraState.flashEnabled,
-            detectionCount: cameraState.detections.length,
           ),
         ),
 
-        // Indicador de detecciones
-        if (cameraState.detections.isNotEmpty)
-          Positioned(
-            top: 100,
-            left: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withAlpha(200),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '${cameraState.detections.length} ingrediente${cameraState.detections.length != 1 ? 's' : ''}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
+        // Badge de conteo de detecciones - Widget separado
+        const _DetectionCountBadge(),
       ],
     );
   }
@@ -605,6 +559,132 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIDGETS OPTIMIZADOS (Consumer separados para evitar rebuilds)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Badge de FPS que solo se reconstruye cuando cambia el FPS.
+class _FpsBadge extends ConsumerWidget {
+  const _FpsBadge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fps = ref.watch(estimatedFpsProvider);
+
+    if (fps <= 0) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${fps.toStringAsFixed(1)} FPS',
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Wrapper del overlay que solo se reconstruye cuando cambian detecciones.
+class _DetectionOverlayWrapper extends ConsumerWidget {
+  final Size previewSize;
+  final int imageWidth;
+  final int imageHeight;
+
+  const _DetectionOverlayWrapper({
+    required this.previewSize,
+    required this.imageWidth,
+    required this.imageHeight,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detections = ref.watch(currentDetectionsProvider);
+    final isFrontCamera = ref.watch(
+      cameraStateProvider.select((state) => state.isFrontCamera),
+    );
+
+    if (detections.isEmpty) return const SizedBox.shrink();
+
+    return DetectionOverlay(
+      detections: detections,
+      previewSize: previewSize,
+      imageWidth: imageWidth,
+      imageHeight: imageHeight,
+      isFrontCamera: isFrontCamera,
+    );
+  }
+}
+
+/// Wrapper de controles que solo se reconstruye con su estado específico.
+class _CameraControlsWrapper extends ConsumerWidget {
+  final VoidCallback onCapture;
+  final VoidCallback onToggleFlash;
+  final VoidCallback? onSwitchCamera;
+
+  const _CameraControlsWrapper({
+    required this.onCapture,
+    required this.onToggleFlash,
+    this.onSwitchCamera,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isProcessing = ref.watch(isProcessingProvider);
+    final flashEnabled = ref.watch(
+      cameraStateProvider.select((state) => state.flashEnabled),
+    );
+    final detectionCount = ref.watch(detectionCountProvider);
+
+    return CameraControls(
+      onCapture: onCapture,
+      onToggleFlash: onToggleFlash,
+      onSwitchCamera: onSwitchCamera,
+      isProcessing: isProcessing,
+      flashEnabled: flashEnabled,
+      detectionCount: detectionCount,
+    );
+  }
+}
+
+/// Badge que muestra el conteo de detecciones.
+class _DetectionCountBadge extends ConsumerWidget {
+  const _DetectionCountBadge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(detectionCountProvider);
+
+    if (count == 0) return const SizedBox.shrink();
+
+    return Positioned(
+      top: 100,
+      left: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primaryGreen.withAlpha(200),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          '$count ingrediente${count != 1 ? 's' : ''}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

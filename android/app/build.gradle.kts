@@ -57,6 +57,18 @@ android {
     ndkVersion = flutter.ndkVersion
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // EXTERNAL NATIVE BUILD (CMake)
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Configura la compilación de código nativo C++ usando CMake.
+    // Usado para conversión YUV→RGB optimizada con NEON.
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // OPCIONES DE COMPILACIÓN JAVA
     // ─────────────────────────────────────────────────────────────────────────────
     // Define la versión de Java para compilación de código fuente y bytecode

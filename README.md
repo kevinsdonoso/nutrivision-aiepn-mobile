@@ -169,89 +169,68 @@ flutter doctor -v
 
 ## 📁 Estructura del Proyecto
 
-### Estado Actual (Implementado)
+### Arquitectura Feature-First (Implementada)
 
 ```
 nutrivision_aiepn_mobile/
 │
-├── android/                          # ✅ Configuración nativa Android
+├── android/                              # ✅ Configuración nativa Android
 │   ├── app/
-│   │   ├── build.gradle.kts         # Configuración de build Android
-│   │   ├── proguard-rules.pro       # Reglas ProGuard para TFLite
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml  # Permisos de la app
-│   │       └── res/                 # Recursos Android
-│   └── build.gradle.kts             # Configuración Gradle del proyecto
+│   │   ├── build.gradle.kts             # Configuración de build
+│   │   ├── proguard-rules.pro           # Reglas ProGuard para TFLite
+│   │   ├── src/main/AndroidManifest.xml # Permisos de la app
+│   │   └── src/main/cpp/                # ✅ Código nativo C++
+│   │       ├── native_image_processor.cpp # Conversión YUV→RGB optimizada
+│   │       ├── yuv_to_rgb.h               # Optimizaciones NEON (ARM SIMD)
+│   │       └── CMakeLists.txt             # Build configuration
+│   └── build.gradle.kts
 │
-├── assets/                          # ✅ Recursos de la app
-│   ├── models/
-│   │   └── yolov11n_float32.tflite # Modelo YOLO11n exportado (~10 MB)
-│   └── labels/
-│       └── labels.txt              # 83 clases de ingredientes
+├── assets/                               # ✅ Recursos de la app
+│   ├── models/yolov11n_float32.tflite   # Modelo YOLO11n (~10 MB)
+│   └── labels/labels.txt                # 83 clases de ingredientes
 │
-├── lib/                             # Código fuente Dart/Flutter
-│   ├── main.dart                   # ✅ Punto de entrada con Riverpod y go_router
+├── lib/                                  # Código fuente Dart/Flutter
+│   ├── main.dart                        # ✅ Punto de entrada
 │   │
-│   ├── core/                       # ✅ Núcleo de la aplicación
-│   │   ├── constants/
-│   │   │   └── app_constants.dart  # ✅ Constantes globales
-│   │   ├── theme/
-│   │   │   └── app_theme.dart      # ✅ Sistema de temas (claro/oscuro)
-│   │   ├── router/
-│   │   │   └── app_router.dart     # ✅ Navegación con go_router
-│   │   └── exceptions/
-│   │       └── app_exceptions.dart # ✅ Sistema completo de excepciones
+│   ├── app/                             # ✅ Configuración de la app
+│   │   ├── app.dart                     # Widget principal NutriVisionApp
+│   │   └── routes.dart                  # Navegación con go_router
+│   │
+│   ├── core/                            # ✅ Núcleo compartido
+│   │   ├── constants/app_constants.dart # Constantes globales
+│   │   ├── theme/app_theme.dart         # Sistema de temas
+│   │   └── exceptions/app_exceptions.dart # Excepciones personalizadas
 │   │
 │   ├── data/models/
-│   │   └── detection.dart          # ✅ Modelo de detección con validaciones
+│   │   └── detection.dart               # ✅ Modelo de detección
 │   │
-│   ├── presentation/pages/
-│   │   ├── home_page.dart          # ✅ Pantalla principal
-│   │   └── gallery_detection_page.dart  # ✅ Detección desde galería
-│   │
-│   └── ml/
-│       └── yolo_detector.dart      # ✅ Detector YOLO con desnormalización
+│   └── features/                        # ✅ Feature-First Architecture
+│       ├── detection/                   # Feature de detección YOLO
+│       │   ├── providers/
+│       │   │   ├── detector_provider.dart    # Singleton del detector
+│       │   │   └── camera_provider.dart      # Estado de cámara
+│       │   ├── services/
+│       │   │   ├── yolo_detector.dart          # Motor de inferencia YOLO
+│       │   │   ├── camera_frame_processor.dart # Conversión YUV→RGB
+│       │   │   ├── image_processing_isolate.dart # Worker isolate para conversión
+│       │   │   └── native_image_processor.dart   # Cliente Dart para C++ nativo
+│       │   ├── views/
+│       │   │   ├── detection_gallery_screen.dart # Detección desde galería
+│       │   │   └── detection_live_screen.dart    # Detección en tiempo real
+│       │   └── widgets/
+│       │       ├── camera_controls.dart     # Controles de cámara
+│       │       └── detection_overlay.dart   # Overlay con bounding boxes
+│       └── home/
+│           └── views/
+│               └── home_screen.dart         # Pantalla principal
 │
-├── test/                            # ✅ Tests automatizados
-│   ├── ml/
-│   │   └── yolo_detector_test.dart # 42 tests pasando
-│   └── test_assets/test_images/    # 51 imágenes de prueba
+├── test/                                 # ✅ Tests automatizados (42 tests)
+│   ├── ml/yolo_detector_test.dart
+│   └── test_assets/test_images/         # 51 imágenes de prueba
 │
-├── pubspec.yaml                     # ✅ Dependencias configuradas
-├── analysis_options.yaml            # ✅ Reglas de linting
-├── CLAUDE.md                        # ✅ Contexto para asistencia IA
-├── .gitignore                       # ✅ Archivos ignorados
-└── README.md                        # Este archivo
-```
-
-### Estructura Planeada (Pendiente)
-
-```
-lib/
-├── core/                            # ✅ Implementado
-│   ├── constants/                   # ✅ app_constants.dart
-│   ├── theme/                       # ✅ app_theme.dart
-│   ├── router/                      # ✅ app_router.dart
-│   ├── utils/                       # ❌ Pendiente
-│   └── exceptions/                  # ✅ app_exceptions.dart
-│
-├── data/                            # ⚠️ Parcial
-│   ├── models/                      # ✅ detection.dart
-│   ├── repositories/                # ❌ Pendiente
-│   └── datasources/                 # ❌ Pendiente
-│
-├── domain/                          # ❌ Pendiente
-│   ├── entities/                    # Entidades de dominio
-│   ├── usecases/                    # Casos de uso
-│   └── repositories/                # Interfaces
-│
-├── presentation/                    # ⚠️ Parcial
-│   ├── providers/                   # ❌ Riverpod providers (pendiente)
-│   ├── pages/                       # ✅ home_page, gallery_detection_page
-│   └── widgets/                     # ❌ Widgets reutilizables (pendiente)
-│
-└── ml/                              # ✅ Completo
-    └── yolo_detector.dart
+├── pubspec.yaml                          # Dependencias
+├── CLAUDE.md                             # Contexto para IA
+└── README.md                             # Este archivo
 ```
 
 ---
@@ -627,7 +606,7 @@ El detector YOLO está implementado con las siguientes características:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### lib/ml/yolo_detector.dart
+### lib/features/detection/services/yolo_detector.dart
 
 ```dart
 /// Detector de ingredientes alimenticios usando YOLO11n.
@@ -754,6 +733,48 @@ extension DetectionListExtension on List<Detection> {
 
 ---
 
+## ⚡ Optimización Nativa (C++)
+
+El proyecto incluye código nativo C++ para optimizar la conversión YUV→RGB en la detección en tiempo real:
+
+### Archivos de Código Nativo
+
+| Archivo | Descripción |
+|---------|-------------|
+| `android/app/src/main/cpp/native_image_processor.cpp` | Implementación JNI con bindings |
+| `android/app/src/main/cpp/yuv_to_rgb.h` | Conversión optimizada con NEON SIMD |
+| `android/app/src/main/cpp/CMakeLists.txt` | Configuración de build CMake |
+
+### Características
+
+- **NEON SIMD (ARM):** Procesa 8 píxeles en paralelo
+- **Aritmética Q8:** Punto fijo para máxima velocidad
+- **Fallback automático:** Si NEON no disponible, usa scalar
+- **Platform Channel:** `edu.epn.nutrivision/native_image_processor`
+
+### Rendimiento
+
+| Implementación | Tiempo por frame | Mejora |
+|----------------|------------------|--------|
+| Dart puro | ~50ms | 1x |
+| C++ con NEON | ~5ms | **~10x** |
+
+### Pipeline de Procesamiento
+
+```
+CameraImage (YUV420)
+    ↓
+¿Nativo disponible?
+    ├─ Sí → C++ NEON (~5ms)
+    └─ No → Dart Isolate (~50ms)
+    ↓
+Imagen RGB
+    ↓
+YoloDetector.detect()
+```
+
+---
+
 ## 🛡️ Sistema de Excepciones
 
 ### lib/core/exceptions/app_exceptions.dart
@@ -788,8 +809,14 @@ NutriVisionException (base abstracta)
 │   ├── CameraPermissionException   # Permiso cámara denegado
 │   └── GalleryPermissionException  # Permiso galería denegado
 │
-└── DatabaseException
-    └── IngredientNotFoundException # Ingrediente no en BD
+├── DatabaseException
+│   └── IngredientNotFoundException # Ingrediente no en BD
+│
+├── CameraInitializationException   # Error inicializando cámara
+├── CameraStreamException           # Error en streaming
+├── FrameConversionException        # Error conversión YUV→RGB
+├── NoCameraAvailableException      # Sin cámaras disponibles
+└── NutriVisionGenericException     # Errores no categorizados
 ```
 
 ### Uso de Excepciones
@@ -1178,6 +1205,10 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 
 ## 🗺️ Roadmap de Desarrollo
 
+### ═══════════════════════════════════════════════════════════════
+### FASES COMPLETADAS
+### ═══════════════════════════════════════════════════════════════
+
 ### Fase 1: Setup Inicial ✅ (100%)
 - [x] Crear proyecto Flutter
 - [x] Configurar estructura de carpetas
@@ -1192,7 +1223,7 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Implementar postprocesamiento (NMS por clase)
 - [x] Probar inferencia con imagen estática
 - [x] Crear modelo `Detection` con métodos auxiliares y validaciones
-- [x] Implementar pantalla de pruebas (`GalleryDetectionPage`)
+- [x] Implementar pantalla de detección desde galería
 - [x] Implementar `BoundingBoxPainter` con escalado correcto
 - [x] Implementar filtrado por ingrediente
 
@@ -1201,7 +1232,6 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Implementar `ExceptionHandler` para manejo centralizado
 - [x] Integrar excepciones en `YoloDetector`
 - [x] Integrar excepciones en `Detection`
-- [x] Integrar excepciones en `GalleryDetectionPage`
 - [x] Agregar validaciones en constructores
 
 ### Fase 4: Testing ✅ (100%)
@@ -1213,35 +1243,173 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Tests con 51 imágenes de Kaggle
 - [x] Tests de rendimiento (< 600ms inferencia)
 
-### Fase 5: Cámara (En progreso - 50%)
+### Fase 5: Cámara en Tiempo Real ✅ (90%)
 - [x] Implementar captura desde galería (ImagePicker)
-- [ ] Implementar preview de cámara en tiempo real
-- [ ] Integrar detección con cámara
+- [x] Implementar preview de cámara en tiempo real
+- [x] Integrar detección con streaming de cámara
 - [x] Dibujar bounding boxes en overlay
-- [x] Placeholder de página de cámara
+- [x] Conversión YUV420 → RGB optimizada
+- [x] Throttling de frames para rendimiento
+- [x] Controles de cámara (flash, cambiar cámara)
+- [x] Código nativo C++ con NEON SIMD (~10x más rápido)
+- [x] Worker Isolate para no bloquear UI
+- [ ] Optimización adicional de FPS
 
-### Fase 6: UI/UX (En progreso - 70%)
+### Fase 6: UI/UX Inicial ✅ (80%)
 - [x] Crear sistema de tema (AppTheme, AppColors)
 - [x] Crear constantes globales (AppConstants)
 - [x] Configurar navegación con go_router
 - [x] Diseñar pantalla principal (HomePage)
-- [ ] Diseñar pantalla de resultados
-- [ ] Implementar cards de ingredientes detallados
 - [x] Agregar animaciones y transiciones
 
-### Fase 7: Base de Datos (Pendiente)
-- [ ] Crear schema SQLite de nutrientes
-- [ ] Poblar base de datos inicial
-- [ ] Implementar consultas de nutrientes
-- [ ] Mostrar información nutricional
+### Fase 7: Refactorización ✅ (100%)
+- [x] Migrar a arquitectura Feature-First
+- [x] Reorganizar carpetas lib/
+- [x] Actualizar imports
+- [x] Verificar 42 tests pasando
 
-### Fase 8: Features Adicionales (Pendiente)
+### ═══════════════════════════════════════════════════════════════
+### PLAN DE EVOLUCIÓN - FASES PENDIENTES
+### ═══════════════════════════════════════════════════════════════
+
+### FASE 0: Verificación Inicial ✅
+- [x] Ejecutar `flutter clean`
+- [x] Ejecutar `flutter pub get`
+- [x] Ejecutar `flutter analyze` → 0 issues
+- [x] Ejecutar `flutter test` → 42 tests pasando
+
+### FASE 1: Crear Estructura de Carpetas ⏳
+| Carpeta | Estado | Descripción |
+|---------|--------|-------------|
+| `lib/core/logging/` | ⬜ | Sistema de logging centralizado |
+| `lib/core/session/` | ⬜ | Gestión de sesión de usuario |
+| `lib/data/defaults/` | ⬜ | Datos fallback de nutrientes |
+| `lib/features/auth/` | ⬜ | Autenticación (demo) |
+| `lib/features/onboarding/` | ⬜ | Splash y welcome screens |
+| `lib/features/profile/` | ⬜ | Pantalla de perfil |
+| `lib/features/home/viewmodels/` | ⬜ | ViewModels de home |
+| `lib/features/home/widgets/` | ⬜ | Widgets reutilizables |
+| `lib/shared/widgets/` | ⬜ | Componentes compartidos |
+
+### FASE 2: Sistema de Logging ⏳
+- [ ] Crear `lib/core/logging/log_level.dart` - Enum de niveles
+- [ ] Crear `lib/core/logging/log_config.dart` - Configuración
+- [ ] Crear `lib/core/logging/app_logger.dart` - Logger principal
+- [ ] Crear `lib/core/logging/log_persistence.dart` - Persistencia (opcional)
+- [ ] Tests para logging
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 3: Modelos de Datos ⏳
+- [ ] Crear `lib/data/models/food_item.dart` - Modelo de alimento
+- [ ] Crear `lib/data/models/macro_nutrients.dart` - Macronutrientes
+- [ ] Crear `lib/data/models/user_profile.dart` - Perfil de usuario
+- [ ] Tests para modelos
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 4: Base de Datos Nutricional ⏳
+- [ ] Crear `lib/data/datasources/database_provider.dart` - SQLite config
+- [ ] Crear `lib/data/defaults/food_nutrition_fallback.dart` - Fallbacks
+- [ ] Crear `lib/data/repositories/food_repository.dart` - CRUD
+- [ ] Crear `assets/db/fooddata.db` - Base de datos SQLite
+- [ ] Tests para repositorio
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 5: Features Nuevas ⏳
+#### 5.1 Onboarding
+- [ ] Crear `lib/features/onboarding/splash_screen.dart`
+- [ ] Crear `lib/features/onboarding/welcome_screen.dart`
+- [ ] Agregar rutas en `routes.dart`
+
+#### 5.2 Auth (Demo)
+- [ ] Crear `lib/features/auth/login_screen.dart`
+- [ ] Crear `lib/features/auth/signup_screen.dart`
+- [ ] Agregar rutas en `routes.dart`
+
+#### 5.3 Profile
+- [ ] Crear `lib/features/profile/views/profile_screen.dart`
+- [ ] Agregar ruta en `routes.dart`
+
+### FASE 6: Session Manager ⏳
+- [ ] Crear `lib/core/session/session_manager.dart` - Flags de sesión
+- [ ] Crear `lib/core/session/user_profile_storage.dart` - Persistencia
+- [ ] Integrar en `routes.dart` (navegación condicional)
+- [ ] Tests para session
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 7: Widgets Compartidos ⏳
+- [ ] Crear `lib/shared/widgets/gradient_app_bar.dart`
+- [ ] Crear `lib/shared/widgets/macro_card.dart`
+- [ ] Crear `lib/features/home/widgets/action_button.dart`
+- [ ] Crear `lib/features/home/widgets/hero_card.dart`
+- [ ] Crear `lib/features/home/widgets/slide_fade_in.dart`
+- [ ] Crear `lib/features/home/widgets/user_data_form.dart`
+- [ ] Crear `lib/features/home/widgets/user_greeting.dart`
+- [ ] Crear `lib/features/home/viewmodels/home_viewmodel.dart`
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 8: Renombrado de Servicios ⚠️ (AL FINAL)
+> **IMPORTANTE:** Esta fase solo debe ejecutarse cuando todo lo anterior esté funcionando.
+
+- [ ] Renombrar `yolo_detector.dart` → `yolo_service.dart`
+- [ ] Renombrar clase `YoloDetector` → `YoloService`
+- [ ] Renombrar `camera_frame_processor.dart` → `detection_service.dart`
+- [ ] Renombrar clase `CameraFrameProcessor` → `DetectionService`
+- [ ] Renombrar `ProcessingResult` → `DetectionResult`
+- [ ] Actualizar todos los imports
+- [ ] Actualizar providers
+- [ ] Verificar: `flutter analyze` y `flutter test`
+- [ ] Test manual: detección en cámara y galería
+
+### ═══════════════════════════════════════════════════════════════
+### ORDEN DE IMPLEMENTACIÓN RECOMENDADO
+### ═══════════════════════════════════════════════════════════════
+
+```
+FASE 0 (Verificación)     ✅ Completado
+       ↓
+FASE 1 (Carpetas)         ← 5 min, riesgo CERO
+       ↓
+FASE 2 (Logging)          ← EMPEZAR AQUÍ (útil para debug)
+       ↓
+FASE 3 (Modelos)          ← Preparar para base de datos
+       ↓
+FASE 4 (Base de datos)    ← CORE DEL PROYECTO
+       ↓
+FASE 5 (Auth/Onboarding)  ← UI nuevas pantallas
+       ↓
+FASE 6 (Session)          ← Navegación condicional
+       ↓
+FASE 7 (Widgets)          ← Refactorizar componentes
+       ↓
+FASE 8 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
+```
+
+### ═══════════════════════════════════════════════════════════════
+### ARCHIVOS CRÍTICOS - NO MODIFICAR HASTA FASE 8
+### ═══════════════════════════════════════════════════════════════
+
+```
+lib/features/detection/services/
+├── yolo_detector.dart           ← 521 líneas, motor ML
+├── camera_frame_processor.dart  ← 356 líneas, orquestación
+├── image_processing_isolate.dart ← 149 líneas, isolate
+└── native_image_processor.dart  ← 102 líneas, C++ bridge
+
+android/app/src/main/cpp/
+├── native_image_processor.cpp   ← 287 líneas, NEON
+├── yuv_to_rgb.h                 ← 87 líneas, headers
+└── CMakeLists.txt               ← Config build
+```
+
+### Fases Finales (Post-Evolución)
+
+### Fase 9: Features Adicionales (Después de FASE 8)
 - [ ] Historial de análisis
 - [ ] Compartir resultados
 - [ ] Configuraciones de usuario
 - [ ] Optimización de rendimiento
 
-### Fase 9: Release (Pendiente)
+### Fase 10: Release (Final)
 - [ ] Tests de integración
 - [ ] Pruebas en múltiples dispositivos
 - [ ] Generar build de release

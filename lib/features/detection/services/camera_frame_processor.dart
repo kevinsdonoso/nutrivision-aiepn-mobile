@@ -3,7 +3,7 @@
 // ║              Procesador de frames de cámara para detección YOLO               ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Convierte frames de cámara (YUV420) a formato RGB para inferencia.           ║
-// ║  Implementa throttling para evitar sobrecarga del dispositivo.                ║
+// ║  Usa código nativo C++ (si disponible) o Isolates como fallback.              ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'package:camera/camera.dart';
@@ -13,6 +13,8 @@ import 'package:image/image.dart' as img;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/exceptions/app_exceptions.dart';
 import '../../../data/models/detection.dart';
+import 'image_processing_isolate.dart';
+import 'native_image_processor.dart';
 import 'yolo_detector.dart';
 
 /// Procesador de frames de cámara para detección en tiempo real.
@@ -34,9 +36,6 @@ class CameraFrameProcessor {
 
   /// Contador de frames para throttling.
   int _frameCounter = 0;
-
-  /// Timestamp del último procesamiento.
-  DateTime _lastProcessTime = DateTime.now();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CONSTRUCTOR
@@ -73,43 +72,59 @@ class CameraFrameProcessor {
     int sensorOrientation = 90,
     bool isFrontCamera = false,
   }) async {
-    // Verificar si está ocupado
+    // SIMPLIFICADO: Solo verificar si está ocupado
+    // El flag isBusy ya proporciona throttling natural
+    // Los checks adicionales descartaban frames innecesariamente
     if (_isProcessing) {
       return null;
     }
 
-    // Throttling por contador de frames
     _frameCounter++;
-    if (_frameCounter % AppConstants.cameraFrameSkip != 0) {
-      return null;
-    }
-
-    // Throttling por tiempo mínimo
-    final now = DateTime.now();
-    final elapsed = now.difference(_lastProcessTime).inMilliseconds;
-    if (elapsed < AppConstants.minInferenceIntervalMs) {
-      return null;
-    }
-
     _isProcessing = true;
-    _lastProcessTime = now;
 
     try {
       final stopwatch = Stopwatch()..start();
 
-      // Convertir YUV420 a RGB
-      final rgbImage = _convertYUV420ToRGB(cameraImage);
-      if (rgbImage == null) {
-        return null;
+      img.Image? finalImage;
+      int outputWidth = cameraImage.width;
+      int outputHeight = cameraImage.height;
+
+      // Intentar conversión nativa primero (más rápida)
+      if (NativeImageProcessor.isAvailable) {
+        finalImage = await _tryNativeConversion(
+          cameraImage,
+          sensorOrientation,
+          isFrontCamera,
+        );
       }
 
-      // Rotar según orientación del sensor
-      final rotatedImage = _rotateImage(rgbImage, sensorOrientation);
+      // Fallback a isolate si nativo no disponible/falló
+      if (finalImage == null) {
+        _debugLog('📦 Usando fallback ISOLATE (nativo no disponible/falló)');
+        final isolateResult = await _convertWithIsolate(
+          cameraImage,
+          sensorOrientation,
+          isFrontCamera,
+        );
+        if (isolateResult != null) {
+          finalImage = isolateResult.image;
+          outputWidth = isolateResult.width;
+          outputHeight = isolateResult.height;
+        }
+      } else {
+        _debugLog('⚡ Usando conversión NATIVA C++');
+        // Ajustar dimensiones según rotación
+        if (sensorOrientation == 90 || sensorOrientation == 270) {
+          final temp = outputWidth;
+          outputWidth = outputHeight;
+          outputHeight = temp;
+        }
+      }
 
-      // Espejo para cámara frontal
-      final finalImage = isFrontCamera
-          ? img.flipHorizontal(rotatedImage)
-          : rotatedImage;
+      if (finalImage == null) {
+        _debugLog('⚠️ No se pudo convertir el frame');
+        return null;
+      }
 
       // Ejecutar detección (verbose: false para evitar logs en tiempo real)
       final detections = await _detector.detect(
@@ -123,8 +138,8 @@ class CameraFrameProcessor {
       return ProcessingResult(
         detections: detections,
         inferenceTimeMs: stopwatch.elapsedMilliseconds,
-        imageWidth: finalImage.width,
-        imageHeight: finalImage.height,
+        imageWidth: outputWidth,
+        imageHeight: outputHeight,
       );
     } on NutriVisionException {
       rethrow;
@@ -139,23 +154,112 @@ class CameraFrameProcessor {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONVERSIÓN YUV420 → RGB
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Convierte un frame YUV420 de la cámara a imagen RGB.
-  ///
-  /// El formato YUV420 es el más común en cámaras Android.
-  /// Estructura de planes:
-  /// - Plane 0: Y (luminancia)
-  /// - Plane 1: U (crominancia)
-  /// - Plane 2: V (crominancia)
-  img.Image? _convertYUV420ToRGB(CameraImage cameraImage) {
+  /// Intenta conversión usando código nativo C++.
+  Future<img.Image?> _tryNativeConversion(
+    CameraImage cameraImage,
+    int sensorOrientation,
+    bool isFrontCamera,
+  ) async {
     try {
-      final int width = cameraImage.width;
-      final int height = cameraImage.height;
+      if (cameraImage.planes.length < 3) return null;
 
-      // Verificar que tenemos los 3 planos YUV
+      final yPlane = cameraImage.planes[0];
+      final uPlane = cameraImage.planes[1];
+      final vPlane = cameraImage.planes[2];
+
+      final rgbBytes = await NativeImageProcessor.convertYuvToRgb(
+        yBytes: Uint8List.fromList(yPlane.bytes),
+        uBytes: Uint8List.fromList(uPlane.bytes),
+        vBytes: Uint8List.fromList(vPlane.bytes),
+        width: cameraImage.width,
+        height: cameraImage.height,
+        yRowStride: yPlane.bytesPerRow,
+        uvRowStride: uPlane.bytesPerRow,
+        uvPixelStride: uPlane.bytesPerPixel ?? 1,
+      );
+
+      if (rgbBytes == null) return null;
+
+      // Crear imagen desde bytes RGB
+      final image = img.Image.fromBytes(
+        width: cameraImage.width,
+        height: cameraImage.height,
+        bytes: rgbBytes.buffer,
+        format: img.Format.uint8,
+        numChannels: 3,
+      );
+
+      // Rotar según orientación
+      img.Image rotatedImage;
+      switch (sensorOrientation) {
+        case 90:
+          rotatedImage = img.copyRotate(image, angle: 90);
+          break;
+        case 180:
+          rotatedImage = img.copyRotate(image, angle: 180);
+          break;
+        case 270:
+          rotatedImage = img.copyRotate(image, angle: 270);
+          break;
+        default:
+          rotatedImage = image;
+      }
+
+      // Espejo para cámara frontal
+      return isFrontCamera ? img.flipHorizontal(rotatedImage) : rotatedImage;
+    } catch (e) {
+      _debugLog('⚠️ Error en conversión nativa: $e');
+      return null;
+    }
+  }
+
+  /// Convierte usando isolate (fallback).
+  Future<_IsolateResult?> _convertWithIsolate(
+    CameraImage cameraImage,
+    int sensorOrientation,
+    bool isFrontCamera,
+  ) async {
+    final input = _prepareIsolateInput(
+      cameraImage,
+      sensorOrientation,
+      isFrontCamera,
+    );
+
+    if (input == null) return null;
+
+    final conversionResult = await compute(
+      convertYuvToRgbIsolate,
+      input,
+    );
+
+    if (!conversionResult.isSuccess || conversionResult.rgbBytes == null) {
+      _debugLog('⚠️ Conversión en isolate falló: ${conversionResult.error}');
+      return null;
+    }
+
+    // OPTIMIZACIÓN: Crear imagen desde bytes RGB crudos (sin PNG decode)
+    final image = img.Image.fromBytes(
+      width: conversionResult.width,
+      height: conversionResult.height,
+      bytes: conversionResult.rgbBytes!.buffer,
+      format: img.Format.uint8,
+      numChannels: 3,
+    );
+
+    return _IsolateResult(
+      image: image,
+      width: conversionResult.width,
+      height: conversionResult.height,
+    );
+  }
+
+  /// Prepara los datos del frame para enviar al isolate.
+  YuvConversionInput? _prepareIsolateInput(
+    CameraImage cameraImage,
+    int sensorOrientation,
+    bool isFrontCamera,
+  ) {
+    try {
       if (cameraImage.planes.length < 3) {
         _debugLog('⚠️ Frame no tiene 3 planos YUV');
         return null;
@@ -165,70 +269,21 @@ class CameraFrameProcessor {
       final uPlane = cameraImage.planes[1];
       final vPlane = cameraImage.planes[2];
 
-      final int yRowStride = yPlane.bytesPerRow;
-      final int uvRowStride = uPlane.bytesPerRow;
-      final int uvPixelStride = uPlane.bytesPerPixel ?? 1;
-
-      final Uint8List yBytes = yPlane.bytes;
-      final Uint8List uBytes = uPlane.bytes;
-      final Uint8List vBytes = vPlane.bytes;
-
-      // Crear imagen de salida
-      final img.Image image = img.Image(width: width, height: height);
-
-      for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-          // Índice en el plano Y
-          final int yIndex = y * yRowStride + x;
-
-          // Índice en los planos UV (submuestreados 2x2)
-          final int uvIndex = (y ~/ 2) * uvRowStride + (x ~/ 2) * uvPixelStride;
-
-          // Obtener valores YUV
-          final int yValue = yBytes[yIndex];
-          final int uValue = uBytes[uvIndex];
-          final int vValue = vBytes[uvIndex];
-
-          // Convertir YUV a RGB usando fórmula ITU-R BT.601
-          int r = (yValue + 1.402 * (vValue - 128)).round().clamp(0, 255);
-          int g = (yValue - 0.344136 * (uValue - 128) - 0.714136 * (vValue - 128))
-              .round()
-              .clamp(0, 255);
-          int b = (yValue + 1.772 * (uValue - 128)).round().clamp(0, 255);
-
-          image.setPixelRgb(x, y, r, g, b);
-        }
-      }
-
-      return image;
+      return YuvConversionInput(
+        width: cameraImage.width,
+        height: cameraImage.height,
+        yBytes: Uint8List.fromList(yPlane.bytes),
+        uBytes: Uint8List.fromList(uPlane.bytes),
+        vBytes: Uint8List.fromList(vPlane.bytes),
+        yRowStride: yPlane.bytesPerRow,
+        uvRowStride: uPlane.bytesPerRow,
+        uvPixelStride: uPlane.bytesPerPixel ?? 1,
+        sensorOrientation: sensorOrientation,
+        flipHorizontal: isFrontCamera,
+      );
     } catch (e) {
-      _debugLog('❌ Error en conversión YUV→RGB: $e');
+      _debugLog('❌ Error preparando input para isolate: $e');
       return null;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ROTACIÓN DE IMAGEN
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  /// Rota la imagen según la orientación del sensor de la cámara.
-  ///
-  /// Los sensores de cámara típicamente reportan orientaciones de:
-  /// - 0°: Landscape izquierda
-  /// - 90°: Portrait normal (más común en Android)
-  /// - 180°: Landscape derecha
-  /// - 270°: Portrait invertido
-  img.Image _rotateImage(img.Image image, int sensorOrientation) {
-    switch (sensorOrientation) {
-      case 90:
-        return img.copyRotate(image, angle: 90);
-      case 180:
-        return img.copyRotate(image, angle: 180);
-      case 270:
-        return img.copyRotate(image, angle: 270);
-      case 0:
-      default:
-        return image;
     }
   }
 
@@ -284,4 +339,17 @@ class ProcessingResult {
   @override
   String toString() =>
       'ProcessingResult(detections: $count, time: ${inferenceTimeMs}ms, fps: ${estimatedFps.toStringAsFixed(1)})';
+}
+
+/// Resultado interno de conversión en isolate.
+class _IsolateResult {
+  final img.Image image;
+  final int width;
+  final int height;
+
+  const _IsolateResult({
+    required this.image,
+    required this.width,
+    required this.height,
+  });
 }
