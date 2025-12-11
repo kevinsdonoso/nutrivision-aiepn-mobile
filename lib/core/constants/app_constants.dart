@@ -125,8 +125,9 @@ abstract class AppConstants {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Frames a saltar entre inferencias (para rendimiento)
-  /// Con cámara a 30fps, frameSkip=3 → ~10 inferencias/segundo
-  static const int cameraFrameSkip = 3;
+  /// Con cámara a 30fps, frameSkip=2 → ~15 inferencias/segundo
+  /// OPTIMIZADO: Reducido de 3 a 2 para mayor fluidez
+  static const int cameraFrameSkip = 2;
 
   /// Ancho máximo de imagen para procesamiento
   static const int maxImageWidth = 1920;
@@ -146,7 +147,8 @@ abstract class AppConstants {
   static const int maxInferenceTimeMs = 800;
 
   /// Tiempo mínimo entre inferencias para evitar sobrecarga (ms)
-  static const int minInferenceIntervalMs = 150;
+  /// OPTIMIZADO: Reducido de 150ms a 80ms para mayor responsividad
+  static const int minInferenceIntervalMs = 80;
 
   /// Mostrar indicador de FPS en modo debug
   static const bool showDebugFps = true;

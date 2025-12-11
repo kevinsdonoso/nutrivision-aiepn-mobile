@@ -74,6 +74,10 @@ class _DetectionOverlayPainter extends CustomPainter {
   final Paint _backgroundPaint = Paint()
     ..style = PaintingStyle.fill;
 
+  // OPTIMIZACIÓN: Cache estático de TextPainters para evitar recreación
+  static final Map<String, TextPainter> _labelCache = {};
+  static const int _maxCacheSize = 50;
+
   _DetectionOverlayPainter({
     required this.detections,
     required this.previewSize,
@@ -91,6 +95,41 @@ class _DetectionOverlayPainter extends CustomPainter {
       _drawBoundingBox(canvas, rect, color);
       _drawLabel(canvas, detection, rect, color);
     }
+  }
+
+  /// Obtiene TextPainter del cache o crea uno nuevo.
+  /// Gestiona el tamaño del cache para evitar memory leaks.
+  TextPainter _getOrCreateTextPainter(String labelText) {
+    // Buscar en cache
+    if (_labelCache.containsKey(labelText)) {
+      return _labelCache[labelText]!;
+    }
+
+    // Crear nuevo TextPainter
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: labelText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+
+    // Limpiar cache si excede límite (LRU simple: eliminar primeros)
+    if (_labelCache.length >= _maxCacheSize) {
+      final keysToRemove = _labelCache.keys.take(_maxCacheSize ~/ 4).toList();
+      for (final key in keysToRemove) {
+        _labelCache.remove(key);
+      }
+    }
+
+    // Guardar en cache
+    _labelCache[labelText] = textPainter;
+    return textPainter;
   }
 
   /// Transforma coordenadas del modelo a coordenadas de pantalla.
@@ -201,19 +240,8 @@ class _DetectionOverlayPainter extends CustomPainter {
   void _drawLabel(Canvas canvas, Detection detection, Rect rect, Color color) {
     final labelText = '${detection.label} ${detection.confidenceFormatted}';
 
-    // Crear texto
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: labelText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
+    // OPTIMIZACIÓN: Usar TextPainter cacheado o crear nuevo
+    final textPainter = _getOrCreateTextPainter(labelText);
 
     // Calcular posición del label (arriba del box)
     final labelWidth = textPainter.width + 12;

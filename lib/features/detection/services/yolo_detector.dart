@@ -41,6 +41,9 @@ class YoloDetector {
   static const String modelPath = 'assets/models/yolov11n_float32.tflite';
   static const String labelsPath = 'assets/labels/labels.txt';
 
+  // Optimización: límite de detecciones antes de NMS para reducir O(n²)
+  static const int maxDetectionsBeforeNms = 200;
+
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES PRIVADAS
   // ═══════════════════════════════════════════════════════════════════════════
@@ -313,8 +316,18 @@ class YoloDetector {
       int validDetections = 0;
       int filteredByConfidence = 0;
       int filteredByInvalidBox = 0;
+      int skippedByLimit = 0;
 
       for (int i = 0; i < numPredictions; i++) {
+        // ═══════════════════════════════════════════════════════════════════
+        // OPTIMIZACIÓN: Early exit si ya tenemos suficientes detecciones
+        // Reduce NMS de O(8400²) a O(maxDetectionsBeforeNms²)
+        // ═══════════════════════════════════════════════════════════════════
+        if (detections.length >= maxDetectionsBeforeNms) {
+          skippedByLimit = numPredictions - i;
+          break;
+        }
+
         // ═══════════════════════════════════════════════════════════════════
         // IMPORTANTE: El modelo devuelve coordenadas NORMALIZADAS (0-1)
         // Debemos multiplicar por inputSize (640) para obtener píxeles
@@ -416,6 +429,9 @@ class YoloDetector {
         _debugLog('      Total predicciones: $numPredictions');
         _debugLog('      Filtradas por confianza: $filteredByConfidence');
         _debugLog('      Filtradas por bbox inválido: $filteredByInvalidBox');
+        if (skippedByLimit > 0) {
+          _debugLog('      Omitidas por límite ($maxDetectionsBeforeNms): $skippedByLimit');
+        }
         _debugLog('      Válidas antes de NMS: ${detections.length}');
       }
 
