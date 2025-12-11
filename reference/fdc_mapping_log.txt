@@ -1,0 +1,74 @@
+============================================================
+NutriVisionAIEPN - FoodData Central Mapping Log
+Generated: 2025-12-11T04:03:23.701613
+============================================================
+
+--- ESTADÍSTICAS ---
+Total clases: 83
+Ingredientes encontrados: 68
+Ingredientes no encontrados: 0
+Platos procesados: 6
+Score promedio: 92.5%
+Tiempo de proceso: 90.5s
+
+--- ADVERTENCIAS ---
+  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
+  - {'label': 'pescado', 'score': 62.06896551724138, 'fdc_description': 'Fish, halibut'}
+  - {'label': 'tostado', 'score': 64.86486486486487, 'fdc_description': 'Bread, cinnamon, toasted'}
+  - {'label': 'pollo', 'score': 73.6842105263158, 'fdc_description': 'Chicken feet'}
+  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
+  - {'label': 'arroz', 'score': 62.5, 'fdc_description': 'Adobo, with rice'}
+  - {'label': 'carne_de_cerdo', 'score': 64.0, 'fdc_description': 'Pork, NFS'}
+  - {'label': 'huevo', 'score': 56.52173913043479, 'fdc_description': 'Eggs, Grade A, Large, egg whole'}
+  - {'label': 'papa', 'score': 71.42857142857143, 'fdc_description': 'Stewed potatoes'}
+  - {'label': 'almeja', 'score': 68.96551724137932, 'fdc_description': 'Clams, raw'}
+  - {'label': 'langostino', 'score': 57.14285714285714, 'fdc_description': 'Shrimp, NFS'}
+  - {'label': 'ceviche', 'missing_components': ['cilantro']}
+  - {'label': 'paella', 'missing_components': ['azafran']}
+  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
+  - {'label': 'pescado', 'score': 64.28571428571428, 'fdc_description': 'Fish, whiting, NFS'}
+  - {'label': 'tostado', 'score': 62.5, 'fdc_description': 'Bread, rye, toasted'}
+  - {'label': 'masa', 'score': 66.66666666666667, 'fdc_description': 'Dessert pizza'}
+  - {'label': 'pollo', 'score': 72.07207207207207, 'fdc_description': 'Chicken, breast, boneless, skinless, raw'}
+  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
+  - {'label': 'salchicha', 'score': 73.6842105263158, 'fdc_description': 'Pork sausage'}
+  - {'label': 'tocino', 'score': 66.66666666666667, 'fdc_description': 'Bacon bits'}
+  - {'label': 'arroz', 'score': 73.41772151898735, 'fdc_description': 'Flour, rice, white, unenriched'}
+  - {'label': 'papa', 'score': 70.58823529411764, 'fdc_description': 'Potato, NFS'}
+  - {'label': 'langostino', 'score': 72.0, 'fdc_description': 'Shrimp, fried'}
+  - {'label': 'caprese_salad', 'missing_components': ['aceite_oliva']}
+  - {'label': 'ceviche', 'missing_components': ['cilantro']}
+  - {'label': 'pizza', 'missing_components': ['aceite_oliva']}
+  - {'label': 'menestra', 'missing_components': ['aceite_oliva']}
+  - {'label': 'paella', 'missing_components': ['aceite_oliva', 'azafran']}
+  - {'label': 'fritada', 'missing_components': ['aceite_oliva']}
+  - {'label': 'tortilla_de_papa', 'missing_components': ['aceite_oliva']}
+  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
+  - {'label': 'pescado', 'score': 64.28571428571428, 'fdc_description': 'Fish, whiting, NFS'}
+  - {'label': 'tostado', 'score': 62.5, 'fdc_description': 'Bread, rye, toasted'}
+  - {'label': 'masa', 'score': 66.66666666666667, 'fdc_description': 'Dessert pizza'}
+  - {'label': 'pollo', 'score': 72.07207207207207, 'fdc_description': 'Chicken, breast, boneless, skinless, raw'}
+  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
+  - {'label': 'salchicha', 'score': 73.6842105263158, 'fdc_description': 'Pork sausage'}
+  - {'label': 'tocino', 'score': 66.66666666666667, 'fdc_description': 'Bacon bits'}
+  - {'label': 'arroz', 'score': 73.41772151898735, 'fdc_description': 'Flour, rice, white, unenriched'}
+  - {'label': 'papa', 'score': 70.58823529411764, 'fdc_description': 'Potato, NFS'}
+  - {'label': 'langostino', 'score': 72.0, 'fdc_description': 'Shrimp, fried'}
+  - {'label': 'tortilla_de_papa', 'score': 62.22222222222222, 'fdc_description': 'Spanish rice, from restaurant'}
+
+--- ERRORES ---
+  - {'label': 'choclo', 'error': 'not_found_in_fdc'}
+
+--- LOG DE PROCESAMIENTO ---
+[04:00:43] [WARNING] 'chocho' tiene match score bajo: 64%
+[04:00:52] [WARNING] 'pescado' tiene match score bajo: 64%
+[04:01:00] [WARNING] 'tostado' tiene match score bajo: 62%
+[04:01:07] [WARNING] 'masa' tiene match score bajo: 67%
+[04:01:13] [WARNING] 'pollo' tiene match score bajo: 72%
+[04:01:15] [WARNING] 'salami' tiene match score bajo: 71%
+[04:01:16] [WARNING] 'salchicha' tiene match score bajo: 74%
+[04:01:18] [WARNING] 'tocino' tiene match score bajo: 67%
+[04:01:20] [WARNING] 'arroz' tiene match score bajo: 73%
+[04:01:28] [WARNING] 'papa' tiene match score bajo: 71%
+[04:01:39] [WARNING] 'langostino' tiene match score bajo: 72%
+[04:01:49] [WARNING] 'tortilla_de_papa' tiene match score bajo: 62%

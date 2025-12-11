@@ -397,6 +397,30 @@ class IngredientNotFoundException extends DatabaseException {
   String get userMessage => 'No tenemos información nutricional para "$ingredientName".';
 }
 
+/// Excepción para errores de datos nutricionales.
+class NutritionDataException extends DatabaseException {
+  const NutritionDataException({
+    required super.message,
+    super.originalError,
+    super.stackTrace,
+  }) : super(code: 'NUTRITION_DATA_ERROR');
+
+  @override
+  String get userMessage => 'Error cargando datos nutricionales.';
+}
+
+/// Excepción cuando el archivo JSON de nutrición está malformado.
+class NutritionJsonParseException extends NutritionDataException {
+  const NutritionJsonParseException({
+    required super.message,
+    super.originalError,
+    super.stackTrace,
+  });
+
+  @override
+  String get userMessage => 'El archivo de datos nutricionales está corrupto.';
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // UTILIDADES PARA MANEJO DE EXCEPCIONES
 // ═══════════════════════════════════════════════════════════════════════════════

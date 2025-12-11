@@ -201,7 +201,7 @@ flutter:
   #   │   └── yolov11n_float32.tflite  (10.27 MB) - Modelo YOLO11n exportado
   #   ├── labels/
   #   │   └── labels.txt               (83 clases de ingredientes)
-  #   ├── database/
+  #   ├── data/
   #   │   └── nutrients.db             (BD SQLite de nutrientes - opcional)
   #   └── images/
   #       └── ...                      (Iconos, fondos, etc.)
@@ -218,7 +218,7 @@ flutter:
     
     # Base de datos precargada con información nutricional (opcional)
     # Se copia a documents directory en el primer inicio
-    - assets/database/
+    - assets/data/
     
     # Recursos visuales de la aplicación
     - assets/images/
