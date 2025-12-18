@@ -6,6 +6,9 @@
 // ║  Integración con el sistema de detección YOLO.                                ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
+// Exportar providers de cantidades para facilitar imports
+export 'quantity_provider.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/datasources/nutrition_datasource.dart';
