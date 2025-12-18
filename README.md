@@ -187,7 +187,11 @@ nutrivision_aiepn_mobile/
 │
 ├── assets/                               # ✅ Recursos de la app
 │   ├── models/yolov11n_float32.tflite   # Modelo YOLO11n (~10 MB)
-│   └── labels/labels.txt                # 83 clases de ingredientes
+│   ├── labels/labels.txt                # 83 clases de ingredientes
+│   └── data/
+│       ├── nutrition_fdc.json           # Base de datos nutricional (80 ingredientes)
+│       ├── standard_portions.json       # Base de datos de porciones (83 ingredientes)
+│       └── fooddata.db                  # Base de datos SQLite (48 KB)
 │
 ├── lib/                                  # Código fuente Dart/Flutter
 │   ├── main.dart                        # ✅ Punto de entrada
@@ -212,7 +216,9 @@ nutrivision_aiepn_mobile/
 │   │   │   ├── nutrition_data.dart      # Contenedor de datos
 │   │   │   ├── quantity_enums.dart      # Enums de cantidades
 │   │   │   ├── standard_portion.dart    # Modelo de porciones
-│   │   │   └── ingredient_quantity.dart # Cantidad de ingrediente
+│   │   │   ├── ingredient_quantity.dart # Cantidad de ingrediente
+│   │   │   ├── user_profile.dart        # Perfil de usuario
+│   │   │   └── auth_state.dart          # Estado de autenticación
 │   │   ├── datasources/
 │   │   │   ├── nutrition_datasource.dart # Carga JSON de nutrientes
 │   │   │   └── portion_datasource.dart  # Carga JSON de porciones
@@ -814,6 +820,17 @@ YoloDetector.detect()
 
 ---
 
+## 📁 Carpeta de Referencia
+
+| Archivo | Propósito |
+|---------|-----------|
+| `reference/fdc_mapping_log.txt` | Log de mapeo de ingredientes con FoodData Central |
+| `reference/nutrivision.yaml` | Configuración de referencia del proyecto |
+
+**Nota:** Archivos de desarrollo y documentación interna, no usados en runtime.
+
+---
+
 ## 🛡️ Sistema de Excepciones
 
 ### lib/core/exceptions/app_exceptions.dart
@@ -1049,6 +1066,19 @@ class BoundingBoxPainter extends CustomPainter {
 | Logging (LogLevel, LogConfig, AppLogger) | 39 | ✅ |
 | Nutrición (NutrientsPer100g, NutritionInfo, NutritionData) | 33 | ✅ |
 | **TOTAL** | **114** | ✅ |
+
+### Estadísticas del Proyecto
+
+| Métrica | Valor |
+|---------|-------|
+| Archivos Dart en lib/ | 52 |
+| Archivos de test | 3 |
+| Total de tests | 114 |
+| Líneas de código | ~17,171 |
+| Ingredientes soportados | 83 |
+| Platos soportados | 6 |
+| Porciones estándar | 83 ingredientes × ~4 porciones c/u |
+| Cobertura de tests | ~94% |
 
 ### Ejecutar Tests
 
@@ -1392,6 +1422,22 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Agregar metodo `calculateTotalNutrientsWithQuantities()` en NutritionRepository
 - [x] Verificar: `flutter analyze` y `flutter test`
 
+**Archivos creados:**
+- `lib/data/models/quantity_enums.dart` (54 líneas)
+- `lib/data/models/standard_portion.dart` (129 líneas)
+- `lib/data/models/ingredient_quantity.dart` (268 líneas)
+- `lib/data/datasources/portion_datasource.dart` (110 líneas)
+- `lib/data/repositories/portion_repository.dart` (264 líneas)
+- `assets/data/standard_portions.json` (83 ingredientes)
+
+**Modificado:**
+- `lib/data/repositories/nutrition_repository.dart` - Agregado método `calculateTotalNutrientsWithQuantities()` (líneas 164-181)
+
+**Verificación:**
+- `flutter analyze`: 0 issues
+- `flutter test`: 114 tests pasando
+- `flutter build apk --release`: Exitoso
+
 ### FASE 6B: Sistema de Cantidades - Providers y State ⏳
 - [ ] Crear `lib/features/nutrition/providers/quantity_provider.dart`
 - [ ] Crear estado de cantidades por ingrediente
@@ -1466,10 +1512,10 @@ FASE 7 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
 
 ```
 lib/features/detection/services/
-├── yolo_detector.dart           ← 521 líneas, motor ML
-├── camera_frame_processor.dart  ← 356 líneas, orquestación
-├── image_processing_isolate.dart ← 149 líneas, isolate
-└── native_image_processor.dart  ← 102 líneas, C++ bridge
+├── yolo_detector.dart           ← 467 líneas, motor ML
+├── camera_frame_processor.dart  ← 354 líneas, orquestación
+├── image_processing_isolate.dart ← 148 líneas, isolate
+└── native_image_processor.dart  ← 97 líneas, C++ bridge
 
 lib/data/models/                 ← FASE 6A: Sistema de cantidades
 ├── quantity_enums.dart          ← Enums QuantityUnit y QuantitySource
@@ -1490,6 +1536,41 @@ android/app/src/main/cpp/
 ├── yuv_to_rgb.h                 ← 87 líneas, headers
 └── CMakeLists.txt               ← Config build
 ```
+
+### ═══════════════════════════════════════════════════════════════
+### TABLA DE PROGRESO GLOBAL
+### ═══════════════════════════════════════════════════════════════
+
+| Fase | Estado | Progreso |
+|------|--------|----------|
+| Fase 0 | Completada | 100% |
+| Fase 1 | Completada | 100% |
+| Fase 2 | Completada | 100% |
+| Fase 3 | Completada | 100% |
+| Fase 4 | Completada | 100% |
+| Fase 5 | Completada | 100% |
+| **Fase 6A** | **Completada** | **100%** |
+| Fase 6B | Pendiente | 0% |
+| Fase 6C | Pendiente | 0% |
+| Fase 6D | Pendiente | 0% |
+| Fase 6E | Pendiente | 0% |
+| Fase 6F | Pendiente | 0% |
+| Fase 7 | Diferida | 0% |
+
+### ═══════════════════════════════════════════════════════════════
+### PRÓXIMOS PASOS (FASE 6B - Providers y State)
+### ═══════════════════════════════════════════════════════════════
+
+**Objetivo:** Implementar state management para el sistema de cantidades
+
+**Archivos a crear:**
+- `lib/features/nutrition/providers/quantity_provider.dart`
+- `lib/features/nutrition/state/ingredient_quantities_notifier.dart`
+
+**Archivos a modificar:**
+- `lib/features/nutrition/providers/nutrition_provider.dart`
+
+**Duración estimada:** 2 días
 
 ### Fases Finales (Post-Evolución)
 
@@ -1699,7 +1780,7 @@ Este proyecto es parte de un Trabajo de Integración Curricular y su uso está s
 
 *Detección inteligente de ingredientes alimenticios con información nutricional*
 
-✅ 114 tests pasando | ✅ 0 issues en flutter analyze | ✅ Firebase Auth integrado
+✅ 114 tests pasando | ✅ 0 issues en flutter analyze | ✅ Firebase Auth integrado | ✅ FASE 6A completada
 
 Made with ❤️ and Flutter
 

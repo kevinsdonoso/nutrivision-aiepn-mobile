@@ -257,9 +257,6 @@ flutter:
     # Base de datos precargada con información nutricional (opcional)
     # Se copia a documents directory en el primer inicio
     - assets/data/
-    
-    # Recursos visuales de la aplicación
-    - assets/images/
 
 # ═══════════════════════════════════════════════════════════════════════════
 # NOTAS TÉCNICAS IMPORTANTES
