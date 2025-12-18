@@ -196,31 +196,33 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _showSuccessSnackBar(String message) {
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: Colors.white),
+            Icon(Icons.check_circle, color: theme.colorScheme.onPrimary),
             const SizedBox(width: 8),
             Text(message),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: theme.colorScheme.primary,
       ),
     );
   }
 
   void _showErrorSnackBar(String message) {
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error, color: Colors.white),
+            Icon(Icons.error, color: theme.colorScheme.onError),
             const SizedBox(width: 8),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: theme.colorScheme.error,
       ),
     );
   }
@@ -254,6 +256,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final inputFillColor = isDark
+        ? theme.colorScheme.surfaceContainerHighest
+        : Colors.grey.shade50;
 
     return PopScope(
       canPop: !_hasChanges,
@@ -323,7 +329,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: inputFillColor,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -353,17 +359,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _buildGenderSelector(theme),
               const SizedBox(height: 16),
 
-              // País
+              // Pais
               TextFormField(
                 controller: _countryController,
                 decoration: InputDecoration(
-                  labelText: 'País',
+                  labelText: 'Pais',
                   prefixIcon: const Icon(Icons.public),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: inputFillColor,
                 ),
               ),
               const SizedBox(height: 16),
@@ -378,7 +384,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: inputFillColor,
                 ),
               ),
 
@@ -407,7 +413,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade50,
+                        fillColor: inputFillColor,
                       ),
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
@@ -434,7 +440,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade50,
+                        fillColor: inputFillColor,
                       ),
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
@@ -467,19 +473,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _buildNutritionGoalSelector(theme),
               const SizedBox(height: 16),
 
-              // Calorías objetivo
+              // Calorias objetivo
               TextFormField(
                 controller: _caloriesController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Calorías diarias objetivo',
+                  labelText: 'Calorias diarias objetivo',
                   suffixText: 'kcal',
                   prefixIcon: const Icon(Icons.local_fire_department),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey.shade50,
+                  fillColor: inputFillColor,
                   helperText: _calculateCalorieTarget() != null
                       ? 'Sugerido: ${_calculateCalorieTarget()} kcal'
                       : null,
@@ -574,6 +580,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildDatePicker(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final inputFillColor = isDark
+        ? theme.colorScheme.surfaceContainerHighest
+        : Colors.grey.shade50;
+    final placeholderColor = theme.colorScheme.onSurfaceVariant;
+
     return InkWell(
       onTap: () async {
         final date = await showDatePicker(
@@ -608,14 +620,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           filled: true,
-          fillColor: Colors.grey.shade50,
+          fillColor: inputFillColor,
         ),
         child: Text(
           _birthDate != null
               ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
               : 'Seleccionar fecha',
           style: TextStyle(
-            color: _birthDate != null ? null : Colors.grey[600],
+            color: _birthDate != null ? null : placeholderColor,
           ),
         ),
       ),
@@ -623,13 +635,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildGenderSelector(ThemeData theme) {
+    final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Género',
+          'Genero',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -660,13 +673,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildActivityLevelSelector(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
+    final borderColor = isDark ? theme.colorScheme.outline : Colors.grey.shade300;
+    final unselectedRadioColor = isDark ? theme.colorScheme.outline : Colors.grey.shade400;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Nivel de actividad física',
+          'Nivel de actividad fisica',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -689,7 +707,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   border: Border.all(
                     color: isSelected
                         ? theme.colorScheme.primary
-                        : Colors.grey.shade300,
+                        : borderColor,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -706,7 +724,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         border: Border.all(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : Colors.grey.shade400,
+                              : unselectedRadioColor,
                           width: 2,
                         ),
                         color: isSelected
@@ -714,10 +732,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             : Colors.transparent,
                       ),
                       child: isSelected
-                          ? const Icon(
+                          ? Icon(
                               Icons.check,
                               size: 12,
-                              color: Colors.white,
+                              color: theme.colorScheme.onPrimary,
                             )
                           : null,
                     ),
@@ -735,7 +753,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           Text(
                             level.description,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
+                              color: secondaryTextColor,
                             ),
                           ),
                         ],
@@ -752,13 +770,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildNutritionGoalSelector(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
+    final borderColor = isDark ? theme.colorScheme.outline : Colors.grey.shade300;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Tu objetivo',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -796,7 +818,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected ? color : Colors.grey.shade300,
+                    color: isSelected ? color : borderColor,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -827,7 +849,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           Text(
                             goal.description,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
+                              color: secondaryTextColor,
                             ),
                           ),
                         ],

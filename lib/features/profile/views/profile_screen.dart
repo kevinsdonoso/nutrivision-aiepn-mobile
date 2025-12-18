@@ -269,11 +269,14 @@ class ProfileScreen extends ConsumerWidget {
     required IconData icon,
     required List<Widget> children,
   }) {
+    final isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+          color: isDark ? theme.colorScheme.outline : Colors.grey.shade200,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -307,27 +310,33 @@ class ProfileScreen extends ConsumerWidget {
     required String value,
     Color? valueColor,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final secondaryColor = theme.colorScheme.onSurfaceVariant;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: secondaryColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(color: secondaryColor),
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: valueColor,
+                ),
+              ),
+            ],
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: valueColor,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -338,7 +347,9 @@ class ProfileScreen extends ConsumerWidget {
     required VoidCallback onTap,
     bool isDestructive = false,
   }) {
-    final color = isDestructive ? Colors.red : null;
+    final theme = Theme.of(context);
+    final defaultColor = theme.colorScheme.onSurfaceVariant;
+    final color = isDestructive ? theme.colorScheme.error : null;
 
     return InkWell(
       onTap: onTap,
@@ -347,7 +358,7 @@ class ProfileScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color ?? Colors.grey[600]),
+            Icon(icon, size: 20, color: color ?? defaultColor),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -360,7 +371,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: color ?? Colors.grey[400],
+              color: color ?? defaultColor.withAlpha(150),
             ),
           ],
         ),
@@ -371,32 +382,35 @@ class ProfileScreen extends ConsumerWidget {
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return AlertDialog(
+          title: const Text('Cerrar Sesion'),
+          content: const Text('Estas seguro de que deseas cerrar sesion?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref.read(authStateProvider.notifier).signOut();
-              if (context.mounted) {
-                context.go('/welcome');
-              }
-            },
-            child: const Text(
-              'Cerrar Sesión',
-              style: TextStyle(color: Colors.red),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
             ),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await ref.read(authStateProvider.notifier).signOut();
+                if (context.mounted) {
+                  context.go('/welcome');
+                }
+              },
+              child: Text(
+                'Cerrar Sesion',
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
