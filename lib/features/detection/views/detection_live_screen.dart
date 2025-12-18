@@ -6,19 +6,26 @@
 // ║  Muestra preview con overlay de bounding boxes.                               ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../data/models/detection.dart';
 import '../services/camera_frame_processor.dart';
+import '../services/yolo_detector.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/camera_provider.dart';
 import '../providers/detector_provider.dart';
 import '../widgets/camera_controls.dart';
 import '../widgets/detection_overlay.dart';
+import '../../nutrition/providers/nutrition_provider.dart';
+import '../../nutrition/widgets/nutrition_card.dart';
 
 /// Pantalla de detección de ingredientes en tiempo real desde cámara.
 class CameraDetectionPage extends ConsumerStatefulWidget {
@@ -38,9 +45,20 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   CameraFrameProcessor? _frameProcessor;
+  YoloDetector? _detector;
 
   bool _isInitializing = true;
   String? _errorMessage;
+
+  // Estado para deteccion en tiempo real
+  bool _liveDetectionEnabled = true;
+
+  // Estado para captura y resultados
+  bool _showCaptureResults = false;
+  File? _capturedImage;
+  List<Detection> _capturedDetections = [];
+  int _capturedImageWidth = 0;
+  int _capturedImageHeight = 0;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIFECYCLE
@@ -112,8 +130,8 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
     // 2. Esperar e inicializar detector YOLO
     try {
-      final detector = await ref.read(yoloDetectorProvider.future);
-      _frameProcessor = CameraFrameProcessor(detector);
+      _detector = await ref.read(yoloDetectorProvider.future);
+      _frameProcessor = CameraFrameProcessor(_detector!);
       await _initializeCamera();
     } catch (e) {
       setState(() {
@@ -246,6 +264,8 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   }
 
   Future<void> _onFrameAvailable(CameraImage cameraImage) async {
+    // Si la deteccion live esta deshabilitada o mostrando resultados, no procesar
+    if (!_liveDetectionEnabled || _showCaptureResults) return;
     if (_frameProcessor == null || _frameProcessor!.isBusy) return;
 
     final notifier = ref.read(cameraStateProvider.notifier);
@@ -313,31 +333,97 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
       return;
     }
 
+    if (_detector == null) {
+      _showSnackBar('Detector no inicializado', AppColors.error);
+      return;
+    }
+
     try {
+      // Pausar streaming
       _stopImageStream();
 
-      final xFile = await _cameraController!.takePicture();
+      setState(() {
+        _isInitializing = true;
+        _errorMessage = null;
+      });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Imagen capturada: ${xFile.path}'),
-            backgroundColor: AppColors.primaryGreen,
-          ),
-        );
+      // Capturar imagen
+      final xFile = await _cameraController!.takePicture();
+      final file = File(xFile.path);
+
+      // Leer y decodificar imagen
+      final bytes = await file.readAsBytes();
+      final image = img.decodeImage(bytes);
+
+      if (image == null) {
+        throw Exception('No se pudo decodificar la imagen');
       }
 
-      // Reiniciar streaming después de captura
-      await _startImageStream();
+      // Ejecutar deteccion
+      final detections = await _detector!.detect(image);
+
+      if (!mounted) return;
+
+      // Guardar resultados
+      setState(() {
+        _isInitializing = false;
+        _showCaptureResults = true;
+        _capturedImage = file;
+        _capturedDetections = detections;
+        _capturedImageWidth = image.width;
+        _capturedImageHeight = image.height;
+      });
+
+      // Inicializar cantidades para nutricion
+      ref.read(ingredientQuantitiesProvider.notifier).setFromDetections(detections);
+
+      if (detections.isEmpty) {
+        _showSnackBar('No se detectaron ingredientes', AppColors.warning);
+      } else {
+        _showSnackBar('Detectados ${detections.length} ingredientes', AppColors.primaryGreen);
+      }
+
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al capturar: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() {
+          _isInitializing = false;
+        });
+        _showSnackBar('Error al capturar: $e', AppColors.error);
+        // Reiniciar streaming si hubo error
+        await _startImageStream();
       }
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+      ),
+    );
+  }
+
+  void _dismissCaptureResults() {
+    setState(() {
+      _showCaptureResults = false;
+      _capturedImage = null;
+      _capturedDetections = [];
+    });
+    // Limpiar detecciones del provider
+    ref.read(cameraStateProvider.notifier).clearDetections();
+    // Reiniciar streaming
+    _startImageStream();
+  }
+
+  void _toggleLiveDetection() {
+    setState(() {
+      _liveDetectionEnabled = !_liveDetectionEnabled;
+    });
+    if (!_liveDetectionEnabled) {
+      // Limpiar detecciones cuando se desactiva
+      ref.read(cameraStateProvider.notifier).clearDetections();
     }
   }
 
@@ -347,8 +433,12 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
   @override
   Widget build(BuildContext context) {
-    // OPTIMIZACIÓN: Usar providers granulares para evitar rebuilds innecesarios
-    // Solo el AppBar necesita FPS, el body se reconstruye por separado
+    // Si estamos mostrando resultados de captura, mostrar esa pantalla
+    if (_showCaptureResults) {
+      return _buildCaptureResultsScreen();
+    }
+
+    // OPTIMIZACION: Usar providers granulares para evitar rebuilds innecesarios
     final cameraStatus = ref.watch(cameraStatusProvider);
 
     return Scaffold(
@@ -362,16 +452,40 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Detección en vivo',
+          'Deteccion en vivo',
           style: TextStyle(color: Colors.white),
         ),
         actions: [
+          // Toggle de deteccion en tiempo real
+          _buildLiveDetectionToggle(),
           // FPS Badge separado para no reconstruir todo el scaffold
-          if (AppConstants.showDebugFps) const _FpsBadge(),
+          if (AppConstants.showDebugFps && _liveDetectionEnabled) const _FpsBadge(),
         ],
       ),
       extendBodyBehindAppBar: true,
       body: _buildBody(cameraStatus),
+    );
+  }
+
+  Widget _buildLiveDetectionToggle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _liveDetectionEnabled ? Icons.visibility : Icons.visibility_off,
+            color: _liveDetectionEnabled ? AppColors.primaryGreen : Colors.white54,
+            size: 20,
+          ),
+          Switch(
+            value: _liveDetectionEnabled,
+            onChanged: (_) => _toggleLiveDetection(),
+            activeThumbColor: AppColors.primaryGreen,
+            activeTrackColor: AppColors.primaryGreen.withAlpha(100),
+          ),
+        ],
+      ),
     );
   }
 
@@ -525,7 +639,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
             ),
             const SizedBox(height: 24),
             const Text(
-              'Permiso de cámara requerido',
+              'Permiso de camara requerido',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -534,7 +648,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
             ),
             const SizedBox(height: 12),
             Text(
-              'Activa el permiso de cámara en la configuración '
+              'Activa el permiso de camara en la configuracion '
               'para detectar ingredientes en tiempo real.',
               style: TextStyle(
                 color: Colors.white.withAlpha(180),
@@ -546,7 +660,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
             ElevatedButton.icon(
               onPressed: () => openAppSettings(),
               icon: const Icon(Icons.settings),
-              label: const Text('Abrir configuración'),
+              label: const Text('Abrir configuracion'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
               ),
@@ -563,6 +677,315 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
         ),
       ),
     );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // PANTALLA DE RESULTADOS DE CAPTURA
+  // ═══════════════════════════════════════════════════════════════════════════════
+
+  Widget _buildCaptureResultsScreen() {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Volver a camara',
+          onPressed: _dismissCaptureResults,
+        ),
+        title: const Text('Resultados de Captura'),
+        backgroundColor: theme.colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            tooltip: 'Nueva captura',
+            onPressed: _dismissCaptureResults,
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Imagen capturada con bounding boxes
+            if (_capturedImage != null) _buildCapturedImageCard(),
+            const SizedBox(height: 16),
+
+            // Resumen de detecciones
+            _buildDetectionSummary(theme),
+            const SizedBox(height: 16),
+
+            // Lista de ingredientes
+            if (_capturedDetections.isNotEmpty) ...[
+              _buildIngredientsList(theme),
+              const SizedBox(height: 24),
+
+              // Seccion nutricional
+              _buildNutritionSection(theme),
+            ],
+
+            const SizedBox(height: 24),
+
+            // Boton para nueva captura
+            ElevatedButton.icon(
+              onPressed: _dismissCaptureResults,
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('Nueva Captura'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCapturedImageCard() {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Image.file(
+            _capturedImage!,
+            fit: BoxFit.contain,
+            width: double.infinity,
+          ),
+          if (_capturedDetections.isNotEmpty)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _CapturedImageBoundingBoxPainter(
+                  detections: _capturedDetections,
+                  imageWidth: _capturedImageWidth,
+                  imageHeight: _capturedImageHeight,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetectionSummary(ThemeData theme) {
+    final stats = _capturedDetections.stats;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Icon(
+              _capturedDetections.isEmpty ? Icons.search_off : Icons.check_circle,
+              size: 48,
+              color: _capturedDetections.isEmpty ? Colors.grey : AppColors.primaryGreen,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _capturedDetections.isEmpty
+                  ? 'No se detectaron ingredientes'
+                  : 'Detectados ${stats.total} ingredientes (${stats.uniqueIngredients} unicos)',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            ),
+            if (_capturedDetections.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Confianza promedio: ${(stats.averageConfidence * 100).toStringAsFixed(0)}%',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIngredientsList(ThemeData theme) {
+    final grouped = _capturedDetections.groupByLabel();
+    final sortedLabels = grouped.keys.toList()
+      ..sort((a, b) => grouped[b]!.length.compareTo(grouped[a]!.length));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ingredientes Detectados',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...sortedLabels.map((label) {
+          final detections = grouped[label]!;
+          final avgConfidence = detections
+              .map((d) => d.confidence)
+              .reduce((a, b) => a + b) / detections.length;
+
+          return Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: _getConfidenceColor(avgConfidence),
+                child: Text(
+                  detections.length.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              title: Text(
+                label.replaceAll('_', ' ').toUpperCase(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                'Confianza: ${(avgConfidence * 100).toStringAsFixed(1)}%',
+              ),
+              trailing: Icon(
+                avgConfidence >= 0.7
+                    ? Icons.check_circle
+                    : avgConfidence >= 0.5
+                        ? Icons.help
+                        : Icons.warning,
+                color: _getConfidenceColor(avgConfidence),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildNutritionSection(ThemeData theme) {
+    final uniqueLabels = _capturedDetections.uniqueLabels.toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.restaurant_menu, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(
+              'Informacion Nutricional',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...uniqueLabels.map((label) => _buildNutritionCardForLabel(label)),
+      ],
+    );
+  }
+
+  Widget _buildNutritionCardForLabel(String label) {
+    final nutritionAsync = ref.watch(nutritionByLabelProvider(label));
+
+    return nutritionAsync.when(
+      loading: () => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(label.replaceAll('_', ' ')),
+            ],
+          ),
+        ),
+      ),
+      error: (e, _) => NutritionNotFoundCard(label: label),
+      data: (nutrition) {
+        if (nutrition == null) {
+          return NutritionNotFoundCard(label: label);
+        }
+        final detectionsForLabel = _capturedDetections.filterByLabel(label);
+        final avgConfidence = detectionsForLabel.isNotEmpty
+            ? detectionsForLabel
+                    .map((d) => d.confidence)
+                    .reduce((a, b) => a + b) /
+                detectionsForLabel.length
+            : null;
+
+        return NutritionCard(
+          nutrition: nutrition,
+          confidence: avgConfidence,
+        );
+      },
+    );
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.7) return Colors.green;
+    if (confidence >= 0.5) return Colors.orange;
+    return Colors.red;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PAINTER PARA IMAGEN CAPTURADA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _CapturedImageBoundingBoxPainter extends CustomPainter {
+  final List<Detection> detections;
+  final int imageWidth;
+  final int imageHeight;
+
+  _CapturedImageBoundingBoxPainter({
+    required this.detections,
+    required this.imageWidth,
+    required this.imageHeight,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (detections.isEmpty || imageWidth <= 0 || imageHeight <= 0) return;
+
+    final double scaleX = size.width / imageWidth;
+    final double scaleY = size.height / imageHeight;
+
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    for (final detection in detections) {
+      Color boxColor;
+      if (detection.isHighConfidence) {
+        boxColor = Colors.green;
+      } else if (detection.isMediumConfidence) {
+        boxColor = Colors.orange;
+      } else {
+        boxColor = Colors.red;
+      }
+
+      strokePaint.color = boxColor;
+
+      final double x1 = detection.x1 * scaleX;
+      final double y1 = detection.y1 * scaleY;
+      final double x2 = detection.x2 * scaleX;
+      final double y2 = detection.y2 * scaleY;
+
+      if (x1.isNaN || y1.isNaN || x2.isNaN || y2.isNaN) continue;
+      if (x2 <= x1 || y2 <= y1) continue;
+
+      final rect = Rect.fromLTRB(x1, y1, x2, y2);
+      canvas.drawRect(rect, strokePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CapturedImageBoundingBoxPainter oldDelegate) {
+    return oldDelegate.detections != detections;
   }
 }
 

@@ -370,6 +370,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ProfileScreen(),
     ),
     GoRoute(
+      path: AppConstants.routeEditProfile,
+      name: 'edit-profile-legacy',
+      builder: (context, state) => const EditProfileScreen(),
+    ),
+    GoRoute(
       path: AppConstants.routeGallery,
       name: 'gallery-legacy',
       builder: (context, state) => const GalleryDetectionPage(),
