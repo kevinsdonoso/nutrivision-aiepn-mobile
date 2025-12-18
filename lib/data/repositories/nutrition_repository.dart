@@ -9,6 +9,7 @@
 import '../../core/logging/app_logger.dart';
 import '../datasources/nutrition_datasource.dart';
 import '../models/detection.dart';
+import '../models/ingredient_quantity.dart';
 import '../models/nutrition_data.dart';
 import '../models/nutrition_info.dart';
 import '../models/nutrients_per_100g.dart';
@@ -138,6 +139,41 @@ class NutritionRepository {
       final nutrition = _cachedData?.getByLabel(detection.label);
       if (nutrition != null && nutrition.hasNutritionData) {
         total = total + nutrition.nutrients;
+      }
+    }
+
+    return total;
+  }
+
+  /// Calcula el total de nutrientes considerando cantidades específicas.
+  ///
+  /// A diferencia de [calculateTotalNutrients], este método usa las cantidades
+  /// reales especificadas en cada [IngredientQuantity] para calcular los
+  /// valores nutricionales.
+  ///
+  /// Ejemplo:
+  /// ```dart
+  /// final quantities = [
+  ///   IngredientQuantity.fromGrams(label: 'tomate', grams: 150),
+  ///   IngredientQuantity.fromGrams(label: 'queso_mozzarella', grams: 30),
+  /// ];
+  /// final nutrients = await repo.calculateTotalNutrientsWithQuantities(quantities);
+  /// ```
+  ///
+  /// Los ingredientes no encontrados se ignoran.
+  Future<NutrientsPer100g> calculateTotalNutrientsWithQuantities(
+    List<IngredientQuantity> quantities,
+  ) async {
+    await _ensureInitialized();
+
+    var total = const NutrientsPer100g.zero();
+
+    for (final quantity in quantities) {
+      final nutrition = _cachedData?.getByLabel(quantity.label);
+      if (nutrition != null && nutrition.hasNutritionData) {
+        // Aplicar factor de cantidad: nutrients * (grams / 100)
+        final factor = quantity.grams / 100.0;
+        total = total + (nutrition.nutrients * factor);
       }
     }
 
