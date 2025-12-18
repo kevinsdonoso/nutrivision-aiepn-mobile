@@ -19,7 +19,7 @@ import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
 import '../../nutrition/providers/nutrition_provider.dart';
 import '../../nutrition/widgets/nutrition_card.dart';
-import '../../nutrition/widgets/nutrition_summary.dart';
+import '../../nutrition/widgets/quantity_adjustment_dialog.dart';
 
 class GalleryDetectionPage extends ConsumerStatefulWidget {
   const GalleryDetectionPage({super.key});
@@ -177,6 +177,9 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
         _statusMessage = _buildStatusMessage(detections);
       });
 
+      // Inicializar cantidades para los ingredientes detectados
+      ref.read(ingredientQuantitiesProvider.notifier).setFromDetections(detections);
+
       _showSnackBar('Detectados ${detections.length} ingredientes', Colors.green);
     } on NutriVisionException catch (e, stackTrace) {
       _handleError(e, stackTrace);
@@ -298,12 +301,199 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
           ],
         ),
         const SizedBox(height: 12),
-        // Resumen total de nutrientes
-        NutritionSummary(detections: _detections),
+        // Preview de nutrientes totales con cantidades ajustadas
+        _buildNutrientPreview(),
         const SizedBox(height: 16),
         // Lista de cards por ingrediente único
         _buildNutritionCards(),
       ],
+    );
+  }
+
+  Widget _buildNutrientPreview() {
+    final totalNutrientsAsync = ref.watch(totalNutrientsWithQuantitiesProvider);
+
+    return totalNutrientsAsync.when(
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (e, _) => Card(
+        color: Colors.orange.shade50,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(Icons.warning_amber, color: Colors.orange.shade700),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text('No se pudo calcular nutrientes totales'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (nutrients) => Card(
+        elevation: 3,
+        color: Colors.green.shade50,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.calculate,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Total Nutricional',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade900,
+                        ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'En tiempo real',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNutrientItem(
+                      'Calorías',
+                      nutrients.energyKcal.toStringAsFixed(0),
+                      'kcal',
+                      Icons.local_fire_department,
+                      Colors.orange,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildNutrientItem(
+                      'Proteínas',
+                      nutrients.proteinG.toStringAsFixed(1),
+                      'g',
+                      Icons.fitness_center,
+                      Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNutrientItem(
+                      'Grasas',
+                      nutrients.fatG.toStringAsFixed(1),
+                      'g',
+                      Icons.water_drop,
+                      Colors.amber,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildNutrientItem(
+                      'Carbohidratos',
+                      nutrients.carbohydratesG.toStringAsFixed(1),
+                      'g',
+                      Icons.grain,
+                      Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNutrientItem(
+    String label,
+    String value,
+    String unit,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withAlpha(77), width: 1.5), // 0.3 * 255 ≈ 77
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                unit,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -328,6 +518,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
 
   Widget _buildNutritionCardForLabel(String label) {
     final nutritionAsync = ref.watch(nutritionByLabelProvider(label));
+    final quantitiesState = ref.watch(ingredientQuantitiesProvider);
+    final currentQuantity = quantitiesState.getQuantity(label);
 
     return nutritionAsync.when(
       loading: () => Card(
@@ -360,12 +552,52 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
                 detectionsForLabel.length
             : null;
 
-        return NutritionCard(
-          nutrition: nutrition,
-          confidence: avgConfidence,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            NutritionCard(
+              nutrition: nutrition,
+              confidence: avgConfidence,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.scale, size: 18, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Cantidad: ${currentQuantity?.grams.toStringAsFixed(0) ?? "100"}g',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () => _showQuantityDialog(label, currentQuantity),
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('Ajustar'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
         );
       },
     );
+  }
+
+  Future<void> _showQuantityDialog(String label, dynamic currentQuantity) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => QuantityAdjustmentDialog(
+        ingredientLabel: label,
+        currentQuantity: currentQuantity,
+      ),
+    );
+
+    if (result == true && mounted) {
+      setState(() {});
+    }
   }
 
   Widget _buildStatusCard() {
