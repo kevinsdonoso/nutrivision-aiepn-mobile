@@ -209,11 +209,16 @@ nutrivision_aiepn_mobile/
 │   │   │   ├── detection.dart           # Modelo de detección YOLO
 │   │   │   ├── nutrients_per_100g.dart  # Nutrientes por 100g
 │   │   │   ├── nutrition_info.dart      # Información nutricional
-│   │   │   └── nutrition_data.dart      # Contenedor de datos
+│   │   │   ├── nutrition_data.dart      # Contenedor de datos
+│   │   │   ├── quantity_enums.dart      # Enums de cantidades
+│   │   │   ├── standard_portion.dart    # Modelo de porciones
+│   │   │   └── ingredient_quantity.dart # Cantidad de ingrediente
 │   │   ├── datasources/
-│   │   │   └── nutrition_datasource.dart # Carga JSON de assets
+│   │   │   ├── nutrition_datasource.dart # Carga JSON de nutrientes
+│   │   │   └── portion_datasource.dart  # Carga JSON de porciones
 │   │   └── repositories/
-│   │       └── nutrition_repository.dart # Repositorio con cache
+│   │       ├── nutrition_repository.dart # Repositorio nutrición con cache
+│   │       └── portion_repository.dart  # Repositorio porciones con cache
 │   │
 │   └── features/                        # ✅ Feature-First Architecture
 │       ├── detection/                   # Feature de detección YOLO
@@ -1377,14 +1382,38 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - [x] Crear `lib/data/models/user_profile.dart`
 - [x] Crear `lib/data/models/auth_state.dart`
 
-### FASE 6: Widgets Compartidos ⏳
+### FASE 6A: Sistema de Cantidades - Modelos y Repositorios ✅ (100%)
+- [x] Crear `lib/data/models/quantity_enums.dart` - Enums QuantityUnit y QuantitySource
+- [x] Crear `lib/data/models/standard_portion.dart` - Modelo de porciones estandar
+- [x] Crear `lib/data/models/ingredient_quantity.dart` - Modelo de cantidad de ingrediente
+- [x] Crear `lib/data/datasources/portion_datasource.dart` - Datasource para porciones
+- [x] Crear `lib/data/repositories/portion_repository.dart` - Repositorio con cache
+- [x] Crear `assets/data/standard_portions.json` - Base de datos de porciones (83 ingredientes)
+- [x] Agregar metodo `calculateTotalNutrientsWithQuantities()` en NutritionRepository
+- [x] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 6B: Sistema de Cantidades - Providers y State ⏳
+- [ ] Crear `lib/features/nutrition/providers/quantity_provider.dart`
+- [ ] Crear estado de cantidades por ingrediente
+- [ ] Integrar con providers de nutricion existentes
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 6C: Sistema de Cantidades - UI Widgets ⏳
+- [ ] Crear `lib/features/nutrition/widgets/quantity_selector.dart`
+- [ ] Crear `lib/features/nutrition/widgets/portion_picker.dart`
+- [ ] Crear `lib/features/nutrition/widgets/grams_input.dart`
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 6D: Integracion con Deteccion ⏳
+- [ ] Integrar selector de cantidades en detection_gallery_screen
+- [ ] Actualizar calculo de nutrientes con cantidades personalizadas
+- [ ] Verificar: `flutter analyze` y `flutter test`
+
+### FASE 6E: Widgets Compartidos ⏳
 - [ ] Crear `lib/shared/widgets/gradient_app_bar.dart`
 - [ ] Crear `lib/shared/widgets/macro_card.dart`
 - [ ] Crear `lib/features/home/widgets/action_button.dart`
 - [ ] Crear `lib/features/home/widgets/hero_card.dart`
-- [ ] Crear `lib/features/home/widgets/slide_fade_in.dart`
-- [ ] Crear `lib/features/home/widgets/user_data_form.dart`
-- [ ] Crear `lib/features/home/widgets/user_greeting.dart`
 - [ ] Crear `lib/features/home/viewmodels/home_viewmodel.dart`
 - [ ] Verificar: `flutter analyze` y `flutter test`
 
@@ -1418,7 +1447,15 @@ FASE 4 (Base de datos)    ✅ COMPLETADO (sistema nutricional completo)
        ↓
 FASE 5 (Auth/Onboarding)  ✅ COMPLETADO (Firebase Auth + Profile + Session)
        ↓
-FASE 6 (Widgets)          ← SIGUIENTE PASO - Refactorizar componentes
+FASE 6A (Cantidades)      ✅ COMPLETADO (Modelos y Repositorios)
+       ↓
+FASE 6B (Providers)       ← SIGUIENTE PASO - State management para cantidades
+       ↓
+FASE 6C (UI Widgets)      ⏳ Selector de cantidades y porciones
+       ↓
+FASE 6D (Integracion)     ⏳ Conectar con deteccion
+       ↓
+FASE 6E (Widgets)         ⏳ Componentes compartidos
        ↓
 FASE 7 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
 ```
@@ -1433,6 +1470,20 @@ lib/features/detection/services/
 ├── camera_frame_processor.dart  ← 356 líneas, orquestación
 ├── image_processing_isolate.dart ← 149 líneas, isolate
 └── native_image_processor.dart  ← 102 líneas, C++ bridge
+
+lib/data/models/                 ← FASE 6A: Sistema de cantidades
+├── quantity_enums.dart          ← Enums QuantityUnit y QuantitySource
+├── standard_portion.dart        ← Modelo de porciones estandar
+└── ingredient_quantity.dart     ← Modelo de cantidad de ingrediente
+
+lib/data/datasources/
+└── portion_datasource.dart      ← Carga de porciones desde JSON
+
+lib/data/repositories/
+└── portion_repository.dart      ← Repositorio con cache de porciones
+
+assets/data/
+└── standard_portions.json       ← Base de datos de porciones (83 ingredientes)
 
 android/app/src/main/cpp/
 ├── native_image_processor.cpp   ← 287 líneas, NEON
