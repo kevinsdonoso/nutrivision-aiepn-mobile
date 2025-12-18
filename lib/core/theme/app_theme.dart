@@ -95,11 +95,26 @@ abstract class AppColors {
   /// Superficie oscura
   static const Color surfaceDark = Color(0xFF1E1E1E);
 
+  /// Superficie elevada oscura (cards, dialogs)
+  static const Color surfaceDarkElevated = Color(0xFF2C2C2C);
+
+  /// Superficie contenedor oscura
+  static const Color surfaceContainerDark = Color(0xFF252525);
+
   /// Texto claro para modo oscuro
   static const Color textLightPrimary = Color(0xFFE0E0E0);
 
   /// Texto secundario claro
   static const Color textLightSecondary = Color(0xFFBDBDBD);
+
+  /// Divisor oscuro
+  static const Color dividerDark = Color(0xFF424242);
+
+  /// Verde primario adaptado para modo oscuro (mas brillante)
+  static const Color primaryGreenDarkMode = Color(0xFF66BB6A);
+
+  /// Fondo de chips en modo oscuro
+  static const Color chipBackgroundDark = Color(0xFF2E3B2E);
 }
 
 /// Configuración de temas de la aplicación.
@@ -289,10 +304,16 @@ abstract class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primaryGreen,
         brightness: Brightness.dark,
-        primary: AppColors.primaryGreen,
+        primary: AppColors.primaryGreenDarkMode,
+        onPrimary: Colors.black,
         secondary: AppColors.secondaryOrange,
+        onSecondary: Colors.black,
         error: AppColors.error,
         surface: AppColors.surfaceDark,
+        onSurface: AppColors.textLightPrimary,
+        onSurfaceVariant: AppColors.textLightSecondary,
+        surfaceContainerHighest: AppColors.surfaceDarkElevated,
+        outline: AppColors.dividerDark,
       ),
 
       // Scaffold
@@ -309,6 +330,9 @@ abstract class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.textLightPrimary,
         ),
+        iconTheme: const IconThemeData(
+          color: AppColors.textLightPrimary,
+        ),
       ),
 
       // Cards
@@ -317,7 +341,7 @@ abstract class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        color: AppColors.surfaceDark,
+        color: AppColors.surfaceDarkElevated,
       ),
 
       // Elevated Buttons
@@ -411,9 +435,9 @@ abstract class AppTheme {
 
       // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.primaryGreen.withAlpha(50),
+        backgroundColor: AppColors.chipBackgroundDark,
         labelStyle: GoogleFonts.poppins(
-          color: AppColors.primaryGreen,
+          color: AppColors.primaryGreenDarkMode,
           fontWeight: FontWeight.w500,
         ),
         shape: RoundedRectangleBorder(
@@ -424,7 +448,7 @@ abstract class AppTheme {
       // Bottom Navigation
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceDark,
-        selectedItemColor: AppColors.primaryGreen,
+        selectedItemColor: AppColors.primaryGreenDarkMode,
         unselectedItemColor: AppColors.textLightSecondary,
         selectedLabelStyle: GoogleFonts.poppins(
           fontSize: 12,
@@ -439,9 +463,52 @@ abstract class AppTheme {
       // Snackbar
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.surfaceDarkElevated,
+        contentTextStyle: GoogleFonts.poppins(
+          color: AppColors.textLightPrimary,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+      ),
+
+      // Dialog Theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceDarkElevated,
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textLightPrimary,
+        ),
+        contentTextStyle: GoogleFonts.poppins(
+          fontSize: 14,
+          color: AppColors.textLightPrimary,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+
+      // ListTile Theme
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.textLightSecondary,
+        textColor: AppColors.textLightPrimary,
+      ),
+
+      // Switch Theme
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primaryGreenDarkMode;
+          }
+          return AppColors.textLightSecondary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primaryGreenDarkMode.withAlpha(100);
+          }
+          return AppColors.surfaceContainerDark;
+        }),
       ),
     );
   }

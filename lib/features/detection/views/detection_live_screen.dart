@@ -51,7 +51,8 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   String? _errorMessage;
 
   // Estado para deteccion en tiempo real
-  bool _liveDetectionEnabled = true;
+  // NOTA: Inicia desactivada para que el usuario controle cuando activarla
+  bool _liveDetectionEnabled = false;
 
   // Estado para captura y resultados
   bool _showCaptureResults = false;
@@ -468,23 +469,54 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   }
 
   Widget _buildLiveDetectionToggle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _liveDetectionEnabled ? Icons.visibility : Icons.visibility_off,
-            color: _liveDetectionEnabled ? AppColors.primaryGreen : Colors.white54,
-            size: 20,
+    return Tooltip(
+      message: _liveDetectionEnabled
+          ? 'Deteccion activa - Tap para pausar'
+          : 'Deteccion pausada - Tap para activar',
+      child: InkWell(
+        onTap: _toggleLiveDetection,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          margin: const EdgeInsets.only(right: 8),
+          decoration: BoxDecoration(
+            color: _liveDetectionEnabled
+                ? AppColors.primaryGreen.withAlpha(40)
+                : Colors.white.withAlpha(20),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _liveDetectionEnabled
+                  ? AppColors.primaryGreen
+                  : Colors.white54,
+              width: 1.5,
+            ),
           ),
-          Switch(
-            value: _liveDetectionEnabled,
-            onChanged: (_) => _toggleLiveDetection(),
-            activeThumbColor: AppColors.primaryGreen,
-            activeTrackColor: AppColors.primaryGreen.withAlpha(100),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icono de radar para indicar deteccion
+              Icon(
+                _liveDetectionEnabled ? Icons.sensors : Icons.sensors_off,
+                color: _liveDetectionEnabled
+                    ? AppColors.primaryGreen
+                    : Colors.white54,
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              // Texto descriptivo
+              Text(
+                _liveDetectionEnabled ? 'ON' : 'OFF',
+                style: TextStyle(
+                  color: _liveDetectionEnabled
+                      ? AppColors.primaryGreen
+                      : Colors.white54,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

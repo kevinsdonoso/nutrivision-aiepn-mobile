@@ -168,7 +168,7 @@ class HomePage extends ConsumerWidget {
 // WIDGETS PRIVADOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Card para opción de detección.
+/// Card para opcion de deteccion.
 class _DetectionOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -186,6 +186,9 @@ class _DetectionOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       elevation: AppConstants.elevationSmall,
       shape: RoundedRectangleBorder(
@@ -198,12 +201,12 @@ class _DetectionOptionCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppConstants.paddingMedium),
           child: Row(
             children: [
-              // Ícono con fondo circular
+              // Icono con fondo circular
               Container(
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: color.withAlpha(26),
+                  color: isDark ? color.withAlpha(40) : color.withAlpha(26),
                   borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
                 ),
                 child: Icon(
@@ -221,14 +224,14 @@ class _DetectionOptionCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -287,13 +290,18 @@ class _DishChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primaryGreenLight.withAlpha(128),
+        color: isDark
+            ? AppColors.chipBackgroundDark
+            : AppColors.primaryGreenLight.withAlpha(128),
         borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
         border: Border.all(
-          color: AppColors.primaryGreen.withAlpha(51),
+          color: theme.colorScheme.primary.withAlpha(51),
         ),
       ),
       child: Row(
@@ -302,15 +310,17 @@ class _DishChip extends StatelessWidget {
           Icon(
             icon,
             size: 16,
-            color: AppColors.primaryGreenDark,
+            color: theme.colorScheme.primary,
           ),
           const SizedBox(width: 6),
           Text(
             name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.primaryGreenDark,
+              color: isDark
+                  ? AppColors.primaryGreenDarkMode
+                  : AppColors.primaryGreenDark,
             ),
           ),
         ],
@@ -323,9 +333,14 @@ class _DishChip extends StatelessWidget {
 class _ModelInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       elevation: 0,
-      color: AppColors.backgroundLight,
+      color: isDark
+          ? theme.colorScheme.surfaceContainerHighest
+          : AppColors.backgroundLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
       ),
@@ -338,14 +353,14 @@ class _ModelInfoCard extends StatelessWidget {
               children: [
                 Icon(
                   Icons.psychology_outlined,
-                  color: AppColors.primaryGreen,
+                  color: theme.colorScheme.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Modelo de IA',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.primaryGreen,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
                       ),
                 ),
               ],
