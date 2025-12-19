@@ -217,7 +217,7 @@ Implementar todas las funcionalidades de galeria en la captura de camara.
 
 ## FASE 4: Claridad y Feedback Visual
 **Duracion estimada**: 4-6 horas
-**Estado**: PENDIENTE
+**Estado**: COMPLETADA
 
 ### Objetivo
 Mejorar la claridad visual y feedback al usuario.

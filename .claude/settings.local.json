@@ -20,7 +20,17 @@
       "Bash(git merge:*)",
       "Bash(git stash:*)",
       "Bash(tree:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(flutter build:*)",
+      "Bash(done)",
+      "Bash(cat:*)",
+      "Bash(du:*)",
+      "Bash(sort:*)",
+      "Bash(python:*)",
+      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\auth\\\\.gitkeep\")",
+      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\detection\\\\.gitkeep\")",
+      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\onboarding\\\\.gitkeep\")",
+      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\profile\\\\.gitkeep\")"
     ],
     "deny": [],
     "ask": []

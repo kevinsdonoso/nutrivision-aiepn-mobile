@@ -238,34 +238,70 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // Completitud del perfil
-                const SizedBox(height: 8),
+                // Completitud del perfil con barra de progreso
+                const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () => _showMissingFieldsDialog(context, profile),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(50),
-                      borderRadius: BorderRadius.circular(20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
-                    child: Row(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(40),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Perfil ${profile.profileCompletionPercent}% completo',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              profile.profileCompletionPercent == 100
+                                  ? Icons.verified
+                                  : Icons.account_circle_outlined,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              profile.profileCompletionPercent == 100
+                                  ? 'Perfil completo'
+                                  : 'Perfil ${profile.profileCompletionPercent}% completo',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (profile.profileCompletionPercent < 100) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.touch_app,
+                                color: Colors.white70,
+                                size: 14,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // Barra de progreso
+                        SizedBox(
+                          width: 180,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: profile.profileCompletionPercent / 100,
+                              backgroundColor: Colors.white.withAlpha(50),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                profile.profileCompletionPercent == 100
+                                    ? Colors.greenAccent
+                                    : Colors.white,
+                              ),
+                              minHeight: 6,
+                            ),
                           ),
                         ),
-                        if (profile.profileCompletionPercent < 100) ...[
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.info_outline,
-                            color: Colors.white70,
-                            size: 14,
-                          ),
-                        ],
                       ],
                     ),
                   ),
