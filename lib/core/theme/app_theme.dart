@@ -615,7 +615,7 @@ abstract class AppTheme {
   }
 }
 
-/// Extensión para acceso rápido a colores de confianza.
+/// Extension para acceso rapido a colores de confianza.
 extension ConfidenceColorExtension on double {
   /// Obtiene el color correspondiente al nivel de confianza.
   Color get confidenceColor {
@@ -623,4 +623,350 @@ extension ConfidenceColorExtension on double {
     if (this >= 0.50) return AppColors.confidenceMedium;
     return AppColors.confidenceLow;
   }
+}
+
+// =============================================================================
+// ICONOGRAFIA CONSISTENTE
+// =============================================================================
+
+/// Iconos estandarizados de la aplicacion.
+///
+/// Define todos los iconos usados en la aplicacion para mantener
+/// consistencia visual y facilitar cambios futuros.
+///
+/// Ejemplo de uso:
+/// ```dart
+/// Icon(AppIcons.detection.camera)
+/// Icon(AppIcons.nutrition.calories)
+/// ```
+abstract class AppIcons {
+  // ===========================================================================
+  // NAVEGACION
+  // ===========================================================================
+
+  /// Iconos de navegacion.
+  static const navigation = _NavigationIcons();
+
+  // ===========================================================================
+  // DETECCION
+  // ===========================================================================
+
+  /// Iconos relacionados con deteccion.
+  static const detection = _DetectionIcons();
+
+  // ===========================================================================
+  // NUTRICION
+  // ===========================================================================
+
+  /// Iconos de nutricion.
+  static const nutrition = _NutritionIcons();
+
+  // ===========================================================================
+  // PERFIL
+  // ===========================================================================
+
+  /// Iconos de perfil y usuario.
+  static const profile = _ProfileIcons();
+
+  // ===========================================================================
+  // ACCIONES
+  // ===========================================================================
+
+  /// Iconos de acciones generales.
+  static const actions = _ActionIcons();
+
+  // ===========================================================================
+  // ESTADO
+  // ===========================================================================
+
+  /// Iconos de estado y feedback.
+  static const status = _StatusIcons();
+}
+
+/// Iconos de navegacion.
+class _NavigationIcons {
+  const _NavigationIcons();
+
+  /// Retroceder.
+  IconData get back => Icons.arrow_back;
+
+  /// Cerrar.
+  IconData get close => Icons.close;
+
+  /// Menu.
+  IconData get menu => Icons.menu;
+
+  /// Inicio.
+  IconData get home => Icons.home_outlined;
+
+  /// Inicio activo.
+  IconData get homeActive => Icons.home;
+
+  /// Configuracion.
+  IconData get settings => Icons.settings_outlined;
+
+  /// Configuracion activo.
+  IconData get settingsActive => Icons.settings;
+
+  /// Mas opciones.
+  IconData get more => Icons.more_vert;
+
+  /// Expandir.
+  IconData get expand => Icons.expand_more;
+
+  /// Contraer.
+  IconData get collapse => Icons.expand_less;
+
+  /// Siguiente.
+  IconData get next => Icons.chevron_right;
+
+  /// Anterior.
+  IconData get previous => Icons.chevron_left;
+}
+
+/// Iconos de deteccion.
+class _DetectionIcons {
+  const _DetectionIcons();
+
+  /// Camara.
+  IconData get camera => Icons.camera_alt_outlined;
+
+  /// Camara activo.
+  IconData get cameraActive => Icons.camera_alt;
+
+  /// Galeria.
+  IconData get gallery => Icons.photo_library_outlined;
+
+  /// Galeria activo.
+  IconData get galleryActive => Icons.photo_library;
+
+  /// Deteccion activa.
+  IconData get detectionOn => Icons.radar;
+
+  /// Deteccion inactiva.
+  IconData get detectionOff => Icons.radar_outlined;
+
+  /// Escanear.
+  IconData get scan => Icons.document_scanner_outlined;
+
+  /// Flash encendido.
+  IconData get flashOn => Icons.flash_on;
+
+  /// Flash apagado.
+  IconData get flashOff => Icons.flash_off;
+
+  /// Flash automatico.
+  IconData get flashAuto => Icons.flash_auto;
+
+  /// Cambiar camara.
+  IconData get switchCamera => Icons.cameraswitch_outlined;
+
+  /// Capturar.
+  IconData get capture => Icons.camera;
+
+  /// Zoom.
+  IconData get zoom => Icons.zoom_in;
+
+  /// Ingrediente detectado.
+  IconData get ingredient => Icons.egg_outlined;
+
+  /// Plato detectado.
+  IconData get dish => Icons.restaurant;
+}
+
+/// Iconos de nutricion.
+class _NutritionIcons {
+  const _NutritionIcons();
+
+  /// Calorias.
+  IconData get calories => Icons.local_fire_department;
+
+  /// Proteinas.
+  IconData get protein => Icons.fitness_center;
+
+  /// Grasas.
+  IconData get fat => Icons.water_drop;
+
+  /// Carbohidratos.
+  IconData get carbs => Icons.grain;
+
+  /// Fibra.
+  IconData get fiber => Icons.grass;
+
+  /// Sodio.
+  IconData get sodium => Icons.science_outlined;
+
+  /// Porcion.
+  IconData get portion => Icons.pie_chart_outline;
+
+  /// Gramos.
+  IconData get grams => Icons.scale;
+
+  /// Meta nutricional.
+  IconData get goal => Icons.flag_outlined;
+
+  /// Meta cumplida.
+  IconData get goalReached => Icons.flag;
+
+  /// Informacion nutricional.
+  IconData get info => Icons.info_outline;
+}
+
+/// Iconos de perfil y usuario.
+class _ProfileIcons {
+  const _ProfileIcons();
+
+  /// Usuario.
+  IconData get user => Icons.person_outlined;
+
+  /// Usuario activo.
+  IconData get userActive => Icons.person;
+
+  /// Editar perfil.
+  IconData get edit => Icons.edit_outlined;
+
+  /// Email.
+  IconData get email => Icons.email_outlined;
+
+  /// Fecha de nacimiento.
+  IconData get birthday => Icons.cake_outlined;
+
+  /// Genero.
+  IconData get gender => Icons.wc_outlined;
+
+  /// Ubicacion.
+  IconData get location => Icons.location_on_outlined;
+
+  /// Peso.
+  IconData get weight => Icons.monitor_weight_outlined;
+
+  /// Altura.
+  IconData get height => Icons.height;
+
+  /// IMC.
+  IconData get bmi => Icons.speed_outlined;
+
+  /// Actividad fisica.
+  IconData get activity => Icons.directions_run_outlined;
+
+  /// Perfil verificado.
+  IconData get verified => Icons.verified;
+
+  /// Perfil incompleto.
+  IconData get incomplete => Icons.account_circle_outlined;
+
+  /// Cerrar sesion.
+  IconData get logout => Icons.logout;
+}
+
+/// Iconos de acciones generales.
+class _ActionIcons {
+  const _ActionIcons();
+
+  /// Agregar.
+  IconData get add => Icons.add;
+
+  /// Eliminar.
+  IconData get delete => Icons.delete_outlined;
+
+  /// Guardar.
+  IconData get save => Icons.save_outlined;
+
+  /// Compartir.
+  IconData get share => Icons.share_outlined;
+
+  /// Descargar.
+  IconData get download => Icons.download_outlined;
+
+  /// Subir.
+  IconData get upload => Icons.upload_outlined;
+
+  /// Refrescar.
+  IconData get refresh => Icons.refresh;
+
+  /// Buscar.
+  IconData get search => Icons.search;
+
+  /// Filtrar.
+  IconData get filter => Icons.filter_list;
+
+  /// Ordenar.
+  IconData get sort => Icons.sort;
+
+  /// Copiar.
+  IconData get copy => Icons.copy_outlined;
+
+  /// Pegar.
+  IconData get paste => Icons.paste_outlined;
+
+  /// Deshacer.
+  IconData get undo => Icons.undo;
+
+  /// Rehacer.
+  IconData get redo => Icons.redo;
+
+  /// Favorito.
+  IconData get favorite => Icons.favorite_border;
+
+  /// Favorito activo.
+  IconData get favoriteActive => Icons.favorite;
+
+  /// Ayuda.
+  IconData get help => Icons.help_outline;
+}
+
+/// Iconos de estado y feedback.
+class _StatusIcons {
+  const _StatusIcons();
+
+  /// Exito.
+  IconData get success => Icons.check_circle;
+
+  /// Exito outlined.
+  IconData get successOutlined => Icons.check_circle_outline;
+
+  /// Error.
+  IconData get error => Icons.error;
+
+  /// Error outlined.
+  IconData get errorOutlined => Icons.error_outline;
+
+  /// Advertencia.
+  IconData get warning => Icons.warning_amber_rounded;
+
+  /// Informacion.
+  IconData get info => Icons.info;
+
+  /// Informacion outlined.
+  IconData get infoOutlined => Icons.info_outline;
+
+  /// Cargando.
+  IconData get loading => Icons.hourglass_empty;
+
+  /// Sin conexion.
+  IconData get offline => Icons.wifi_off;
+
+  /// Conectado.
+  IconData get online => Icons.wifi;
+
+  /// Sincronizando.
+  IconData get syncing => Icons.sync;
+
+  /// Bloqueado.
+  IconData get locked => Icons.lock_outlined;
+
+  /// Desbloqueado.
+  IconData get unlocked => Icons.lock_open_outlined;
+
+  /// Visible.
+  IconData get visible => Icons.visibility;
+
+  /// Oculto.
+  IconData get hidden => Icons.visibility_off;
+
+  /// Tiempo.
+  IconData get time => Icons.access_time;
+
+  /// Calendario.
+  IconData get calendar => Icons.calendar_today_outlined;
 }
