@@ -4,6 +4,7 @@
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Implementa detección usando la cámara del dispositivo.                       ║
 // ║  Muestra preview con overlay de bounding boxes.                               ║
+// ║  Soporta configuracion de rendimiento ajustable en tiempo real.               ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:io';
@@ -16,13 +17,16 @@ import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../data/models/camera_settings.dart';
 import '../../../data/models/detection.dart';
 import '../services/camera_frame_processor.dart';
 import '../services/yolo_detector.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/camera_provider.dart';
+import '../providers/camera_settings_provider.dart';
 import '../providers/detector_provider.dart';
 import '../widgets/camera_controls.dart';
+import '../widgets/camera_settings_panel.dart';
 import '../widgets/detection_overlay.dart';
 import '../../nutrition/providers/nutrition_provider.dart';
 import '../../nutrition/widgets/nutrition_card.dart';
@@ -60,6 +64,10 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   List<Detection> _capturedDetections = [];
   int _capturedImageWidth = 0;
   int _capturedImageHeight = 0;
+
+  // Configuracion de rendimiento
+  int _frameCounter = 0;
+  CameraResolution _currentResolution = CameraSettings.defaultResolution;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIFECYCLE
@@ -187,7 +195,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
     return false;
   }
 
-  Future<void> _initializeCamera() async {
+  Future<void> _initializeCamera({CameraResolution? resolution}) async {
     final notifier = ref.read(cameraStateProvider.notifier);
 
     try {
@@ -202,6 +210,15 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
         return;
       }
 
+      // Obtener resolucion de la configuracion si no se especifica
+      if (resolution == null) {
+        final settings = ref.read(cameraSettingsProvider).valueOrNull;
+        resolution = settings?.resolution ?? CameraSettings.defaultResolution;
+      }
+
+      // Guardar la resolucion actual para detectar cambios
+      _currentResolution = resolution;
+
       // Usar cámara trasera por defecto
       final cameraState = ref.read(cameraStateProvider);
       final cameraIndex = cameraState.isFrontCamera ? 1 : 0;
@@ -209,7 +226,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
       _cameraController = CameraController(
         camera,
-        ResolutionPreset.medium, // 720x480 - balance entre calidad y rendimiento
+        resolution.toResolutionPreset(),
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
@@ -269,6 +286,17 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
     if (!_liveDetectionEnabled || _showCaptureResults) return;
     if (_frameProcessor == null || _frameProcessor!.isBusy) return;
 
+    // Obtener configuracion actual
+    final settings = ref.read(cameraSettingsProvider).valueOrNull;
+    final frameSkip = settings?.frameSkip ?? CameraSettings.defaultFrameSkip;
+    final confidenceThreshold = settings?.confidenceThreshold ??
+        CameraSettings.defaultConfidenceThreshold;
+
+    // Aplicar frame skipping
+    _frameCounter++;
+    if (_frameCounter < frameSkip) return;
+    _frameCounter = 0;
+
     final notifier = ref.read(cameraStateProvider.notifier);
     final cameraState = ref.read(cameraStateProvider);
 
@@ -285,7 +313,12 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
       );
 
       if (result != null && mounted) {
-        notifier.updateDetections(result.detections, result.inferenceTimeMs);
+        // Filtrar detecciones por umbral de confianza de la configuracion
+        final filteredDetections = result.detections
+            .where((d) => d.confidence >= confidenceThreshold)
+            .toList();
+
+        notifier.updateDetections(filteredDetections, result.inferenceTimeMs);
       }
     } catch (e) {
       // Ignorar errores de frames individuales para no interrumpir streaming
@@ -428,6 +461,34 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
     }
   }
 
+  Future<void> _openSettings() async {
+    // Guardar la resolucion actual antes de abrir configuracion
+    final previousResolution = _currentResolution;
+
+    // Mostrar panel de configuracion
+    final result = await showCameraSettingsPanel(context);
+
+    // Si se aplicaron cambios, verificar si cambio la resolucion
+    if (result == true && mounted) {
+      final settings = ref.read(cameraSettingsProvider).valueOrNull;
+      final newResolution =
+          settings?.resolution ?? CameraSettings.defaultResolution;
+
+      // Si cambio la resolucion, reinicializar la camara
+      if (newResolution != previousResolution) {
+        _stopImageStream();
+        await _cameraController?.dispose();
+        _cameraController = null;
+
+        setState(() {
+          _isInitializing = true;
+        });
+
+        await _initializeCamera(resolution: newResolution);
+      }
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // BUILD
   // ═══════════════════════════════════════════════════════════════════════════
@@ -441,6 +502,7 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
     // OPTIMIZACION: Usar providers granulares para evitar rebuilds innecesarios
     final cameraStatus = ref.watch(cameraStatusProvider);
+    final showFps = ref.watch(showFpsProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -459,8 +521,14 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
         actions: [
           // Toggle de deteccion en tiempo real
           _buildLiveDetectionToggle(),
-          // FPS Badge separado para no reconstruir todo el scaffold
-          if (AppConstants.showDebugFps && _liveDetectionEnabled) const _FpsBadge(),
+          // FPS Badge condicional basado en configuracion
+          if (showFps && _liveDetectionEnabled) const _FpsBadge(),
+          // Boton de configuracion
+          IconButton(
+            icon: const Icon(Icons.tune, color: Colors.white),
+            tooltip: 'Configuracion',
+            onPressed: _openSettings,
+          ),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -576,6 +644,9 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
 
         // Badge de conteo de detecciones - Widget separado
         const _DetectionCountBadge(),
+
+        // Badge de informacion de memoria - Widget separado
+        const _MemoryInfoBadge(),
       ],
     );
   }
@@ -1141,6 +1212,51 @@ class _DetectionCountBadge extends ConsumerWidget {
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Badge que muestra informacion de memoria (opcional).
+class _MemoryInfoBadge extends ConsumerWidget {
+  const _MemoryInfoBadge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showMemoryInfo = ref.watch(showMemoryInfoProvider);
+
+    if (!showMemoryInfo) return const SizedBox.shrink();
+
+    // Nota: En Flutter no hay acceso directo a la memoria del proceso,
+    // esto es una estimacion aproximada basada en el heap de Dart
+    return Positioned(
+      top: 140,
+      left: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.memory,
+              color: Colors.white70,
+              size: 14,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Modelo activo',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
