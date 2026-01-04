@@ -197,8 +197,7 @@ class NutritionInfo {
     // Parsear componentes faltantes
     List<String>? missingComponents;
     if (json['missing_components'] != null) {
-      missingComponents =
-          (json['missing_components'] as List).cast<String>();
+      missingComponents = (json['missing_components'] as List).cast<String>();
     }
 
     return NutritionInfo(

@@ -215,10 +215,11 @@ class PortionRepository {
     }
 
     final totalIngredients = _cachedPortions!.length;
-    final totalPortions =
-        _cachedPortions!.values.fold<int>(0, (sum, portions) => sum + portions.length);
-    final avgPortionsPerIngredient =
-        totalIngredients > 0 ? (totalPortions / totalIngredients).toDouble() : 0.0;
+    final totalPortions = _cachedPortions!.values
+        .fold<int>(0, (sum, portions) => sum + portions.length);
+    final avgPortionsPerIngredient = totalIngredients > 0
+        ? (totalPortions / totalIngredients).toDouble()
+        : 0.0;
 
     return PortionStats(
       totalIngredients: totalIngredients,
