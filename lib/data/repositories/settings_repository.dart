@@ -72,7 +72,8 @@ class SettingsRepository {
     try {
       _prefs = await SharedPreferences.getInstance();
       _initialized = true;
-      AppLogger.info('SettingsRepository inicializado correctamente', tag: _tag);
+      AppLogger.info('SettingsRepository inicializado correctamente',
+          tag: _tag);
     } catch (e) {
       AppLogger.error(
         'Error inicializando SettingsRepository: $e',

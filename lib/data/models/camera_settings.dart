@@ -47,6 +47,13 @@ class CameraSettings {
   /// - 0.8: Solo detecciones muy seguras
   final double confidenceThreshold;
 
+  /// Umbral IoU para Non-Maximum Suppression (0.20 - 0.50).
+  ///
+  /// - 0.20: Muy agresivo (elimina muchas detecciones superpuestas)
+  /// - 0.30: Balance recomendado
+  /// - 0.50: Menos agresivo (mantiene mas detecciones)
+  final double iouThreshold;
+
   // ==================================================================================
   // OPCIONES DE VISUALIZACION
   // ==================================================================================
@@ -73,18 +80,32 @@ class CameraSettings {
   /// Umbral de confianza maximo.
   static const double maxConfidence = 0.80;
 
+  /// Umbral IoU minimo.
+  static const double minIouThreshold = 0.20;
+
+  /// Umbral IoU maximo.
+  static const double maxIouThreshold = 0.50;
+
   // ==================================================================================
   // VALORES POR DEFECTO
   // ==================================================================================
 
-  /// Frame skip por defecto.
-  static const int defaultFrameSkip = 3;
+  /// Frame skip por defecto para tiempo real.
+  /// frameSkip=4 → Procesar 1 de cada 4 frames (~7.5 FPS @ 30fps cámara)
+  static const int defaultFrameSkip = 4;
 
-  /// Resolucion por defecto.
+  /// Resolucion por defecto para tiempo real.
+  /// Medium resolution (720x480) ofrece mejor balance detección/rendimiento.
+  /// LOW (352x288) es demasiado baja para detectar ingredientes correctamente.
   static const CameraResolution defaultResolution = CameraResolution.medium;
 
   /// Umbral de confianza por defecto.
-  static const double defaultConfidenceThreshold = 0.50;
+  /// Igualado a 0.40 para paridad con detección FOTO/galería.
+  static const double defaultConfidenceThreshold = 0.40;
+
+  /// Umbral IoU por defecto.
+  /// 0.30 ofrece buen balance entre eliminar duplicados y mantener detecciones.
+  static const double defaultIouThreshold = 0.30;
 
   /// Mostrar FPS por defecto.
   static const bool defaultShowFps = false;
@@ -103,6 +124,7 @@ class CameraSettings {
     this.frameSkip = defaultFrameSkip,
     this.resolution = defaultResolution,
     this.confidenceThreshold = defaultConfidenceThreshold,
+    this.iouThreshold = defaultIouThreshold,
     this.showFps = defaultShowFps,
     this.showMemoryInfo = defaultShowMemoryInfo,
   })  : assert(
@@ -113,6 +135,10 @@ class CameraSettings {
           confidenceThreshold >= minConfidence &&
               confidenceThreshold <= maxConfidence,
           'confidenceThreshold debe estar entre $minConfidence y $maxConfidence',
+        ),
+        assert(
+          iouThreshold >= minIouThreshold && iouThreshold <= maxIouThreshold,
+          'iouThreshold debe estar entre $minIouThreshold y $maxIouThreshold',
         );
 
   // ==================================================================================
@@ -129,6 +155,7 @@ class CameraSettings {
         frameSkip: 5,
         resolution: CameraResolution.low,
         confidenceThreshold: 0.55,
+        iouThreshold: 0.35,
         showFps: true,
         showMemoryInfo: false,
       );
@@ -140,6 +167,7 @@ class CameraSettings {
         frameSkip: 1,
         resolution: CameraResolution.high,
         confidenceThreshold: 0.40,
+        iouThreshold: 0.30,
         showFps: false,
         showMemoryInfo: false,
       );
@@ -151,9 +179,10 @@ class CameraSettings {
       resolution: CameraResolution.fromString(
         json['resolution'] as String? ?? defaultResolution.name,
       ),
-      confidenceThreshold:
-          (json['confidenceThreshold'] as num?)?.toDouble() ??
-              defaultConfidenceThreshold,
+      confidenceThreshold: (json['confidenceThreshold'] as num?)?.toDouble() ??
+          defaultConfidenceThreshold,
+      iouThreshold: (json['iouThreshold'] as num?)?.toDouble() ??
+          defaultIouThreshold,
       showFps: json['showFps'] as bool? ?? defaultShowFps,
       showMemoryInfo: json['showMemoryInfo'] as bool? ?? defaultShowMemoryInfo,
     );
@@ -168,6 +197,7 @@ class CameraSettings {
     int? frameSkip,
     CameraResolution? resolution,
     double? confidenceThreshold,
+    double? iouThreshold,
     bool? showFps,
     bool? showMemoryInfo,
   }) {
@@ -175,6 +205,7 @@ class CameraSettings {
       frameSkip: frameSkip ?? this.frameSkip,
       resolution: resolution ?? this.resolution,
       confidenceThreshold: confidenceThreshold ?? this.confidenceThreshold,
+      iouThreshold: iouThreshold ?? this.iouThreshold,
       showFps: showFps ?? this.showFps,
       showMemoryInfo: showMemoryInfo ?? this.showMemoryInfo,
     );
@@ -186,6 +217,7 @@ class CameraSettings {
       'frameSkip': frameSkip,
       'resolution': resolution.name,
       'confidenceThreshold': confidenceThreshold,
+      'iouThreshold': iouThreshold,
       'showFps': showFps,
       'showMemoryInfo': showMemoryInfo,
     };
@@ -200,6 +232,7 @@ class CameraSettings {
       resolution: resolution,
       confidenceThreshold:
           confidenceThreshold.clamp(minConfidence, maxConfidence),
+      iouThreshold: iouThreshold.clamp(minIouThreshold, maxIouThreshold),
       showFps: showFps,
       showMemoryInfo: showMemoryInfo,
     );
@@ -210,6 +243,7 @@ class CameraSettings {
       frameSkip == defaultFrameSkip &&
       resolution == defaultResolution &&
       confidenceThreshold == defaultConfidenceThreshold &&
+      iouThreshold == defaultIouThreshold &&
       showFps == defaultShowFps &&
       showMemoryInfo == defaultShowMemoryInfo;
 
@@ -219,6 +253,7 @@ class CameraSettings {
         'frameSkip: $frameSkip, '
         'resolution: ${resolution.displayName}, '
         'confidence: ${(confidenceThreshold * 100).toInt()}%, '
+        'iou: ${(iouThreshold * 100).toInt()}%, '
         'showFps: $showFps, '
         'showMemory: $showMemoryInfo'
         ')';
@@ -231,6 +266,7 @@ class CameraSettings {
         other.frameSkip == frameSkip &&
         other.resolution == resolution &&
         other.confidenceThreshold == confidenceThreshold &&
+        other.iouThreshold == iouThreshold &&
         other.showFps == showFps &&
         other.showMemoryInfo == showMemoryInfo;
   }
@@ -240,6 +276,7 @@ class CameraSettings {
         frameSkip,
         resolution,
         confidenceThreshold,
+        iouThreshold,
         showFps,
         showMemoryInfo,
       );
@@ -253,17 +290,22 @@ class CameraSettings {
 ///
 /// Mapea directamente a [ResolutionPreset] del paquete camera.
 enum CameraResolution {
-  /// Baja resolucion (~352x288).
-  /// Mejor rendimiento, menor calidad.
+  /// Baja resolucion (352x288 píxeles).
+  /// ⚠️ NO RECOMENDADO para detección - muy pocas detecciones.
   low,
 
-  /// Resolucion media (~720x480).
-  /// Balance recomendado.
+  /// Resolucion media (720x480 píxeles).
+  /// ✅ RECOMENDADO - Buen balance detección/rendimiento (~8-12 FPS).
   medium,
 
-  /// Alta resolucion (~1280x720).
-  /// Mejor calidad, mayor consumo.
-  high;
+  /// Alta resolucion (1280x720 píxeles).
+  /// ✅✅ Mejor detección - Requiere dispositivo potente (~5-8 FPS).
+  high,
+
+  /// Ultra resolucion (1920x1080+ píxeles, hasta 4K si el dispositivo lo soporta).
+  /// ✅✅✅ Máxima detección - Solo dispositivos de gama alta (~3-5 FPS).
+  /// NOTA: Aunque usa más píxeles, FOTO siempre detectará mejor por usar resolución completa.
+  ultra;
 
   /// Nombre para mostrar en la UI.
   String get displayName {
@@ -274,6 +316,8 @@ enum CameraResolution {
         return 'Media';
       case CameraResolution.high:
         return 'Alta';
+      case CameraResolution.ultra:
+        return 'Ultra';
     }
   }
 
@@ -281,11 +325,13 @@ enum CameraResolution {
   String get description {
     switch (this) {
       case CameraResolution.low:
-        return 'Mejor rendimiento';
+        return '⚠️ Poca detección';
       case CameraResolution.medium:
-        return 'Balance recomendado';
+        return '✅ Recomendado';
       case CameraResolution.high:
-        return 'Mejor calidad';
+        return '✅✅ Mejor detección';
+      case CameraResolution.ultra:
+        return '✅✅✅ Máxima detección (lento)';
     }
   }
 
@@ -298,6 +344,8 @@ enum CameraResolution {
         return ResolutionPreset.medium;
       case CameraResolution.high:
         return ResolutionPreset.high;
+      case CameraResolution.ultra:
+        return ResolutionPreset.max;
     }
   }
 
@@ -308,6 +356,8 @@ enum CameraResolution {
         return CameraResolution.low;
       case 'high':
         return CameraResolution.high;
+      case 'ultra':
+        return CameraResolution.ultra;
       case 'medium':
       default:
         return CameraResolution.medium;
@@ -320,10 +370,11 @@ enum CameraResolution {
       case ResolutionPreset.low:
         return CameraResolution.low;
       case ResolutionPreset.high:
+        return CameraResolution.high;
       case ResolutionPreset.veryHigh:
       case ResolutionPreset.ultraHigh:
       case ResolutionPreset.max:
-        return CameraResolution.high;
+        return CameraResolution.ultra;
       case ResolutionPreset.medium:
         return CameraResolution.medium;
     }

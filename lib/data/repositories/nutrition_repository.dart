@@ -59,7 +59,8 @@ class NutritionRepository {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    AppLogger.debug('Inicializando NutritionRepository...', tag: 'NutritionRepo');
+    AppLogger.debug('Inicializando NutritionRepository...',
+        tag: 'NutritionRepo');
 
     _cachedData = await _datasource.loadNutritionData();
     _initialized = true;
