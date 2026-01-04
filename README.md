@@ -205,8 +205,14 @@ nutrivision_aiepn_mobile/
 │   │   ├── theme/app_theme.dart         # Sistema de temas
 │   │   ├── exceptions/app_exceptions.dart # Excepciones personalizadas
 │   │   ├── logging/                     # Sistema de logging centralizado
-│   │   ├── security/input_validator.dart # Validación de inputs
-│   │   └── session/session_manager.dart # Gestión de sesión
+│   │   │   ├── app_logger.dart          # Logger principal
+│   │   │   ├── log_config.dart          # Configuración de logging
+│   │   │   └── log_level.dart           # Niveles de log
+│   │   ├── security/                    # ✅ NEW: Seguridad y validación
+│   │   │   └── input_validator.dart     # Validación de inputs (133 tests)
+│   │   ├── session/session_manager.dart # Gestión de sesión
+│   │   └── utils/                       # ✅ NEW: Utilidades compartidas
+│   │       └── runtime_mode.dart        # Detección de entorno (debug/profile/release)
 │   │
 │   ├── data/                            # ✅ Capa de datos
 │   │   ├── models/
@@ -218,13 +224,16 @@ nutrivision_aiepn_mobile/
 │   │   │   ├── standard_portion.dart    # Modelo de porciones
 │   │   │   ├── ingredient_quantity.dart # Cantidad de ingrediente
 │   │   │   ├── user_profile.dart        # Perfil de usuario
-│   │   │   └── auth_state.dart          # Estado de autenticación
+│   │   │   ├── auth_state.dart          # Estado de autenticación
+│   │   │   ├── camera_settings.dart     # ✅ NEW: Configuración de cámara
+│   │   │   └── performance_metrics.dart # ✅ NEW: Métricas de rendimiento
 │   │   ├── datasources/
 │   │   │   ├── nutrition_datasource.dart # Carga JSON de nutrientes
 │   │   │   └── portion_datasource.dart  # Carga JSON de porciones
 │   │   └── repositories/
 │   │       ├── nutrition_repository.dart # Repositorio nutrición con cache
-│   │       └── portion_repository.dart  # Repositorio porciones con cache
+│   │       ├── portion_repository.dart  # Repositorio porciones con cache
+│   │       └── settings_repository.dart # ✅ NEW: Repositorio de configuración
 │   │
 │   └── features/                        # ✅ Feature-First Architecture
 │       ├── detection/                   # Feature de detección YOLO
@@ -235,20 +244,29 @@ nutrivision_aiepn_mobile/
 │       │   │   ├── yolo_detector.dart          # Motor de inferencia YOLO
 │       │   │   ├── camera_frame_processor.dart # Conversión YUV→RGB
 │       │   │   ├── image_processing_isolate.dart # Worker isolate para conversión
-│       │   │   └── native_image_processor.dart   # Cliente Dart para C++ nativo
+│       │   │   ├── native_image_processor.dart   # Cliente Dart para C++ nativo
+│       │   │   ├── detection_controller.dart     # ✅ NEW: Controlador centralizado
+│       │   │   └── detection_debug_helper.dart   # ✅ NEW: Helper para debugging
 │       │   ├── views/
 │       │   │   ├── detection_gallery_screen.dart # Detección desde galería + nutrición
-│       │   │   └── detection_live_screen.dart    # Detección en tiempo real
+│       │   │   ├── detection_live_screen.dart    # Detección en tiempo real
+│       │   │   └── detection_results_screen.dart # ✅ NEW: Pantalla de resultados
 │       │   └── widgets/
-│       │       ├── camera_controls.dart     # Controles de cámara
-│       │       └── detection_overlay.dart   # Overlay con bounding boxes
+│       │       ├── camera_controls.dart         # Controles de cámara
+│       │       ├── detection_overlay.dart       # Overlay con bounding boxes
+│       │       └── camera_settings_panel.dart   # ✅ NEW: Panel configuración
 │       ├── nutrition/                   # ✅ Sistema nutricional
-│       │   ├── providers/nutrition_provider.dart # Providers Riverpod
+│       │   ├── providers/
+│       │   │   ├── nutrition_provider.dart # Providers Riverpod
+│       │   │   └── quantity_provider.dart  # ✅ NEW: Provider de cantidades
 │       │   ├── services/nutrition_service.dart   # Servicio singleton
+│       │   ├── state/                   # ✅ NEW: State management
+│       │   │   └── ingredient_quantities_notifier.dart # Notifier cantidades (115 tests)
 │       │   └── widgets/
 │       │       ├── nutrient_bar.dart        # Barra de progreso nutriente
 │       │       ├── nutrition_card.dart      # Card de información nutricional
-│       │       └── nutrition_summary.dart   # Resumen total de nutrientes
+│       │       ├── nutrition_summary.dart   # Resumen total de nutrientes
+│       │       └── quantity_adjustment_dialog.dart # ✅ NEW: Dialog ajuste cantidades
 │       ├── auth/                        # ✅ Autenticación Firebase
 │       │   ├── services/                # Firebase Auth + Firestore
 │       │   ├── repositories/            # Auth repository
@@ -262,10 +280,28 @@ nutrivision_aiepn_mobile/
 │           └── views/
 │               └── home_screen.dart         # Pantalla principal
 │
-├── test/                                 # ✅ Tests automatizados (114 tests)
+├── shared/                              # ✅ NEW: Widgets compartidos
+│   └── widgets/
+│       ├── runtime_mode_indicator.dart  # Indicador visual modo runtime
+│       ├── animated_counter.dart        # Contador animado para nutrientes
+│       ├── feedback_widgets.dart        # Widgets de feedback (snackbars, toasts)
+│       ├── info_card.dart               # Card de información genérico
+│       └── loading_overlay.dart         # Overlay de carga
+│
+├── test/                                 # ✅ Tests automatizados (445 tests)
 │   ├── ml/yolo_detector_test.dart       # 42 tests del detector
-│   ├── data/models/nutrition_test.dart  # 33 tests de nutrición
-│   ├── core/logging/                    # 39 tests de logging
+│   ├── data/models/
+│   │   ├── nutrition_test.dart          # 33 tests de nutrición
+│   │   ├── auth_state_test.dart         # ✅ NEW: 24 tests AuthState
+│   │   ├── camera_settings_test.dart    # ✅ NEW: 14 tests CameraSettings
+│   │   ├── ingredient_quantity_test.dart # ✅ NEW: 26 tests IngredientQuantity
+│   │   └── user_profile_test.dart       # ✅ NEW: 18 tests UserProfile
+│   ├── core/
+│   │   ├── logging/                     # 39 tests de logging
+│   │   └── security/
+│   │       └── input_validator_test.dart # ✅ NEW: 133 tests InputValidator
+│   ├── features/nutrition/state/
+│   │   └── ingredient_quantities_notifier_test.dart # ✅ NEW: 115 tests
 │   └── test_assets/test_images/         # 54 imágenes de prueba
 │
 ├── pubspec.yaml                          # Dependencias
@@ -1065,16 +1101,23 @@ class BoundingBoxPainter extends CustomPainter {
 | YoloDetector (Inicialización, Detección, Consistencia, Rendimiento) | 42 | ✅ |
 | Logging (LogLevel, LogConfig, AppLogger) | 39 | ✅ |
 | Nutrición (NutrientsPer100g, NutritionInfo, NutritionData) | 33 | ✅ |
-| **TOTAL** | **114** | ✅ |
+| Security (InputValidator) | 133 | ✅ |
+| Auth State | 24 | ✅ |
+| Camera Settings | 14 | ✅ |
+| User Profile | 18 | ✅ |
+| Ingredient Quantity | 26 | ✅ |
+| Quantities Notifier | 115 | ✅ |
+| Otros | 1 | ✅ |
+| **TOTAL** | **445** | ✅ |
 
 ### Estadísticas del Proyecto
 
 | Métrica | Valor |
 |---------|-------|
-| Archivos Dart en lib/ | 52 |
-| Archivos de test | 3 |
-| Total de tests | 114 |
-| Líneas de código | ~17,171 |
+| Archivos Dart en lib/ | 81 |
+| Archivos de test | 9 |
+| Total de tests | 445 |
+| Líneas de código | ~25,000 |
 | Ingredientes soportados | 83 |
 | Platos soportados | 6 |
 | Porciones estándar | 83 ingredientes × ~4 porciones c/u |
@@ -1438,11 +1481,13 @@ flutter build appbundle --release --obfuscate --split-debug-info=build/debug-inf
 - `flutter test`: 114 tests pasando
 - `flutter build apk --release`: Exitoso
 
-### FASE 6B: Sistema de Cantidades - Providers y State ⏳
-- [ ] Crear `lib/features/nutrition/providers/quantity_provider.dart`
-- [ ] Crear estado de cantidades por ingrediente
-- [ ] Integrar con providers de nutricion existentes
-- [ ] Verificar: `flutter analyze` y `flutter test`
+### FASE 6B: Sistema de Cantidades - Providers y State ✅ (100%)
+- [x] Crear `lib/features/nutrition/state/ingredient_quantities_notifier.dart` (323 líneas)
+- [x] Crear `lib/features/nutrition/providers/quantity_provider.dart` (providers Riverpod)
+- [x] Estado reactivo con AsyncNotifierProvider
+- [x] 115 tests unitarios pasando
+- [x] Integración completa con nutrition_provider
+- [x] Verificar: `flutter analyze` (0 issues) y `flutter test` (445 tests pasando)
 
 ### FASE 6C: Sistema de Cantidades - UI Widgets ⏳
 - [ ] Crear `lib/features/nutrition/widgets/quantity_selector.dart`
@@ -1495,9 +1540,9 @@ FASE 5 (Auth/Onboarding)  ✅ COMPLETADO (Firebase Auth + Profile + Session)
        ↓
 FASE 6A (Cantidades)      ✅ COMPLETADO (Modelos y Repositorios)
        ↓
-FASE 6B (Providers)       ← SIGUIENTE PASO - State management para cantidades
+FASE 6B (Providers)       ✅ COMPLETADO (State management - 115 tests)
        ↓
-FASE 6C (UI Widgets)      ⏳ Selector de cantidades y porciones
+FASE 6C (UI Widgets)      ← SIGUIENTE PASO - Selector de cantidades y porciones
        ↓
 FASE 6D (Integracion)     ⏳ Conectar con deteccion
        ↓
@@ -1511,22 +1556,41 @@ FASE 7 (Renombrar)        ← SOLO AL FINAL, cuando todo funcione
 ### ═══════════════════════════════════════════════════════════════
 
 ```
-lib/features/detection/services/
-├── yolo_detector.dart           ← 467 líneas, motor ML
-├── camera_frame_processor.dart  ← 354 líneas, orquestación
-├── image_processing_isolate.dart ← 148 líneas, isolate
-└── native_image_processor.dart  ← 97 líneas, C++ bridge
+lib/core/
+├── utils/
+│   └── runtime_mode.dart        ← Detección de entorno (debug/profile/release)
+└── security/
+    └── input_validator.dart     ← Validación de inputs (133 tests)
 
-lib/data/models/                 ← FASE 6A: Sistema de cantidades
-├── quantity_enums.dart          ← Enums QuantityUnit y QuantitySource
-├── standard_portion.dart        ← Modelo de porciones estandar
-└── ingredient_quantity.dart     ← Modelo de cantidad de ingrediente
+lib/data/models/
+├── performance_metrics.dart     ← ✅ NEW: Métricas de rendimiento detección
+├── quantity_enums.dart          ← FASE 6A: Enums QuantityUnit y QuantitySource
+├── standard_portion.dart        ← FASE 6A: Modelo de porciones estandar
+└── ingredient_quantity.dart     ← FASE 6A: Modelo de cantidad de ingrediente
 
 lib/data/datasources/
 └── portion_datasource.dart      ← Carga de porciones desde JSON
 
 lib/data/repositories/
 └── portion_repository.dart      ← Repositorio con cache de porciones
+
+lib/features/detection/services/
+├── yolo_detector.dart            ← 467 líneas, motor ML
+├── camera_frame_processor.dart   ← 354 líneas, orquestación
+├── image_processing_isolate.dart ← 148 líneas, isolate
+├── native_image_processor.dart   ← 97 líneas, C++ bridge
+├── detection_controller.dart     ← ✅ NEW: Controlador centralizado detección
+└── detection_debug_helper.dart   ← ✅ NEW: Helper para debugging
+
+lib/features/nutrition/state/
+└── ingredient_quantities_notifier.dart ← ✅ NEW: State manager cantidades (115 tests)
+
+lib/shared/widgets/
+├── runtime_mode_indicator.dart  ← ✅ NEW: Indicador visual modo runtime
+├── animated_counter.dart        ← ✅ NEW: Contador animado para nutrientes
+├── feedback_widgets.dart        ← ✅ NEW: Widgets de feedback (snackbars, toasts)
+├── info_card.dart               ← ✅ NEW: Card de información genérico
+└── loading_overlay.dart         ← ✅ NEW: Overlay de carga
 
 assets/data/
 └── standard_portions.json       ← Base de datos de porciones (83 ingredientes)
@@ -1549,8 +1613,8 @@ android/app/src/main/cpp/
 | Fase 3 | Completada | 100% |
 | Fase 4 | Completada | 100% |
 | Fase 5 | Completada | 100% |
-| **Fase 6A** | **Completada** | **100%** |
-| Fase 6B | Pendiente | 0% |
+| Fase 6A | Completada | 100% |
+| **Fase 6B** | **Completada** | **100%** |
 | Fase 6C | Pendiente | 0% |
 | Fase 6D | Pendiente | 0% |
 | Fase 6E | Pendiente | 0% |
@@ -1558,19 +1622,20 @@ android/app/src/main/cpp/
 | Fase 7 | Diferida | 0% |
 
 ### ═══════════════════════════════════════════════════════════════
-### PRÓXIMOS PASOS (FASE 6B - Providers y State)
+### PRÓXIMOS PASOS (FASE 6C - UI Widgets)
 ### ═══════════════════════════════════════════════════════════════
 
-**Objetivo:** Implementar state management para el sistema de cantidades
+**Objetivo:** Implementar widgets de UI para el sistema de cantidades
 
 **Archivos a crear:**
-- `lib/features/nutrition/providers/quantity_provider.dart`
-- `lib/features/nutrition/state/ingredient_quantities_notifier.dart`
+- `lib/features/nutrition/widgets/quantity_selector.dart`
+- `lib/features/nutrition/widgets/portion_picker.dart`
+- `lib/features/nutrition/widgets/grams_input.dart`
 
-**Archivos a modificar:**
-- `lib/features/nutrition/providers/nutrition_provider.dart`
+**Archivos ya creados (reutilizar):**
+- `lib/features/nutrition/widgets/quantity_adjustment_dialog.dart` ✅
 
-**Duración estimada:** 2 días
+**Duración estimada:** 1-2 días
 
 ### Fases Finales (Post-Evolución)
 
@@ -1780,7 +1845,7 @@ Este proyecto es parte de un Trabajo de Integración Curricular y su uso está s
 
 *Detección inteligente de ingredientes alimenticios con información nutricional*
 
-✅ 114 tests pasando | ✅ 0 issues en flutter analyze | ✅ Firebase Auth integrado | ✅ FASE 6A completada
+✅ 445 tests pasando | ✅ 0 issues en flutter analyze | ✅ Firebase Auth integrado | ✅ FASE 6B completada
 
 Made with ❤️ and Flutter
 

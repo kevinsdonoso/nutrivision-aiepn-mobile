@@ -30,7 +30,13 @@
       "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\auth\\\\.gitkeep\")",
       "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\detection\\\\.gitkeep\")",
       "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\onboarding\\\\.gitkeep\")",
-      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\profile\\\\.gitkeep\")"
+      "Bash(del \"C:\\\\Users\\\\kedos\\\\StudioProjects\\\\nutrivision_aiepn_mobile\\\\lib\\\\features\\\\profile\\\\.gitkeep\")",
+      "Bash(flutter pub get:*)",
+      "Bash(grep:*)",
+      "Bash(flutter run:*)",
+      "Bash(timeout /t 2)",
+      "Bash(dart run:*)",
+      "Bash(del generate_icon.dart create_icon.py)"
     ],
     "deny": [],
     "ask": []
