@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/routes.dart';
 import '../../../data/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -189,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
       expandedHeight: 200,
       pinned: true,
       leading: IconButton(
-        onPressed: () => context.pop(),
+        onPressed: () => context.goBackOrHome(),
         icon: const Icon(Icons.arrow_back),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -238,19 +239,71 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // Completitud del perfil
-                const SizedBox(height: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(50),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Perfil ${profile.profileCompletionPercent}% completo',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white,
+                // Completitud del perfil con barra de progreso
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => _showMissingFieldsDialog(context, profile),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(40),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              profile.profileCompletionPercent == 100
+                                  ? Icons.verified
+                                  : Icons.account_circle_outlined,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              profile.profileCompletionPercent == 100
+                                  ? 'Perfil completo'
+                                  : 'Perfil ${profile.profileCompletionPercent}% completo',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (profile.profileCompletionPercent < 100) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.touch_app,
+                                color: Colors.white70,
+                                size: 14,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // Barra de progreso
+                        SizedBox(
+                          width: 180,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: profile.profileCompletionPercent / 100,
+                              backgroundColor: Colors.white.withAlpha(50),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                profile.profileCompletionPercent == 100
+                                    ? Colors.greenAccent
+                                    : Colors.white,
+                              ),
+                              minHeight: 6,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -269,11 +322,14 @@ class ProfileScreen extends ConsumerWidget {
     required IconData icon,
     required List<Widget> children,
   }) {
+    final isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(
+          color: isDark ? theme.colorScheme.outline : Colors.grey.shade200,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -307,27 +363,33 @@ class ProfileScreen extends ConsumerWidget {
     required String value,
     Color? valueColor,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final secondaryColor = theme.colorScheme.onSurfaceVariant;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: secondaryColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(color: secondaryColor),
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: valueColor,
+                ),
+              ),
+            ],
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: valueColor,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -338,7 +400,9 @@ class ProfileScreen extends ConsumerWidget {
     required VoidCallback onTap,
     bool isDestructive = false,
   }) {
-    final color = isDestructive ? Colors.red : null;
+    final theme = Theme.of(context);
+    final defaultColor = theme.colorScheme.onSurfaceVariant;
+    final color = isDestructive ? theme.colorScheme.error : null;
 
     return InkWell(
       onTap: onTap,
@@ -347,7 +411,7 @@ class ProfileScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: color ?? Colors.grey[600]),
+            Icon(icon, size: 20, color: color ?? defaultColor),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -360,7 +424,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: color ?? Colors.grey[400],
+              color: color ?? defaultColor.withAlpha(150),
             ),
           ],
         ),
@@ -371,32 +435,129 @@ class ProfileScreen extends ConsumerWidget {
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return AlertDialog(
+          title: const Text('Cerrar Sesion'),
+          content: const Text('Estas seguro de que deseas cerrar sesion?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref.read(authStateProvider.notifier).signOut();
-              if (context.mounted) {
-                context.go('/welcome');
-              }
-            },
-            child: const Text(
-              'Cerrar Sesión',
-              style: TextStyle(color: Colors.red),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
             ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await ref.read(authStateProvider.notifier).signOut();
+                if (context.mounted) {
+                  context.go('/welcome');
+                }
+              },
+              child: Text(
+                'Cerrar Sesion',
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showMissingFieldsDialog(BuildContext context, UserProfile profile) {
+    final theme = Theme.of(context);
+    final missingFields = <String>[];
+
+    // Verificar campos faltantes
+    if (profile.photoUrl == null) missingFields.add('Foto de perfil');
+    if (profile.birthDate == null) missingFields.add('Fecha de nacimiento');
+    if (profile.gender == null) missingFields.add('Genero');
+    if (profile.country == null) missingFields.add('Pais');
+    if (profile.city == null) missingFields.add('Ciudad');
+    if (profile.weightKg == null) missingFields.add('Peso');
+    if (profile.heightCm == null) missingFields.add('Altura');
+    if (profile.activityLevel == null) missingFields.add('Nivel de actividad');
+    if (profile.nutritionGoal == null) missingFields.add('Meta nutricional');
+    if (profile.dailyCalorieTarget == null) {
+      missingFields.add('Calorias diarias');
+    }
+
+    if (missingFields.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: theme.colorScheme.onPrimary),
+              const SizedBox(width: 8),
+              const Text('Tu perfil esta completo'),
+            ],
           ),
-        ],
-      ),
+          backgroundColor: theme.colorScheme.primary,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('Completa tu perfil'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Te faltan ${missingFields.length} campos para completar tu perfil:',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              ...missingFields.map((field) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(field),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cerrar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                context.push('/edit-profile');
+              },
+              child: const Text('Editar perfil'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

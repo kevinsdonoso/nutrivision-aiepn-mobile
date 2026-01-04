@@ -117,9 +117,8 @@ YuvConversionResult convertYuvToRgbIsolate(YuvConversionInput input) {
     }
 
     // Espejo horizontal para cámara frontal
-    final img.Image finalImage = input.flipHorizontal
-        ? img.flipHorizontal(rotatedImage)
-        : rotatedImage;
+    final img.Image finalImage =
+        input.flipHorizontal ? img.flipHorizontal(rotatedImage) : rotatedImage;
 
     // OPTIMIZACIÓN: Extraer bytes RGB crudos en lugar de PNG (~500ms ahorro)
     final rgbBytes = Uint8List(finalImage.width * finalImage.height * 3);

@@ -162,7 +162,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           constraints: const BoxConstraints(),
         ),
         const SizedBox(height: 24),
-
         Text(
           'Crear Cuenta',
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -269,14 +268,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       controller: _passwordController,
       obscureText: _obscurePassword,
       textInputAction: TextInputAction.next,
-      onChanged: (_) => setState(() {}), // Para actualizar indicador de fortaleza
+      onChanged: (_) =>
+          setState(() {}), // Para actualizar indicador de fortaleza
       decoration: InputDecoration(
         labelText: 'Contraseña',
         prefixIcon: const Icon(Icons.lock_outlined),
         suffixIcon: IconButton(
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
           icon: Icon(
-            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
         ),
         border: OutlineInputBorder(
@@ -365,8 +367,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         labelText: 'Confirmar contraseña',
         prefixIcon: const Icon(Icons.lock_outlined),
         suffixIcon: IconButton(
-          onPressed: () =>
-              setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+          onPressed: () => setState(
+              () => _obscureConfirmPassword = !_obscureConfirmPassword),
           icon: Icon(
             _obscureConfirmPassword
                 ? Icons.visibility_outlined
