@@ -125,7 +125,8 @@ void main() {
 
         expect(notifier.state.count, 1);
         expect(notifier.state.getQuantity('tomate')!.grams, 150);
-        expect(notifier.state.getQuantity('tomate')!.source, QuantitySource.manual);
+        expect(notifier.state.getQuantity('tomate')!.source,
+            QuantitySource.manual);
       });
 
       test('sobrescribe cantidad existente', () {
@@ -181,8 +182,10 @@ void main() {
         notifier.updateQuantityFromPortion('tomate', portion);
 
         expect(notifier.state.getQuantity('tomate')!.grams, 150);
-        expect(notifier.state.getQuantity('tomate')!.unit, QuantityUnit.portion);
-        expect(notifier.state.getQuantity('tomate')!.portionLabel, '1 unidad mediana');
+        expect(
+            notifier.state.getQuantity('tomate')!.unit, QuantityUnit.portion);
+        expect(notifier.state.getQuantity('tomate')!.portionLabel,
+            '1 unidad mediana');
       });
     });
 
@@ -196,7 +199,8 @@ void main() {
         notifier.updateQuantity(quantity);
 
         expect(notifier.state.getQuantity('tomate')!.grams, 120);
-        expect(notifier.state.getQuantity('tomate')!.source, QuantitySource.estimated);
+        expect(notifier.state.getQuantity('tomate')!.source,
+            QuantitySource.estimated);
       });
     });
 
@@ -233,12 +237,22 @@ void main() {
       test('crea cantidades por defecto para detecciones', () {
         final detections = [
           Detection(
-            x1: 0, y1: 0, x2: 100, y2: 100,
-            confidence: 0.9, classId: 0, label: 'tomate',
+            x1: 0,
+            y1: 0,
+            x2: 100,
+            y2: 100,
+            confidence: 0.9,
+            classId: 0,
+            label: 'tomate',
           ),
           Detection(
-            x1: 100, y1: 0, x2: 200, y2: 100,
-            confidence: 0.85, classId: 1, label: 'queso',
+            x1: 100,
+            y1: 0,
+            x2: 200,
+            y2: 100,
+            confidence: 0.85,
+            classId: 1,
+            label: 'queso',
           ),
         ];
 
@@ -247,7 +261,8 @@ void main() {
         expect(notifier.state.count, 2);
         expect(notifier.state.getQuantity('tomate')!.grams, 100); // default
         expect(notifier.state.getQuantity('queso')!.grams, 100); // default
-        expect(notifier.state.getQuantity('tomate')!.source, QuantitySource.defaultValue);
+        expect(notifier.state.getQuantity('tomate')!.source,
+            QuantitySource.defaultValue);
       });
 
       test('no sobrescribe cantidades existentes por defecto', () {
@@ -255,8 +270,13 @@ void main() {
 
         final detections = [
           Detection(
-            x1: 0, y1: 0, x2: 100, y2: 100,
-            confidence: 0.9, classId: 0, label: 'tomate',
+            x1: 0,
+            y1: 0,
+            x2: 100,
+            y2: 100,
+            confidence: 0.9,
+            classId: 0,
+            label: 'tomate',
           ),
         ];
 
@@ -270,8 +290,13 @@ void main() {
 
         final detections = [
           Detection(
-            x1: 0, y1: 0, x2: 100, y2: 100,
-            confidence: 0.9, classId: 0, label: 'tomate',
+            x1: 0,
+            y1: 0,
+            x2: 100,
+            y2: 100,
+            confidence: 0.9,
+            classId: 0,
+            label: 'tomate',
           ),
         ];
 
@@ -289,12 +314,22 @@ void main() {
       test('maneja detecciones duplicadas', () {
         final detections = [
           Detection(
-            x1: 0, y1: 0, x2: 100, y2: 100,
-            confidence: 0.9, classId: 0, label: 'tomate',
+            x1: 0,
+            y1: 0,
+            x2: 100,
+            y2: 100,
+            confidence: 0.9,
+            classId: 0,
+            label: 'tomate',
           ),
           Detection(
-            x1: 100, y1: 0, x2: 200, y2: 100,
-            confidence: 0.85, classId: 0, label: 'tomate',
+            x1: 100,
+            y1: 0,
+            x2: 200,
+            y2: 100,
+            confidence: 0.85,
+            classId: 0,
+            label: 'tomate',
           ),
         ];
 
@@ -328,7 +363,8 @@ void main() {
         notifier.resetToDefault('tomate');
 
         expect(notifier.state.getQuantity('tomate')!.grams, 100);
-        expect(notifier.state.getQuantity('tomate')!.source, QuantitySource.defaultValue);
+        expect(notifier.state.getQuantity('tomate')!.source,
+            QuantitySource.defaultValue);
       });
 
       test('ignora ingrediente inexistente', () {
