@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/routes.dart';
 import '../../../data/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -189,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
       expandedHeight: 200,
       pinned: true,
       leading: IconButton(
-        onPressed: () => context.pop(),
+        onPressed: () => context.goBackOrHome(),
         icon: const Icon(Icons.arrow_back),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -480,7 +481,9 @@ class ProfileScreen extends ConsumerWidget {
     if (profile.heightCm == null) missingFields.add('Altura');
     if (profile.activityLevel == null) missingFields.add('Nivel de actividad');
     if (profile.nutritionGoal == null) missingFields.add('Meta nutricional');
-    if (profile.dailyCalorieTarget == null) missingFields.add('Calorias diarias');
+    if (profile.dailyCalorieTarget == null) {
+      missingFields.add('Calorias diarias');
+    }
 
     if (missingFields.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -522,19 +525,19 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ...missingFields.map((field) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: theme.colorScheme.onSurfaceVariant,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(field),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Text(field),
-                  ],
-                ),
-              )),
+                  )),
             ],
           ),
           shape: RoundedRectangleBorder(

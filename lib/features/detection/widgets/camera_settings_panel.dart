@@ -76,14 +76,17 @@ class _SettingsContentState extends ConsumerState<_SettingsContent> {
   }
 
   Future<void> _saveSettings() async {
-    await ref.read(cameraSettingsProvider.notifier).updateSettings(_localSettings);
+    await ref
+        .read(cameraSettingsProvider.notifier)
+        .updateSettings(_localSettings);
     if (mounted) {
       Navigator.of(context).pop(true);
     }
   }
 
   Future<void> _resetToDefaults() async {
-    final defaults = await ref.read(cameraSettingsProvider.notifier).resetToDefaults();
+    final defaults =
+        await ref.read(cameraSettingsProvider.notifier).resetToDefaults();
     setState(() {
       _localSettings = defaults;
       _hasChanges = true;
@@ -182,7 +185,18 @@ class _SettingsContentState extends ConsumerState<_SettingsContent> {
             _ConfidenceSlider(
               value: _localSettings.confidenceThreshold,
               onChanged: (value) {
-                _updateSetting(_localSettings.copyWith(confidenceThreshold: value));
+                _updateSetting(
+                    _localSettings.copyWith(confidenceThreshold: value));
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Umbral IoU
+            _IouThresholdSlider(
+              value: _localSettings.iouThreshold,
+              onChanged: (value) {
+                _updateSetting(_localSettings.copyWith(iouThreshold: value));
               },
             ),
 
@@ -227,7 +241,8 @@ class _SettingsContentState extends ConsumerState<_SettingsContent> {
                 // Restaurar valores por defecto
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _localSettings.isDefault ? null : _resetToDefaults,
+                    onPressed:
+                        _localSettings.isDefault ? null : _resetToDefaults,
                     icon: const Icon(Icons.restore),
                     label: const Text('Restaurar'),
                   ),
@@ -588,6 +603,99 @@ class _ConfidenceSlider extends StatelessWidget {
     if (confidence >= 0.7) return AppColors.confidenceHigh;
     if (confidence >= 0.5) return AppColors.confidenceMedium;
     return AppColors.confidenceLow;
+  }
+}
+
+/// Slider para umbral IoU (Non-Maximum Suppression).
+class _IouThresholdSlider extends StatelessWidget {
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  const _IouThresholdSlider({
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final percentage = (value * 100).toInt();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.grid_on,
+                  size: 20,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'IoU (NMS)',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: _getIouColor(value).withAlpha(30),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$percentage%',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: _getIouColor(value),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Slider(
+          value: value,
+          min: CameraSettings.minIouThreshold,
+          max: CameraSettings.maxIouThreshold,
+          divisions: 6,
+          activeColor: _getIouColor(value),
+          inactiveColor: _getIouColor(value).withAlpha(50),
+          onChanged: onChanged,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Mas agresivo',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+              Text(
+                'Mas detecciones',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getIouColor(double iou) {
+    if (iou <= 0.25) return AppColors.secondaryOrange;
+    if (iou <= 0.35) return AppColors.primaryGreen;
+    return AppColors.confidenceMedium;
   }
 }
 

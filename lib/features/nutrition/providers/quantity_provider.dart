@@ -95,7 +95,8 @@ final hasPortionsProvider =
 ///
 /// [args] Tupla (ingredientLabel, portionName).
 final findPortionProvider =
-    FutureProvider.family<StandardPortion?, (String, String)>((ref, args) async {
+    FutureProvider.family<StandardPortion?, (String, String)>(
+        (ref, args) async {
   await ref.watch(portionInitProvider.future);
 
   final (ingredientLabel, portionName) = args;
@@ -104,7 +105,8 @@ final findPortionProvider =
 });
 
 /// Provider para obtener lista de ingredientes con porciones definidas.
-final ingredientsWithPortionsProvider = FutureProvider<List<String>>((ref) async {
+final ingredientsWithPortionsProvider =
+    FutureProvider<List<String>>((ref) async {
   await ref.watch(portionInitProvider.future);
 
   final repository = ref.watch(portionRepositoryProvider);
@@ -139,8 +141,8 @@ final portionStatsProvider = FutureProvider<PortionStats>((ref) async {
 /// final notifier = ref.read(ingredientQuantitiesProvider.notifier);
 /// notifier.updateQuantityGrams('tomate', 150);
 /// ```
-final ingredientQuantitiesProvider =
-    StateNotifierProvider<IngredientQuantitiesNotifier, IngredientQuantitiesState>(
+final ingredientQuantitiesProvider = StateNotifierProvider<
+    IngredientQuantitiesNotifier, IngredientQuantitiesState>(
   (ref) => IngredientQuantitiesNotifier(),
 );
 

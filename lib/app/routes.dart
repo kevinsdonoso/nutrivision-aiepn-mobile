@@ -444,7 +444,6 @@ class _ForgotPasswordPlaceholder extends StatelessWidget {
   }
 }
 
-
 /// Página placeholder para resultados nutricionales.
 class _ResultsPlaceholderPage extends StatelessWidget {
   const _ResultsPlaceholderPage();

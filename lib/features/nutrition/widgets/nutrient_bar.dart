@@ -55,9 +55,8 @@ class NutrientBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = maxValue > 0 ? (value / maxValue).clamp(0.0, 1.0) : 0.0;
-    final valueText = showDecimals
-        ? value.toStringAsFixed(1)
-        : value.toStringAsFixed(0);
+    final valueText =
+        showDecimals ? value.toStringAsFixed(1) : value.toStringAsFixed(0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

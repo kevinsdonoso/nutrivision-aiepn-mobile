@@ -221,6 +221,21 @@ dev_dependencies:
   # Generador específico para providers de Riverpod
   riverpod_generator: ^2.6.2
 
+  # Generador de iconos de launcher para Android/iOS
+  # Ejecutar: dart run flutter_launcher_icons
+  flutter_launcher_icons: ^0.13.1
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE FLUTTER LAUNCHER ICONS
+# ═══════════════════════════════════════════════════════════════════════════
+flutter_launcher_icons:
+  android: true
+  ios: false  # Proyecto solo Android por ahora
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#4CAF50"  # Verde primario
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  remove_alpha_ios: true
+
 # ═══════════════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN DE FLUTTER
 # ═══════════════════════════════════════════════════════════════════════════

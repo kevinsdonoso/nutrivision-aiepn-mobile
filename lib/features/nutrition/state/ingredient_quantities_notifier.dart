@@ -114,7 +114,8 @@ class IngredientQuantitiesState {
 /// ```
 class IngredientQuantitiesNotifier
     extends StateNotifier<IngredientQuantitiesState> {
-  IngredientQuantitiesNotifier() : super(const IngredientQuantitiesState.initial());
+  IngredientQuantitiesNotifier()
+      : super(const IngredientQuantitiesState.initial());
 
   // ═══════════════════════════════════════════════════════════════════════════
   // METODOS DE ACTUALIZACION
@@ -135,7 +136,8 @@ class IngredientQuantitiesNotifier
       source: QuantitySource.manual,
     );
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities[label] = newQuantity;
 
     state = state.copyWith(quantities: newQuantities);
@@ -152,7 +154,8 @@ class IngredientQuantitiesNotifier
       source: QuantitySource.manual,
     );
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities[label] = newQuantity;
 
     state = state.copyWith(quantities: newQuantities);
@@ -162,7 +165,8 @@ class IngredientQuantitiesNotifier
   ///
   /// Util cuando se necesita especificar todos los parametros.
   void updateQuantity(IngredientQuantity quantity) {
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities[quantity.label] = quantity;
 
     state = state.copyWith(quantities: newQuantities);
@@ -172,7 +176,8 @@ class IngredientQuantitiesNotifier
   ///
   /// [quantities] Mapa de etiqueta a cantidad.
   void updateMultiple(Map<String, IngredientQuantity> quantities) {
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities.addAll(quantities);
 
     state = state.copyWith(quantities: newQuantities);
@@ -195,7 +200,8 @@ class IngredientQuantitiesNotifier
     // Obtener etiquetas unicas
     final uniqueLabels = detections.map((d) => d.label).toSet();
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
 
     for (final label in uniqueLabels) {
       if (overwrite || !newQuantities.containsKey(label)) {
@@ -216,7 +222,8 @@ class IngredientQuantitiesNotifier
     if (labels.isEmpty) return;
 
     final uniqueLabels = labels.toSet();
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
 
     for (final label in uniqueLabels) {
       if (overwrite || !newQuantities.containsKey(label)) {
@@ -237,7 +244,8 @@ class IngredientQuantitiesNotifier
   void resetToDefault(String label) {
     if (!state.quantities.containsKey(label)) return;
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities[label] = IngredientQuantity.defaultValue(label);
 
     state = state.copyWith(quantities: newQuantities);
@@ -261,7 +269,8 @@ class IngredientQuantitiesNotifier
   void removeIngredient(String label) {
     if (!state.quantities.containsKey(label)) return;
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     newQuantities.remove(label);
 
     state = state.copyWith(quantities: newQuantities);
@@ -273,7 +282,8 @@ class IngredientQuantitiesNotifier
   void removeIngredients(List<String> labels) {
     if (labels.isEmpty) return;
 
-    final newQuantities = Map<String, IngredientQuantity>.from(state.quantities);
+    final newQuantities =
+        Map<String, IngredientQuantity>.from(state.quantities);
     for (final label in labels) {
       newQuantities.remove(label);
     }

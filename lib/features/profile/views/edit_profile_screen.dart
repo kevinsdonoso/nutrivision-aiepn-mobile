@@ -8,8 +8,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../app/routes.dart';
 import '../../../data/models/user_profile.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -148,7 +148,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     result.when(
       success: (_) {
         _showSuccessSnackBar('Perfil actualizado correctamente');
-        context.pop();
+        context.goBackOrHome();
       },
       failure: (message, _) {
         _showErrorSnackBar(message);
@@ -267,7 +267,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (didPop) return;
         final shouldPop = await _onWillPop();
         if (shouldPop && context.mounted) {
-          context.pop();
+          context.goBackOrHome();
         }
       },
       child: Scaffold(
@@ -279,10 +279,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               if (_hasChanges) {
                 final shouldPop = await _onWillPop();
                 if (shouldPop && context.mounted) {
-                  context.pop();
+                  context.goBackOrHome();
                 }
               } else {
-                context.pop();
+                context.goBackOrHome();
               }
             },
           ),
@@ -675,8 +675,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget _buildActivityLevelSelector(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
-    final borderColor = isDark ? theme.colorScheme.outline : Colors.grey.shade300;
-    final unselectedRadioColor = isDark ? theme.colorScheme.outline : Colors.grey.shade400;
+    final borderColor =
+        isDark ? theme.colorScheme.outline : Colors.grey.shade300;
+    final unselectedRadioColor =
+        isDark ? theme.colorScheme.outline : Colors.grey.shade400;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,14 +707,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : borderColor,
+                    color: isSelected ? theme.colorScheme.primary : borderColor,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  color:
-                      isSelected ? theme.colorScheme.primary.withAlpha(20) : null,
+                  color: isSelected
+                      ? theme.colorScheme.primary.withAlpha(20)
+                      : null,
                 ),
                 child: Row(
                   children: [
@@ -772,7 +773,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget _buildNutritionGoalSelector(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     final secondaryTextColor = theme.colorScheme.onSurfaceVariant;
-    final borderColor = isDark ? theme.colorScheme.outline : Colors.grey.shade300;
+    final borderColor =
+        isDark ? theme.colorScheme.outline : Colors.grey.shade300;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
