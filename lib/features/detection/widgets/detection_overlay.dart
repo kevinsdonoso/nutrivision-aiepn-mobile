@@ -41,9 +41,10 @@ class DetectionOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Limitar número de detecciones mostradas
-    final displayDetections = detections.length > AppConstants.maxOverlayDetections
-        ? detections.sublist(0, AppConstants.maxOverlayDetections)
-        : detections;
+    final displayDetections =
+        detections.length > AppConstants.maxOverlayDetections
+            ? detections.sublist(0, AppConstants.maxOverlayDetections)
+            : detections;
 
     return CustomPaint(
       size: previewSize,
@@ -71,8 +72,7 @@ class _DetectionOverlayPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.5;
 
-  final Paint _backgroundPaint = Paint()
-    ..style = PaintingStyle.fill;
+  final Paint _backgroundPaint = Paint()..style = PaintingStyle.fill;
 
   // OPTIMIZACIÓN: Cache estático de TextPainters para evitar recreación
   static final Map<String, TextPainter> _labelCache = {};

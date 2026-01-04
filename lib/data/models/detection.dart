@@ -301,7 +301,8 @@ class Detection {
 
   /// Indica si la detección tiene confianza media (50% - 70%)
   bool get isMediumConfidence =>
-      confidence >= mediumConfidenceThreshold && confidence < highConfidenceThreshold;
+      confidence >= mediumConfidenceThreshold &&
+      confidence < highConfidenceThreshold;
 
   /// Indica si la detección tiene baja confianza (< 50%)
   bool get isLowConfidence => confidence < mediumConfidenceThreshold;
@@ -334,8 +335,10 @@ class Detection {
     final intersectY2 = y2 < other.y2 ? y2 : other.y2;
 
     // Calcular área de intersección
-    final intersectWidth = (intersectX2 - intersectX1) > 0 ? (intersectX2 - intersectX1) : 0.0;
-    final intersectHeight = (intersectY2 - intersectY1) > 0 ? (intersectY2 - intersectY1) : 0.0;
+    final intersectWidth =
+        (intersectX2 - intersectX1) > 0 ? (intersectX2 - intersectX1) : 0.0;
+    final intersectHeight =
+        (intersectY2 - intersectY1) > 0 ? (intersectY2 - intersectY1) : 0.0;
     final intersectionArea = intersectWidth * intersectHeight;
 
     // Calcular área de unión
@@ -361,8 +364,7 @@ class Detection {
 
   /// Verifica si esta detección contiene completamente a otra.
   bool contains(Detection other) {
-    return x1 <= other.x1 && y1 <= other.y1 &&
-        x2 >= other.x2 && y2 >= other.y2;
+    return x1 <= other.x1 && y1 <= other.y1 && x2 >= other.x2 && y2 >= other.y2;
   }
 
   /// Crea una copia de esta detección con valores modificados.
@@ -395,7 +397,8 @@ class Detection {
   /// Throws [ArgumentError] si los factores de escala son <= 0.
   Detection scale(double scaleX, double scaleY) {
     if (scaleX <= 0 || scaleY <= 0) {
-      throw ArgumentError('Los factores de escala deben ser positivos: scaleX=$scaleX, scaleY=$scaleY');
+      throw ArgumentError(
+          'Los factores de escala deben ser positivos: scaleX=$scaleX, scaleY=$scaleY');
     }
 
     return Detection._internal(
@@ -447,7 +450,15 @@ class Detection {
   factory Detection.fromJson(Map<String, dynamic> json) {
     try {
       // Validar campos requeridos
-      final requiredFields = ['x1', 'y1', 'x2', 'y2', 'confidence', 'classId', 'label'];
+      final requiredFields = [
+        'x1',
+        'y1',
+        'x2',
+        'y2',
+        'confidence',
+        'classId',
+        'label'
+      ];
       for (final field in requiredFields) {
         if (!json.containsKey(field)) {
           throw DetectionException(
@@ -603,9 +614,8 @@ extension DetectionListExtension on List<Detection> {
   /// Ordena las detecciones por área (mayor a menor).
   List<Detection> sortedByArea({bool ascending = false}) {
     final sorted = [...this];
-    sorted.sort((a, b) => ascending
-        ? a.area.compareTo(b.area)
-        : b.area.compareTo(a.area));
+    sorted.sort((a, b) =>
+        ascending ? a.area.compareTo(b.area) : b.area.compareTo(a.area));
     return sorted;
   }
 
@@ -769,8 +779,10 @@ class DetectionStats {
       lowConfidence: detections.where((d) => d.isLowConfidence).length,
       uniqueIngredients: detections.uniqueLabels.length,
       averageConfidence: detections.averageConfidence,
-      maxConfidence: detections.map((d) => d.confidence).reduce((a, b) => a > b ? a : b),
-      minConfidence: detections.map((d) => d.confidence).reduce((a, b) => a < b ? a : b),
+      maxConfidence:
+          detections.map((d) => d.confidence).reduce((a, b) => a > b ? a : b),
+      minConfidence:
+          detections.map((d) => d.confidence).reduce((a, b) => a < b ? a : b),
       mostFrequentIngredient: mostFrequent,
       mostFrequentCount: mostFrequentCount,
     );

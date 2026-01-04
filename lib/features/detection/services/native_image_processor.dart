@@ -18,7 +18,8 @@ class NativeImageProcessor {
   static const String _tag = 'NativeProcessor';
 
   /// Canal de comunicación con código nativo.
-  static const _channel = MethodChannel('edu.epn.nutrivision/native_image_processor');
+  static const _channel =
+      MethodChannel('edu.epn.nutrivision/native_image_processor');
 
   /// Cache del soporte NEON.
   static bool? _neonSupported;
@@ -34,7 +35,8 @@ class NativeImageProcessor {
     if (_neonSupported != null) return _neonSupported!;
 
     try {
-      _neonSupported = await _channel.invokeMethod<bool>('isNeonSupported') ?? false;
+      _neonSupported =
+          await _channel.invokeMethod<bool>('isNeonSupported') ?? false;
       return _neonSupported!;
     } catch (e) {
       AppLogger.warning('Error verificando NEON: $e', tag: _tag);
