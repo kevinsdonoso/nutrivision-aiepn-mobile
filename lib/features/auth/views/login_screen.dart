@@ -254,7 +254,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         suffixIcon: IconButton(
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
           icon: Icon(
-            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
           ),
         ),
         border: OutlineInputBorder(

@@ -74,10 +74,14 @@ class CameraFrameProcessor {
   /// [cameraImage] - Frame de la cámara en formato YUV420
   /// [sensorOrientation] - Orientación del sensor de la cámara en grados
   /// [isFrontCamera] - Si es la cámara frontal (para espejo)
+  /// [confidenceThreshold] - Umbral mínimo de confianza para detecciones
+  /// [iouThreshold] - Umbral IoU para Non-Maximum Suppression
   Future<ProcessingResult?> processFrame(
     CameraImage cameraImage, {
     int sensorOrientation = 90,
     bool isFrontCamera = false,
+    double? confidenceThreshold,
+    double? iouThreshold,
   }) async {
     // SIMPLIFICADO: Solo verificar si está ocupado
     // El flag isBusy ya proporciona throttling natural
@@ -90,11 +94,18 @@ class CameraFrameProcessor {
     _isProcessing = true;
 
     try {
-      final stopwatch = Stopwatch()..start();
+      // ════════════════════════════════════════════════════════════
+      // INSTRUMENTACIÓN: Timers por etapa
+      // ════════════════════════════════════════════════════════════
+      final stopwatchTotal = Stopwatch()..start();
+      final stopwatchConversion = Stopwatch();
 
       img.Image? finalImage;
       int outputWidth = cameraImage.width;
       int outputHeight = cameraImage.height;
+
+      // ETAPA 1: Conversión YUV→RGB
+      stopwatchConversion.start();
 
       // Intentar conversión nativa primero (más rápida)
       if (NativeImageProcessor.isAvailable) {
@@ -127,23 +138,47 @@ class CameraFrameProcessor {
         }
       }
 
+      stopwatchConversion.stop();
+
       if (finalImage == null) {
         AppLogger.warning('No se pudo convertir el frame', tag: _tag);
         return null;
       }
 
-      // Ejecutar detección (verbose: false para evitar logs en tiempo real)
-      final detections = await _detector.detect(
-        finalImage,
-        confidenceThreshold: AppConstants.realtimeConfidenceThreshold,
-        verbose: false,
+      // Ejecutar detección con pipeline unificado (LIVE)
+      final detections = await _detector.detectFromSource(
+        source: DetectionSource.live,
+        image: finalImage,
+        confidenceThreshold:
+            confidenceThreshold ?? AppConstants.realtimeConfidenceThreshold,
+        iouThreshold: iouThreshold,
       );
 
-      stopwatch.stop();
+      stopwatchTotal.stop();
+
+      // Loggear métricas cada 10 inferencias para no saturar
+      if (_frameCounter % 10 == 0) {
+        final detectionLabels = detections.map((d) => d.label).join(', ');
+        AppLogger.tree(
+          '📊 Frame #$_frameCounter Performance',
+          [
+            '📷 Input: ${cameraImage.width}x${cameraImage.height} YUV',
+            '🖼️  Output: ${outputWidth}x$outputHeight RGB',
+            '🎚️  Confidence: ${(confidenceThreshold ?? AppConstants.realtimeConfidenceThreshold).toStringAsFixed(2)}',
+            '⏱️  Total: ${stopwatchTotal.elapsedMilliseconds}ms',
+            '   ├─ YUV→RGB: ${stopwatchConversion.elapsedMilliseconds}ms',
+            '   └─ Detección: ${stopwatchTotal.elapsedMilliseconds - stopwatchConversion.elapsedMilliseconds}ms',
+            '📈 FPS: ${(1000 / stopwatchTotal.elapsedMilliseconds).toStringAsFixed(1)}',
+            '🎯 DETECCIONES: ${detections.length}',
+            if (detections.isNotEmpty) '   └─ Labels: $detectionLabels',
+          ],
+          tag: _tag,
+        );
+      }
 
       return ProcessingResult(
         detections: detections,
-        inferenceTimeMs: stopwatch.elapsedMilliseconds,
+        inferenceTimeMs: stopwatchTotal.elapsedMilliseconds,
         imageWidth: outputWidth,
         imageHeight: outputHeight,
       );
@@ -173,10 +208,11 @@ class CameraFrameProcessor {
       final uPlane = cameraImage.planes[1];
       final vPlane = cameraImage.planes[2];
 
+      // OPTIMIZACIÓN: Evitar copias innecesarias, pasar bytes directamente
       final rgbBytes = await NativeImageProcessor.convertYuvToRgb(
-        yBytes: Uint8List.fromList(yPlane.bytes),
-        uBytes: Uint8List.fromList(uPlane.bytes),
-        vBytes: Uint8List.fromList(vPlane.bytes),
+        yBytes: yPlane.bytes,
+        uBytes: uPlane.bytes,
+        vBytes: vPlane.bytes,
         width: cameraImage.width,
         height: cameraImage.height,
         yRowStride: yPlane.bytesPerRow,
@@ -239,7 +275,9 @@ class CameraFrameProcessor {
     );
 
     if (!conversionResult.isSuccess || conversionResult.rgbBytes == null) {
-      AppLogger.warning('Conversión en isolate falló: ${conversionResult.error}', tag: _tag);
+      AppLogger.warning(
+          'Conversión en isolate falló: ${conversionResult.error}',
+          tag: _tag);
       return null;
     }
 
@@ -288,7 +326,8 @@ class CameraFrameProcessor {
         flipHorizontal: isFrontCamera,
       );
     } catch (e) {
-      AppLogger.error('Error preparando input para isolate', tag: _tag, error: e);
+      AppLogger.error('Error preparando input para isolate',
+          tag: _tag, error: e);
       return null;
     }
   }
@@ -332,8 +371,7 @@ class ProcessingResult {
   int get count => detections.length;
 
   /// FPS estimado basado en tiempo de inferencia.
-  double get estimatedFps =>
-      inferenceTimeMs > 0 ? 1000 / inferenceTimeMs : 0;
+  double get estimatedFps => inferenceTimeMs > 0 ? 1000 / inferenceTimeMs : 0;
 
   @override
   String toString() =>

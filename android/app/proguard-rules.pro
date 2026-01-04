@@ -20,3 +20,8 @@
 }
 
 -dontwarn org.tensorflow.lite.gpu.**
+
+# Google Play Core (Deferred Components)
+-dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
+-dontwarn com.google.android.play.core.splitinstall.**
+-dontwarn com.google.android.play.core.tasks.**

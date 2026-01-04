@@ -21,6 +21,7 @@ import '../features/detection/views/detection_live_screen.dart';
 import '../features/home/views/home_screen.dart';
 import '../features/onboarding/views/splash_screen.dart';
 import '../features/onboarding/views/welcome_screen.dart';
+import '../features/profile/views/edit_profile_screen.dart';
 import '../features/profile/views/profile_screen.dart';
 
 /// Provider del router de la aplicación.
@@ -224,13 +225,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Edit Profile (placeholder por ahora)
+      // Edit Profile
       GoRoute(
         path: AppConstants.routeEditProfile,
         name: 'edit-profile',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
-          child: const _EditProfilePlaceholder(),
+          child: const EditProfileScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(
@@ -369,6 +370,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ProfileScreen(),
     ),
     GoRoute(
+      path: AppConstants.routeEditProfile,
+      name: 'edit-profile-legacy',
+      builder: (context, state) => const EditProfileScreen(),
+    ),
+    GoRoute(
       path: AppConstants.routeGallery,
       name: 'gallery-legacy',
       builder: (context, state) => const GalleryDetectionPage(),
@@ -416,57 +422,6 @@ class _ForgotPasswordPlaceholder extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'La funcionalidad de recuperación de contraseña estará disponible pronto.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withAlpha(153),
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              OutlinedButton.icon(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Volver'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Página placeholder para editar perfil.
-class _EditProfilePlaceholder extends StatelessWidget {
-  const _EditProfilePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Perfil'),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.edit_outlined,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary.withAlpha(128),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Próximamente',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'La edición de perfil estará disponible pronto.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context)
                           .colorScheme
