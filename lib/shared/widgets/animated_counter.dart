@@ -149,7 +149,8 @@ class _AnimatedCounterState extends State<AnimatedCounter>
 
     final defaultUnitStyle = widget.unitStyle ??
         theme.textTheme.bodyLarge?.copyWith(
-          color: widget.color?.withAlpha(179) ?? Colors.grey[600], // 0.7 * 255 ≈ 179
+          color: widget.color?.withAlpha(179) ??
+              Colors.grey[600], // 0.7 * 255 ≈ 179
         );
 
     return AnimatedBuilder(

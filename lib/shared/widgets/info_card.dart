@@ -185,9 +185,8 @@ class _InfoCardState extends State<InfoCard>
         onTapCancel: _handleTapCancel,
         onTap: widget.onTap,
         child: Card(
-          elevation: widget.style == InfoCardStyle.elevated
-              ? widget.elevation
-              : 0,
+          elevation:
+              widget.style == InfoCardStyle.elevated ? widget.elevation : 0,
           color: widget.style == InfoCardStyle.filled
               ? widget.color.withAlpha(26) // 0.1 * 255 ≈ 26
               : null,
