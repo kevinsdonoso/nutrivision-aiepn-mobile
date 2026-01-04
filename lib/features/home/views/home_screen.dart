@@ -9,156 +9,207 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../shared/widgets/runtime_mode_indicator.dart';
 
 /// Pantalla principal de la aplicación.
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOpacity = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // Calcular opacidad basada en el scroll (fade out de 0 a 150 pixels)
+    final offset = _scrollController.offset;
+    final opacity = (1.0 - (offset / 150)).clamp(0.0, 1.0);
+
+    if (opacity != _scrollOpacity) {
+      setState(() {
+        _scrollOpacity = opacity;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(currentUserProfileProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // AppBar con diseño expandible
-            SliverAppBar(
-              expandedHeight: 200,
-              floating: false,
-              pinned: true,
-              backgroundColor: AppColors.primaryGreen,
-              actions: [
-                // Botón de perfil/avatar
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _ProfileButton(
-                    isAuthenticated: isAuthenticated,
-                    photoUrl: profile?.photoUrl,
-                    initials: profile?.initials ?? '?',
-                    onTap: () {
-                      if (isAuthenticated) {
-                        context.push(AppConstants.routeProfile);
-                      } else {
-                        context.push(AppConstants.routeLogin);
-                      }
-                    },
+      body: Stack(
+        children: [
+          SafeArea(
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                // AppBar con diseño expandible
+                SliverAppBar(
+                  expandedHeight: 200,
+                  floating: false,
+                  pinned: true,
+                  backgroundColor: AppColors.primaryGreen,
+                  centerTitle: true,
+                  actions: [
+                    // Botón de perfil/avatar
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _ProfileButton(
+                        isAuthenticated: isAuthenticated,
+                        photoUrl: profile?.photoUrl,
+                        initials: profile?.initials ?? '?',
+                        onTap: () {
+                          if (isAuthenticated) {
+                            context.push(AppConstants.routeProfile);
+                          } else {
+                            context.push(AppConstants.routeLogin);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    centerTitle: true,
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.primaryGreen,
+                            AppColors.primaryGreenDark,
+                          ],
+                        ),
+                      ),
+                      child: Opacity(
+                        opacity: _scrollOpacity,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Icono de cubiertos
+                                const Icon(
+                                  Icons.restaurant_menu,
+                                  size: 60,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(height: 12),
+                                // Texto "NutriVision AI"
+                                Text(
+                                  'NutriVision AI',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                // Saludo personalizado
+                                if (isAuthenticated && profile != null)
+                                  Text(
+                                    'Hola, ${profile.displayName}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Contenido principal
+                SliverPadding(
+                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const SizedBox(height: 8),
+
+                      // Sección de título
+                      Text(
+                        '¿Cómo quieres detectar?',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Card: Detectar desde Galería
+                      _DetectionOptionCard(
+                        icon: Icons.photo_library_outlined,
+                        title: 'Desde Galería',
+                        subtitle: 'Selecciona una imagen de tu galería',
+                        color: AppColors.primaryGreen,
+                        onTap: () => context.go(AppConstants.routeGallery),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Card: Detectar con Cámara
+                      _DetectionOptionCard(
+                        icon: Icons.camera_alt_outlined,
+                        title: 'Con Cámara',
+                        subtitle: 'Detecta ingredientes en tiempo real',
+                        color: AppColors.secondaryOrange,
+                        onTap: () => context.go(AppConstants.routeCamera),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Sección de información
+                      Text(
+                        'Platos soportados',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Grid de platos
+                      _SupportedDishesGrid(),
+                      const SizedBox(height: 32),
+
+                      // Estadísticas del modelo
+                      _ModelInfoCard(),
+                      const SizedBox(height: 24),
+                    ]),
                   ),
                 ),
               ],
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                title: Text(
-                  AppConstants.appName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.primaryGreen,
-                        AppColors.primaryGreenDark,
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.restaurant_menu,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        // Saludo personalizado si está autenticado
-                        if (isAuthenticated && profile != null)
-                          Text(
-                            'Hola, ${profile.displayName.split(' ').first}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          )
-                        else
-                          Text(
-                            AppConstants.appDescription,
-                            style: TextStyle(
-                              color: Colors.white.withAlpha(230),
-                              fontSize: 14,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
-
-            // Contenido principal
-            SliverPadding(
-              padding: const EdgeInsets.all(AppConstants.paddingMedium),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 8),
-
-                  // Sección de título
-                  Text(
-                    '¿Cómo quieres detectar?',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Card: Detectar desde Galería
-                  _DetectionOptionCard(
-                    icon: Icons.photo_library_outlined,
-                    title: 'Desde Galería',
-                    subtitle: 'Selecciona una imagen de tu galería',
-                    color: AppColors.primaryGreen,
-                    onTap: () => context.go(AppConstants.routeGallery),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Card: Detectar con Cámara
-                  _DetectionOptionCard(
-                    icon: Icons.camera_alt_outlined,
-                    title: 'Con Cámara',
-                    subtitle: 'Detecta ingredientes en tiempo real',
-                    color: AppColors.secondaryOrange,
-                    onTap: () => context.go(AppConstants.routeCamera),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Sección de información
-                  Text(
-                    'Platos soportados',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Grid de platos
-                  _SupportedDishesGrid(),
-                  const SizedBox(height: 32),
-
-                  // Estadísticas del modelo
-                  _ModelInfoCard(),
-                  const SizedBox(height: 24),
-                ]),
-              ),
+          ),
+          // RuntimeModeBadge en esquina superior izquierda
+          const SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(left: 16, top: 16),
+              child: RuntimeModeBadge(show: true),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -168,7 +219,7 @@ class HomePage extends ConsumerWidget {
 // WIDGETS PRIVADOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Card para opción de detección.
+/// Card para opcion de deteccion.
 class _DetectionOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -186,6 +237,9 @@ class _DetectionOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       elevation: AppConstants.elevationSmall,
       shape: RoundedRectangleBorder(
@@ -198,13 +252,14 @@ class _DetectionOptionCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppConstants.paddingMedium),
           child: Row(
             children: [
-              // Ícono con fondo circular
+              // Icono con fondo circular
               Container(
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: color.withAlpha(26),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                  color: isDark ? color.withAlpha(40) : color.withAlpha(26),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusMedium),
                 ),
                 child: Icon(
                   icon,
@@ -221,14 +276,14 @@ class _DetectionOptionCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -287,13 +342,18 @@ class _DishChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primaryGreenLight.withAlpha(128),
+        color: isDark
+            ? AppColors.chipBackgroundDark
+            : AppColors.primaryGreenLight.withAlpha(128),
         borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
         border: Border.all(
-          color: AppColors.primaryGreen.withAlpha(51),
+          color: theme.colorScheme.primary.withAlpha(51),
         ),
       ),
       child: Row(
@@ -302,15 +362,17 @@ class _DishChip extends StatelessWidget {
           Icon(
             icon,
             size: 16,
-            color: AppColors.primaryGreenDark,
+            color: theme.colorScheme.primary,
           ),
           const SizedBox(width: 6),
           Text(
             name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.primaryGreenDark,
+              color: isDark
+                  ? AppColors.primaryGreenDarkMode
+                  : AppColors.primaryGreenDark,
             ),
           ),
         ],
@@ -323,9 +385,14 @@ class _DishChip extends StatelessWidget {
 class _ModelInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Card(
       elevation: 0,
-      color: AppColors.backgroundLight,
+      color: isDark
+          ? theme.colorScheme.surfaceContainerHighest
+          : AppColors.backgroundLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
       ),
@@ -338,15 +405,15 @@ class _ModelInfoCard extends StatelessWidget {
               children: [
                 Icon(
                   Icons.psychology_outlined,
-                  color: AppColors.primaryGreen,
+                  color: theme.colorScheme.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Modelo de IA',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.primaryGreen,
-                      ),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ],
             ),

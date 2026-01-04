@@ -75,7 +75,8 @@ class NutritionService {
   Future<void> initialize() async {
     if (isInitialized) return;
 
-    AppLogger.info('Inicializando NutritionService...', tag: 'NutritionService');
+    AppLogger.info('Inicializando NutritionService...',
+        tag: 'NutritionService');
     await _repository.initialize();
     AppLogger.info('NutritionService listo', tag: 'NutritionService');
   }

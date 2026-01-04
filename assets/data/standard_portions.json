@@ -1,0 +1,375 @@
+{
+  "tomate": [
+    {"name": "1 unidad pequeña", "grams": 90},
+    {"name": "1 unidad mediana", "grams": 150},
+    {"name": "1 unidad grande", "grams": 250},
+    {"name": "1 rodaja", "grams": 20},
+    {"name": "1 taza picado", "grams": 180}
+  ],
+  "tomate_cherry": [
+    {"name": "1 unidad", "grams": 15},
+    {"name": "5 unidades", "grams": 75},
+    {"name": "10 unidades", "grams": 150},
+    {"name": "1 taza", "grams": 150}
+  ],
+  "queso_mozzarella": [
+    {"name": "1 rodaja", "grams": 30},
+    {"name": "1 taza rallado", "grams": 110},
+    {"name": "1 bola pequeña", "grams": 125},
+    {"name": "30g", "grams": 30}
+  ],
+  "albahaca": [
+    {"name": "1 hoja", "grams": 1},
+    {"name": "5 hojas", "grams": 5},
+    {"name": "1 cucharada picada", "grams": 5},
+    {"name": "1/4 taza picada", "grams": 10}
+  ],
+  "aceituna_negra": [
+    {"name": "1 unidad", "grams": 5},
+    {"name": "5 unidades", "grams": 25},
+    {"name": "10 unidades", "grams": 50},
+    {"name": "1 cucharada", "grams": 15}
+  ],
+  "aceituna_verde": [
+    {"name": "1 unidad", "grams": 5},
+    {"name": "5 unidades", "grams": 25},
+    {"name": "10 unidades", "grams": 50},
+    {"name": "1 cucharada", "grams": 15}
+  ],
+  "lechuga": [
+    {"name": "1 hoja", "grams": 10},
+    {"name": "1 taza picada", "grams": 50},
+    {"name": "1 taza rallada", "grams": 72}
+  ],
+  "limon": [
+    {"name": "1 unidad", "grams": 60},
+    {"name": "1 cucharada jugo", "grams": 15},
+    {"name": "1 rodaja", "grams": 10}
+  ],
+  "pimiento_amarillo": [
+    {"name": "1 unidad pequeña", "grams": 120},
+    {"name": "1 unidad mediana", "grams": 180},
+    {"name": "1 taza picado", "grams": 150}
+  ],
+  "pimiento_rojo": [
+    {"name": "1 unidad pequeña", "grams": 120},
+    {"name": "1 unidad mediana", "grams": 180},
+    {"name": "1 taza picado", "grams": 150}
+  ],
+  "pimiento_verde": [
+    {"name": "1 unidad pequeña", "grams": 120},
+    {"name": "1 unidad mediana", "grams": 180},
+    {"name": "1 taza picado", "grams": 150}
+  ],
+  "rucula": [
+    {"name": "1 taza", "grams": 20},
+    {"name": "1 puñado", "grams": 25}
+  ],
+  "aguacate": [
+    {"name": "1/2 unidad", "grams": 100},
+    {"name": "1 unidad", "grams": 200},
+    {"name": "1 cucharada", "grams": 20}
+  ],
+  "aji_picante": [
+    {"name": "1 unidad", "grams": 15},
+    {"name": "1 cucharadita picado", "grams": 5}
+  ],
+  "ajo": [
+    {"name": "1 diente", "grams": 5},
+    {"name": "3 dientes", "grams": 15},
+    {"name": "1 cucharadita picado", "grams": 5}
+  ],
+  "cebolla": [
+    {"name": "1 unidad pequeña", "grams": 100},
+    {"name": "1 unidad mediana", "grams": 150},
+    {"name": "1 unidad grande", "grams": 250},
+    {"name": "1 taza picada", "grams": 160}
+  ],
+  "cebolla_blanca": [
+    {"name": "1 unidad pequeña", "grams": 100},
+    {"name": "1 unidad mediana", "grams": 150},
+    {"name": "1 taza picada", "grams": 160}
+  ],
+  "perejil": [
+    {"name": "1 cucharada picado", "grams": 4},
+    {"name": "1 ramita", "grams": 5},
+    {"name": "1/4 taza picado", "grams": 15}
+  ],
+  "sal": [
+    {"name": "1 pizca", "grams": 0.5},
+    {"name": "1 cucharadita", "grams": 6},
+    {"name": "1 cucharada", "grams": 18}
+  ],
+  "pimienta_negra": [
+    {"name": "1 pizca", "grams": 0.5},
+    {"name": "1 cucharadita", "grams": 2},
+    {"name": "1 cucharada", "grams": 6}
+  ],
+  "oregano": [
+    {"name": "1 pizca", "grams": 0.5},
+    {"name": "1 cucharadita", "grams": 2},
+    {"name": "1 cucharada", "grams": 5}
+  ],
+  "calamar": [
+    {"name": "1 unidad pequeña", "grams": 80},
+    {"name": "1 unidad mediana", "grams": 120},
+    {"name": "1 taza anillos", "grams": 150}
+  ],
+  "camaron": [
+    {"name": "1 unidad grande", "grams": 15},
+    {"name": "5 unidades", "grams": 75},
+    {"name": "10 unidades", "grams": 150}
+  ],
+  "pescado": [
+    {"name": "1 filete pequeño", "grams": 100},
+    {"name": "1 filete mediano", "grams": 150},
+    {"name": "1 filete grande", "grams": 200}
+  ],
+  "pulpo": [
+    {"name": "1 tentáculo", "grams": 50},
+    {"name": "1 taza cocido", "grams": 150}
+  ],
+  "camote": [
+    {"name": "1 unidad pequeña", "grams": 100},
+    {"name": "1 unidad mediana", "grams": 150},
+    {"name": "1 taza en cubos", "grams": 130}
+  ],
+  "chocho": [
+    {"name": "1 taza", "grams": 160},
+    {"name": "1/2 taza", "grams": 80}
+  ],
+  "choclo": [
+    {"name": "1 unidad", "grams": 200},
+    {"name": "1 taza granos", "grams": 154}
+  ],
+  "concha": [
+    {"name": "1 unidad", "grams": 40},
+    {"name": "5 unidades", "grams": 200}
+  ],
+  "garbanzo": [
+    {"name": "1 taza cocidos", "grams": 164},
+    {"name": "1/2 taza cocidos", "grams": 82}
+  ],
+  "mango": [
+    {"name": "1 unidad", "grams": 200},
+    {"name": "1 taza en cubos", "grams": 165}
+  ],
+  "mango_verde": [
+    {"name": "1 unidad", "grams": 180},
+    {"name": "1 taza en rodajas", "grams": 150}
+  ],
+  "naranja": [
+    {"name": "1 unidad", "grams": 130},
+    {"name": "1 taza jugo", "grams": 248}
+  ],
+  "platano_verde": [
+    {"name": "1 unidad", "grams": 150},
+    {"name": "1 taza en rodajas", "grams": 148}
+  ],
+  "tostado": [
+    {"name": "1 taza", "grams": 120},
+    {"name": "1/2 taza", "grams": 60}
+  ],
+  "alcachofa": [
+    {"name": "1 unidad mediana", "grams": 120},
+    {"name": "1 corazón", "grams": 40}
+  ],
+  "anchoa": [
+    {"name": "1 filete", "grams": 10},
+    {"name": "5 filetes", "grams": 50}
+  ],
+  "carne_de_res_molida": [
+    {"name": "1 porción", "grams": 100},
+    {"name": "1 taza", "grams": 225}
+  ],
+  "champinon": [
+    {"name": "1 unidad mediano", "grams": 18},
+    {"name": "1 taza enteros", "grams": 70},
+    {"name": "1 taza rebanados", "grams": 108}
+  ],
+  "espinaca": [
+    {"name": "1 taza cruda", "grams": 30},
+    {"name": "1 taza cocida", "grams": 180}
+  ],
+  "jamon": [
+    {"name": "1 rodaja", "grams": 30},
+    {"name": "3 rodajas", "grams": 90}
+  ],
+  "jamon_serrano": [
+    {"name": "1 rodaja", "grams": 15},
+    {"name": "3 rodajas", "grams": 45}
+  ],
+  "masa": [
+    {"name": "1 porción pizza", "grams": 150},
+    {"name": "1 base individual", "grams": 200}
+  ],
+  "pepperoni": [
+    {"name": "1 rodaja", "grams": 5},
+    {"name": "10 rodajas", "grams": 50}
+  ],
+  "pina": [
+    {"name": "1 rodaja", "grams": 85},
+    {"name": "1 taza en cubos", "grams": 165}
+  ],
+  "pollo": [
+    {"name": "1 pechuga pequeña", "grams": 120},
+    {"name": "1 pechuga mediana", "grams": 180},
+    {"name": "1 muslo", "grams": 100}
+  ],
+  "queso_parmesano": [
+    {"name": "1 cucharada rallado", "grams": 5},
+    {"name": "1/4 taza rallado", "grams": 25},
+    {"name": "30g", "grams": 30}
+  ],
+  "salami": [
+    {"name": "1 rodaja", "grams": 10},
+    {"name": "5 rodajas", "grams": 50}
+  ],
+  "salchicha": [
+    {"name": "1 unidad", "grams": 50},
+    {"name": "2 unidades", "grams": 100}
+  ],
+  "salsa_de_tomate": [
+    {"name": "1/4 taza", "grams": 60},
+    {"name": "1/2 taza", "grams": 120},
+    {"name": "1 taza", "grams": 240}
+  ],
+  "tocino": [
+    {"name": "1 tira", "grams": 15},
+    {"name": "3 tiras", "grams": 45}
+  ],
+  "arroz": [
+    {"name": "1/2 taza cocido", "grams": 90},
+    {"name": "1 taza cocido", "grams": 180},
+    {"name": "1 porción", "grams": 150}
+  ],
+  "carne_de_cerdo": [
+    {"name": "1 chuleta", "grams": 150},
+    {"name": "1 porción", "grams": 120}
+  ],
+  "carne_de_res": [
+    {"name": "1 bistec pequeño", "grams": 120},
+    {"name": "1 bistec mediano", "grams": 180},
+    {"name": "1 porción", "grams": 100}
+  ],
+  "frijol_blanco": [
+    {"name": "1/2 taza cocidos", "grams": 90},
+    {"name": "1 taza cocidos", "grams": 180}
+  ],
+  "frijol_negro": [
+    {"name": "1/2 taza cocidos", "grams": 90},
+    {"name": "1 taza cocidos", "grams": 180}
+  ],
+  "frijol_rojo": [
+    {"name": "1/2 taza cocidos", "grams": 90},
+    {"name": "1 taza cocidos", "grams": 180}
+  ],
+  "huevo": [
+    {"name": "1 unidad", "grams": 50},
+    {"name": "2 unidades", "grams": 100},
+    {"name": "3 unidades", "grams": 150}
+  ],
+  "lenteja": [
+    {"name": "1/2 taza cocidas", "grams": 100},
+    {"name": "1 taza cocidas", "grams": 200}
+  ],
+  "papa": [
+    {"name": "1 unidad pequeña", "grams": 100},
+    {"name": "1 unidad mediana", "grams": 150},
+    {"name": "1 unidad grande", "grams": 250},
+    {"name": "1 taza en cubos", "grams": 150}
+  ],
+  "pepinillo": [
+    {"name": "1 unidad", "grams": 75},
+    {"name": "1 taza rebanado", "grams": 104}
+  ],
+  "platano_maduro": [
+    {"name": "1 unidad", "grams": 120},
+    {"name": "1 taza en rodajas", "grams": 150}
+  ],
+  "zanahoria": [
+    {"name": "1 unidad mediana", "grams": 60},
+    {"name": "1 taza picada", "grams": 128},
+    {"name": "1 taza rallada", "grams": 110}
+  ],
+  "almeja": [
+    {"name": "1 unidad", "grams": 15},
+    {"name": "10 unidades", "grams": 150}
+  ],
+  "arveja": [
+    {"name": "1/2 taza", "grams": 75},
+    {"name": "1 taza", "grams": 150}
+  ],
+  "cangrejo": [
+    {"name": "1 porción", "grams": 100},
+    {"name": "1 taza carne", "grams": 120}
+  ],
+  "chorizo": [
+    {"name": "1 unidad", "grams": 60},
+    {"name": "1 porción", "grams": 50}
+  ],
+  "esparrago": [
+    {"name": "1 tallo", "grams": 20},
+    {"name": "5 tallos", "grams": 100}
+  ],
+  "langostino": [
+    {"name": "1 unidad grande", "grams": 20},
+    {"name": "5 unidades", "grams": 100}
+  ],
+  "mejillon": [
+    {"name": "1 unidad", "grams": 15},
+    {"name": "10 unidades", "grams": 150}
+  ],
+  "romero": [
+    {"name": "1 ramita", "grams": 2},
+    {"name": "1 cucharadita", "grams": 1}
+  ],
+  "vainita": [
+    {"name": "1 taza", "grams": 100},
+    {"name": "1/2 taza", "grams": 50}
+  ],
+  "cuero_reventado": [
+    {"name": "1 taza", "grams": 50},
+    {"name": "1 porción", "grams": 60}
+  ],
+  "haba": [
+    {"name": "1/2 taza cocidas", "grams": 85},
+    {"name": "1 taza cocidas", "grams": 170}
+  ],
+  "mote": [
+    {"name": "1/2 taza cocido", "grams": 80},
+    {"name": "1 taza cocido", "grams": 160}
+  ],
+  "queso_fresco": [
+    {"name": "1 rodaja", "grams": 30},
+    {"name": "30g", "grams": 30},
+    {"name": "1 taza desmoronado", "grams": 120}
+  ],
+  "tortilla_de_papa": [
+    {"name": "1 porción", "grams": 150},
+    {"name": "1 rebanada", "grams": 100}
+  ],
+  "caprese_salad": [
+    {"name": "1 porción", "grams": 200}
+  ],
+  "ceviche": [
+    {"name": "1 porción", "grams": 200},
+    {"name": "1 taza", "grams": 250}
+  ],
+  "pizza": [
+    {"name": "1 rebanada", "grams": 120},
+    {"name": "2 rebanadas", "grams": 240}
+  ],
+  "menestra": [
+    {"name": "1 porción", "grams": 200},
+    {"name": "1 taza", "grams": 250}
+  ],
+  "paella": [
+    {"name": "1 porción", "grams": 300},
+    {"name": "1 taza", "grams": 200}
+  ],
+  "fritada": [
+    {"name": "1 porción", "grams": 200},
+    {"name": "1 taza", "grams": 150}
+  ]
+}

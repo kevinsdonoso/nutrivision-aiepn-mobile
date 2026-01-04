@@ -99,7 +99,8 @@ void main() {
       await testDetector.initialize();
 
       expect(testDetector.labelCount, equals(83),
-          reason: 'El modelo NutriVisionAIEPN debe tener exactamente 83 clases');
+          reason:
+              'El modelo NutriVisionAIEPN debe tener exactamente 83 clases');
 
       testDetector.dispose();
     });
@@ -120,12 +121,13 @@ void main() {
     // ═══════════════════════════════════════════════════════════════════════
     // ✅ CORREGIDO: Ahora espera ModelNotInitializedException
     // ═══════════════════════════════════════════════════════════════════════
-    test('Detectar sin inicializar lanza ModelNotInitializedException', () async {
+    test('Detectar sin inicializar lanza ModelNotInitializedException',
+        () async {
       final testDetector = YoloDetector();
       final dummyImage = img.Image(width: 100, height: 100);
 
       expect(
-            () async => await testDetector.detect(dummyImage),
+        () async => await testDetector.detect(dummyImage),
         throwsA(isA<ModelNotInitializedException>()),
       );
     });
@@ -141,7 +143,7 @@ void main() {
       final dummyImage = img.Image(width: 100, height: 100);
 
       expect(
-            () async => await testDetector.detect(dummyImage),
+        () async => await testDetector.detect(dummyImage),
         throwsA(isA<ModelDisposedException>()),
       );
     });
@@ -149,13 +151,14 @@ void main() {
     // ═══════════════════════════════════════════════════════════════════════
     // ✅ NUEVO: Test para inicializar después de dispose
     // ═══════════════════════════════════════════════════════════════════════
-    test('Inicializar después de dispose lanza ModelDisposedException', () async {
+    test('Inicializar después de dispose lanza ModelDisposedException',
+        () async {
       final testDetector = YoloDetector();
       await testDetector.initialize();
       testDetector.dispose();
 
       expect(
-            () async => await testDetector.initialize(),
+        () async => await testDetector.initialize(),
         throwsA(isA<ModelDisposedException>()),
       );
     });
@@ -187,16 +190,31 @@ void main() {
 
     test('Calcula propiedades de confianza correctamente', () {
       final highConf = Detection(
-        x1: 0, y1: 0, x2: 10, y2: 10,
-        confidence: 0.85, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 10,
+        y2: 10,
+        confidence: 0.85,
+        classId: 0,
+        label: 'test',
       );
       final medConf = Detection(
-        x1: 0, y1: 0, x2: 10, y2: 10,
-        confidence: 0.55, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 10,
+        y2: 10,
+        confidence: 0.55,
+        classId: 0,
+        label: 'test',
       );
       final lowConf = Detection(
-        x1: 0, y1: 0, x2: 10, y2: 10,
-        confidence: 0.35, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 10,
+        y2: 10,
+        confidence: 0.35,
+        classId: 0,
+        label: 'test',
       );
 
       expect(highConf.isHighConfidence, isTrue);
@@ -213,12 +231,22 @@ void main() {
 
     test('calculateIoU - Cajas idénticas = IoU 1.0', () {
       final det1 = Detection(
-        x1: 0, y1: 0, x2: 100, y2: 100,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 100,
+        y2: 100,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
       final det2 = Detection(
-        x1: 0, y1: 0, x2: 100, y2: 100,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 100,
+        y2: 100,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
 
       expect(det1.calculateIoU(det2), closeTo(1.0, 0.001));
@@ -226,12 +254,22 @@ void main() {
 
     test('calculateIoU - Sin overlap = IoU 0.0', () {
       final det1 = Detection(
-        x1: 0, y1: 0, x2: 100, y2: 100,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 100,
+        y2: 100,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
       final det2 = Detection(
-        x1: 200, y1: 200, x2: 300, y2: 300,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 200,
+        y1: 200,
+        x2: 300,
+        y2: 300,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
 
       expect(det1.calculateIoU(det2), equals(0.0));
@@ -239,12 +277,22 @@ void main() {
 
     test('calculateIoU - Overlap parcial', () {
       final det1 = Detection(
-        x1: 0, y1: 0, x2: 100, y2: 100,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 100,
+        y2: 100,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
       final det2 = Detection(
-        x1: 50, y1: 0, x2: 150, y2: 100,
-        confidence: 0.9, classId: 0, label: 'test',
+        x1: 50,
+        y1: 0,
+        x2: 150,
+        y2: 100,
+        confidence: 0.9,
+        classId: 0,
+        label: 'test',
       );
 
       expect(det1.calculateIoU(det2), closeTo(0.333, 0.01));
@@ -252,8 +300,13 @@ void main() {
 
     test('toJson y fromJson son inversos', () {
       final original = Detection(
-        x1: 10.5, y1: 20.3, x2: 100.7, y2: 200.9,
-        confidence: 0.756, classId: 42, label: 'albahaca',
+        x1: 10.5,
+        y1: 20.3,
+        x2: 100.7,
+        y2: 200.9,
+        confidence: 0.756,
+        classId: 42,
+        label: 'albahaca',
       );
 
       final jsonMap = original.toJson();
@@ -270,11 +323,17 @@ void main() {
 
     test('copyWith crea copia modificada', () {
       final original = Detection(
-        x1: 10, y1: 20, x2: 100, y2: 200,
-        confidence: 0.8, classId: 5, label: 'tomate',
+        x1: 10,
+        y1: 20,
+        x2: 100,
+        y2: 200,
+        confidence: 0.8,
+        classId: 5,
+        label: 'tomate',
       );
 
-      final modified = original.copyWith(confidence: 0.95, label: 'tomate_maduro');
+      final modified =
+          original.copyWith(confidence: 0.95, label: 'tomate_maduro');
 
       expect(modified.confidence, equals(0.95));
       expect(modified.label, equals('tomate_maduro'));
@@ -284,8 +343,13 @@ void main() {
 
     test('scale escala coordenadas', () {
       final original = Detection(
-        x1: 100, y1: 100, x2: 200, y2: 200,
-        confidence: 0.8, classId: 5, label: 'tomate',
+        x1: 100,
+        y1: 100,
+        x2: 200,
+        y2: 200,
+        confidence: 0.8,
+        classId: 5,
+        label: 'tomate',
       );
 
       final scaled = original.scale(0.5, 2.0);
@@ -301,7 +365,7 @@ void main() {
     // ═══════════════════════════════════════════════════════════════════════
     test('Constructor lanza InvalidBoundingBoxException si x2 <= x1', () {
       expect(
-            () => Detection(
+        () => Detection(
           x1: 100, y1: 0, x2: 50, y2: 100, // x2 < x1
           confidence: 0.8, classId: 0, label: 'test',
         ),
@@ -311,7 +375,7 @@ void main() {
 
     test('Constructor lanza InvalidBoundingBoxException si y2 <= y1', () {
       expect(
-            () => Detection(
+        () => Detection(
           x1: 0, y1: 100, x2: 100, y2: 50, // y2 < y1
           confidence: 0.8, classId: 0, label: 'test',
         ),
@@ -319,9 +383,11 @@ void main() {
       );
     });
 
-    test('Constructor lanza InvalidConfidenceException si confianza fuera de rango', () {
+    test(
+        'Constructor lanza InvalidConfidenceException si confianza fuera de rango',
+        () {
       expect(
-            () => Detection(
+        () => Detection(
           x1: 0, y1: 0, x2: 100, y2: 100,
           confidence: 1.5, // > 1.0
           classId: 0, label: 'test',
@@ -330,7 +396,7 @@ void main() {
       );
 
       expect(
-            () => Detection(
+        () => Detection(
           x1: 0, y1: 0, x2: 100, y2: 100,
           confidence: -0.1, // < 0.0
           classId: 0, label: 'test',
@@ -341,7 +407,7 @@ void main() {
 
     test('Constructor lanza InvalidClassIdException si classId negativo', () {
       expect(
-            () => Detection(
+        () => Detection(
           x1: 0, y1: 0, x2: 100, y2: 100,
           confidence: 0.8,
           classId: -1, // negativo
@@ -355,12 +421,12 @@ void main() {
       // Valores que serían inválidos en el constructor normal
       final detection = Detection.fromModelOutput(
         x1: -10, // negativo
-        y1: -5,  // negativo
+        y1: -5, // negativo
         x2: 100,
         y2: 200,
         confidence: 1.5, // > 1.0
-        classId: -1,     // negativo
-        label: '',       // vacío
+        classId: -1, // negativo
+        label: '', // vacío
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -384,8 +450,13 @@ void main() {
 
     test('Detection.tryCreate retorna Detection para datos válidos', () {
       final result = Detection.tryCreate(
-        x1: 0, y1: 0, x2: 100, y2: 100,
-        confidence: 0.8, classId: 0, label: 'test',
+        x1: 0,
+        y1: 0,
+        x2: 100,
+        y2: 100,
+        confidence: 0.8,
+        classId: 0,
+        label: 'test',
       );
 
       expect(result, isNotNull);
@@ -402,10 +473,38 @@ void main() {
 
     setUp(() {
       testDetections = [
-        Detection(x1: 0, y1: 0, x2: 10, y2: 10, confidence: 0.90, classId: 0, label: 'tomate'),
-        Detection(x1: 0, y1: 0, x2: 10, y2: 10, confidence: 0.50, classId: 0, label: 'tomate'),
-        Detection(x1: 0, y1: 0, x2: 10, y2: 10, confidence: 0.80, classId: 1, label: 'cebolla'),
-        Detection(x1: 0, y1: 0, x2: 10, y2: 10, confidence: 0.30, classId: 2, label: 'ajo'),
+        Detection(
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10,
+            confidence: 0.90,
+            classId: 0,
+            label: 'tomate'),
+        Detection(
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10,
+            confidence: 0.50,
+            classId: 0,
+            label: 'tomate'),
+        Detection(
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10,
+            confidence: 0.80,
+            classId: 1,
+            label: 'cebolla'),
+        Detection(
+            x1: 0,
+            y1: 0,
+            x2: 10,
+            y2: 10,
+            confidence: 0.30,
+            classId: 2,
+            label: 'ajo'),
       ];
     });
 
@@ -518,9 +617,11 @@ void main() {
       final testDir = Directory(TestConfig.testImagesPath);
       final files = await testDir.list().toList();
       final jpgFile = files.whereType<File>().firstWhere(
-            (f) => f.path.toLowerCase().endsWith('.jpg') || f.path.toLowerCase().endsWith('.jpeg'),
-        orElse: () => throw Exception('No hay imágenes'),
-      );
+            (f) =>
+                f.path.toLowerCase().endsWith('.jpg') ||
+                f.path.toLowerCase().endsWith('.jpeg'),
+            orElse: () => throw Exception('No hay imágenes'),
+          );
 
       final bytes = await jpgFile.readAsBytes();
       final image = img.decodeImage(bytes)!;
@@ -550,8 +651,8 @@ void main() {
       final files = await testDir.list().toList();
       final jpgFile = files.whereType<File>().firstWhere(
             (f) => f.path.toLowerCase().endsWith('.jpg'),
-        orElse: () => throw Exception('No hay archivos JPG'),
-      );
+            orElse: () => throw Exception('No hay archivos JPG'),
+          );
 
       final bytes = await jpgFile.readAsBytes();
       final image = img.decodeImage(bytes)!;
@@ -577,7 +678,7 @@ void main() {
   group('YoloDetector - Imágenes de Kaggle', () {
     test(
       'Todas las imágenes se procesan sin error',
-          () async {
+      () async {
         if (!hasTestImages) {
           // ignore: avoid_print
           print('⏭️ Saltando: no hay imágenes de prueba');
@@ -588,7 +689,9 @@ void main() {
         final files = await testDir.list().toList();
         final imageFiles = files.whereType<File>().where((f) {
           final ext = f.path.toLowerCase();
-          return ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png');
+          return ext.endsWith('.jpg') ||
+              ext.endsWith('.jpeg') ||
+              ext.endsWith('.png');
         }).toList();
 
         expect(imageFiles, isNotEmpty);
@@ -661,8 +764,8 @@ void main() {
       final files = await testDir.list().toList();
       final jpgFile = files.whereType<File>().firstWhere(
             (f) => f.path.toLowerCase().endsWith('.jpg'),
-        orElse: () => throw Exception('No hay archivos JPG'),
-      );
+            orElse: () => throw Exception('No hay archivos JPG'),
+          );
 
       final bytes = await jpgFile.readAsBytes();
       final image = img.decodeImage(bytes)!;
@@ -707,7 +810,8 @@ void main() {
     });
 
     test('ExceptionHandler.getUserMessage retorna mensaje amigable', () {
-      const exception = ImageDecodeException(message: 'Technical error details');
+      const exception =
+          ImageDecodeException(message: 'Technical error details');
       final userMessage = ExceptionHandler.getUserMessage(exception);
 
       expect(userMessage, isNot(contains('Technical')));

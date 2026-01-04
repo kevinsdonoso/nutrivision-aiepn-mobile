@@ -35,7 +35,8 @@ class FirebaseAuthService {
   final FirebaseAuth _auth;
 
   /// Constructor con inyección de dependencia opcional.
-  FirebaseAuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
+  FirebaseAuthService({FirebaseAuth? auth})
+      : _auth = auth ?? FirebaseAuth.instance;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PROPIEDADES
