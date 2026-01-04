@@ -59,7 +59,8 @@ class _QuantityAdjustmentDialogState
   @override
   void initState() {
     super.initState();
-    final initialGrams = widget.currentQuantity?.grams ?? IngredientQuantity.defaultGrams;
+    final initialGrams =
+        widget.currentQuantity?.grams ?? IngredientQuantity.defaultGrams;
     _gramsController = TextEditingController(
       text: initialGrams.toStringAsFixed(0),
     );
@@ -108,7 +109,8 @@ class _QuantityAdjustmentDialogState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final portionsAsync = ref.watch(availablePortionsProvider(widget.ingredientLabel));
+    final portionsAsync =
+        ref.watch(availablePortionsProvider(widget.ingredientLabel));
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -286,7 +288,8 @@ class _QuantityAdjustmentDialogState
     );
   }
 
-  Widget _buildPortionsSection(List<StandardPortion> portions, ThemeData theme) {
+  Widget _buildPortionsSection(
+      List<StandardPortion> portions, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -294,7 +297,8 @@ class _QuantityAdjustmentDialogState
         const SizedBox(height: 16),
         Row(
           children: [
-            const Icon(Icons.restaurant_menu, size: 20, color: Color(0xFFFF9800)),
+            const Icon(Icons.restaurant_menu,
+                size: 20, color: Color(0xFFFF9800)),
             const SizedBox(width: 8),
             Text(
               'Porciones estándar',
@@ -308,7 +312,8 @@ class _QuantityAdjustmentDialogState
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: portions.map((portion) => _buildPortionChip(portion)).toList(),
+          children:
+              portions.map((portion) => _buildPortionChip(portion)).toList(),
         ),
       ],
     );

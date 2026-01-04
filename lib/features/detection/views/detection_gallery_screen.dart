@@ -10,10 +10,10 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
+import '../../../app/routes.dart';
 import '../services/yolo_detector.dart';
 import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
@@ -25,7 +25,8 @@ class GalleryDetectionPage extends ConsumerStatefulWidget {
   const GalleryDetectionPage({super.key});
 
   @override
-  ConsumerState<GalleryDetectionPage> createState() => _GalleryDetectionPageState();
+  ConsumerState<GalleryDetectionPage> createState() =>
+      _GalleryDetectionPageState();
 }
 
 class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
@@ -135,7 +136,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
         _imageHeight = decodedImage.height;
         _detections = [];
         _selectedIngredient = null;
-        _statusMessage = 'Imagen: ${_imageWidth}x$_imageHeight. Presiona "Detectar".';
+        _statusMessage =
+            'Imagen: ${_imageWidth}x$_imageHeight. Presiona "Detectar".';
       });
     } on NutriVisionException catch (e, stackTrace) {
       _handleError(e, stackTrace);
@@ -166,7 +168,10 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
       _imageHeight = image.height;
 
       final stopwatch = Stopwatch()..start();
-      final detections = await _detector.detect(image);
+      final detections = await _detector.detectFromSource(
+        source: DetectionSource.photo,
+        image: image,
+      );
       stopwatch.stop();
 
       if (!mounted) return;
@@ -178,9 +183,12 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
       });
 
       // Inicializar cantidades para los ingredientes detectados
-      ref.read(ingredientQuantitiesProvider.notifier).setFromDetections(detections);
+      ref
+          .read(ingredientQuantitiesProvider.notifier)
+          .setFromDetections(detections);
 
-      _showSnackBar('Detectados ${detections.length} ingredientes', Colors.green);
+      _showSnackBar(
+          'Detectados ${detections.length} ingredientes', Colors.green);
     } on NutriVisionException catch (e, stackTrace) {
       _handleError(e, stackTrace);
     } catch (e, stackTrace) {
@@ -235,7 +243,7 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Volver',
-          onPressed: () => context.pop(),
+          onPressed: () => context.goBackOrHome(),
         ),
         title: const Text('Detección de Ingredientes'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -366,20 +374,25 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
                         ),
                   ),
                   const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'En tiempo real',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.green.shade900 : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'En tiempo real',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.green.shade200 : Colors.green.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -445,13 +458,17 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withAlpha(77), width: 1.5), // 0.3 * 255 ≈ 77
-      ),
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey.shade900 : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: color.withAlpha(77), width: 1.5), // 0.3 * 255 ≈ 77
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -494,6 +511,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 
@@ -572,7 +591,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
                   ),
                   const Spacer(),
                   TextButton.icon(
-                    onPressed: () => _showQuantityDialog(label, currentQuantity),
+                    onPressed: () =>
+                        _showQuantityDialog(label, currentQuantity),
                     icon: const Icon(Icons.edit, size: 18),
                     label: const Text('Ajustar'),
                   ),
@@ -586,7 +606,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
     );
   }
 
-  Future<void> _showQuantityDialog(String label, dynamic currentQuantity) async {
+  Future<void> _showQuantityDialog(
+      String label, dynamic currentQuantity) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => QuantityAdjustmentDialog(
@@ -610,14 +631,14 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
               _currentError != null
                   ? Icons.error
                   : _isModelLoaded
-                  ? Icons.check_circle
-                  : Icons.info,
+                      ? Icons.check_circle
+                      : Icons.info,
               size: 48,
               color: _currentError != null
                   ? Colors.red
                   : _isModelLoaded
-                  ? Colors.green
-                  : Colors.grey,
+                      ? Colors.green
+                      : Colors.grey,
             ),
             const SizedBox(height: 8),
             Text(
@@ -665,7 +686,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _loadModel,
                 icon: const Icon(Icons.memory),
-                label: Text(_isModelLoaded ? 'Modelo Cargado' : 'Cargar Modelo'),
+                label:
+                    Text(_isModelLoaded ? 'Modelo Cargado' : 'Cargar Modelo'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isModelLoaded ? Colors.green : null,
                   foregroundColor: _isModelLoaded ? Colors.white : null,
@@ -773,7 +795,9 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
                     );
                   },
                 ),
-                if (_filteredDetections.isNotEmpty && _imageWidth > 0 && _imageHeight > 0)
+                if (_filteredDetections.isNotEmpty &&
+                    _imageWidth > 0 &&
+                    _imageHeight > 0)
                   SizedBox(
                     width: renderWidth,
                     height: renderHeight,
@@ -822,12 +846,13 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
         Text(
           'Toca un ingrediente para filtrar sus detecciones',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey.shade600,
-            fontStyle: FontStyle.italic,
-          ),
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
         ),
         const SizedBox(height: 8),
-        ...sortedLabels.map((label) => _buildIngredientCard(label, grouped[label]!)),
+        ...sortedLabels
+            .map((label) => _buildIngredientCard(label, grouped[label]!)),
       ],
     );
   }
@@ -854,9 +879,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: isSelected
-                  ? Colors.blue
-                  : _getConfidenceColor(avgConfidence),
+              backgroundColor:
+                  isSelected ? Colors.blue : _getConfidenceColor(avgConfidence),
               child: Text(
                 count.toString(),
                 style: const TextStyle(
@@ -882,8 +906,8 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
                   avgConfidence >= 0.7
                       ? Icons.check_circle
                       : avgConfidence >= 0.5
-                      ? Icons.help
-                      : Icons.warning,
+                          ? Icons.help
+                          : Icons.warning,
                   color: isSelected
                       ? Colors.blue
                       : _getConfidenceColor(avgConfidence),
@@ -983,14 +1007,15 @@ class BoundingBoxPainter extends CustomPainter {
   }
 
   void _drawLabel(
-      Canvas canvas,
-      Detection detection,
-      double x1,
-      double y1,
-      Color boxColor,
-      Size canvasSize,
-      ) {
-    final String labelText = '${detection.label} ${detection.confidenceFormatted}';
+    Canvas canvas,
+    Detection detection,
+    double x1,
+    double y1,
+    Color boxColor,
+    Size canvasSize,
+  ) {
+    final String labelText =
+        '${detection.label} ${detection.confidenceFormatted}';
 
     final textSpan = TextSpan(
       text: labelText,

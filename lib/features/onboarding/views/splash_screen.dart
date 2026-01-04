@@ -196,11 +196,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     // Nombre de la app
                     Text(
                       'NutriVision',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
                     ),
                     const SizedBox(height: 8),
 

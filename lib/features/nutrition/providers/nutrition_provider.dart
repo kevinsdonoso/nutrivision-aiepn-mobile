@@ -76,7 +76,8 @@ final hasNutritionProvider =
 
 /// Provider para obtener múltiples informaciones nutricionales.
 final nutritionBatchProvider =
-    FutureProvider.family<List<NutritionInfo>, List<String>>((ref, labels) async {
+    FutureProvider.family<List<NutritionInfo>, List<String>>(
+        (ref, labels) async {
   await ref.watch(nutritionInitProvider.future);
 
   final repository = ref.watch(nutritionRepositoryProvider);
@@ -91,7 +92,8 @@ final nutritionBatchProvider =
 ///
 /// Recibe una lista de detecciones y retorna el total de nutrientes.
 final totalNutrientsProvider =
-    FutureProvider.family<NutrientsPer100g, List<Detection>>((ref, detections) async {
+    FutureProvider.family<NutrientsPer100g, List<Detection>>(
+        (ref, detections) async {
   if (detections.isEmpty) {
     return const NutrientsPer100g.zero();
   }
@@ -134,7 +136,8 @@ final detectionsWithNutritionCountProvider =
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Provider para obtener metadata de los datos nutricionales.
-final nutritionMetadataProvider = FutureProvider<NutritionMetadata?>((ref) async {
+final nutritionMetadataProvider =
+    FutureProvider<NutritionMetadata?>((ref) async {
   await ref.watch(nutritionInitProvider.future);
 
   final repository = ref.watch(nutritionRepositoryProvider);

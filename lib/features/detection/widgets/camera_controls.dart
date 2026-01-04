@@ -12,13 +12,13 @@ import '../../../core/theme/app_theme.dart';
 
 /// Controles de cámara superpuestos sobre el preview.
 class CameraControls extends StatelessWidget {
-  /// Callback al presionar capturar.
-  final VoidCallback onCapture;
+  /// Callback al presionar capturar. Null si está deshabilitado.
+  final VoidCallback? onCapture;
 
-  /// Callback al alternar flash.
-  final VoidCallback onToggleFlash;
+  /// Callback al alternar flash. Null si está deshabilitado.
+  final VoidCallback? onToggleFlash;
 
-  /// Callback al cambiar cámara. Null si solo hay una cámara.
+  /// Callback al cambiar cámara. Null si solo hay una cámara o está deshabilitado.
   final VoidCallback? onSwitchCamera;
 
   /// Indica si se está procesando (para mostrar indicador).
@@ -32,8 +32,8 @@ class CameraControls extends StatelessWidget {
 
   const CameraControls({
     super.key,
-    required this.onCapture,
-    required this.onToggleFlash,
+    this.onCapture,
+    this.onToggleFlash,
     this.onSwitchCamera,
     this.isProcessing = false,
     this.flashEnabled = false,
@@ -73,15 +73,12 @@ class CameraControls extends StatelessWidget {
               isProcessing: isProcessing,
             ),
 
-            // Botón de cambiar cámara
-            if (onSwitchCamera != null)
-              _ControlButton(
-                icon: Icons.cameraswitch,
-                label: 'Cambiar',
-                onPressed: onSwitchCamera!,
-              )
-            else
-              const SizedBox(width: 64), // Placeholder para mantener layout
+            // Botón de cambiar cámara (siempre visible pero puede estar deshabilitado)
+            _ControlButton(
+              icon: Icons.cameraswitch,
+              label: 'Cambiar',
+              onPressed: onSwitchCamera,
+            ),
           ],
         ),
       ),
@@ -93,28 +90,32 @@ class CameraControls extends StatelessWidget {
 class _ControlButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isActive;
 
   const _ControlButton({
     required this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
     this.isActive = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onPressed == null;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: isActive
-              ? AppColors.primaryGreen.withAlpha(50)
-              : Colors.white.withAlpha(30),
+          color: isDisabled
+              ? Colors.white.withAlpha(10)
+              : (isActive
+                  ? AppColors.primaryGreen.withAlpha(50)
+                  : Colors.white.withAlpha(30)),
           shape: const CircleBorder(),
           child: InkWell(
-            onTap: onPressed,
+            onTap: isDisabled ? null : onPressed,
             customBorder: const CircleBorder(),
             child: Container(
               width: 48,
@@ -122,15 +123,19 @@ class _ControlButton extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isActive
-                      ? AppColors.primaryGreen
-                      : Colors.white.withAlpha(100),
+                  color: isDisabled
+                      ? Colors.white.withAlpha(30)
+                      : (isActive
+                          ? AppColors.primaryGreen
+                          : Colors.white.withAlpha(100)),
                   width: 2,
                 ),
               ),
               child: Icon(
                 icon,
-                color: isActive ? AppColors.primaryGreen : Colors.white,
+                color: isDisabled
+                    ? Colors.white.withAlpha(50)
+                    : (isActive ? AppColors.primaryGreen : Colors.white),
                 size: 24,
               ),
             ),
@@ -151,28 +156,30 @@ class _ControlButton extends StatelessWidget {
 
 /// Botón principal de captura.
 class _CaptureButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isProcessing;
 
   const _CaptureButton({
-    required this.onPressed,
+    this.onPressed,
     required this.isProcessing,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onPressed == null;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
-          onTap: isProcessing ? null : onPressed,
+          onTap: (isProcessing || isDisabled) ? null : onPressed,
           child: Container(
             width: 72,
             height: 72,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white,
+                color: isDisabled ? Colors.white38 : Colors.white,
                 width: 4,
               ),
             ),
@@ -182,7 +189,7 @@ class _CaptureButton extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isProcessing
                     ? AppColors.primaryGreen.withAlpha(150)
-                    : Colors.white,
+                    : (isDisabled ? Colors.white38 : Colors.white),
               ),
               child: isProcessing
                   ? const Padding(

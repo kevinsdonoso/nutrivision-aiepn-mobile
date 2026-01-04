@@ -628,8 +628,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           ],
                         ),
                       ),
-                      if (isSelected)
-                        Icon(Icons.check_circle, color: color),
+                      if (isSelected) Icon(Icons.check_circle, color: color),
                     ],
                   ),
                 ),
