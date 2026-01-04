@@ -669,7 +669,8 @@ class FeedbackDialog {
         icon: icon != null
             ? Icon(
                 icon,
-                color: isDestructive ? AppColors.error : theme.colorScheme.primary,
+                color:
+                    isDestructive ? AppColors.error : theme.colorScheme.primary,
                 size: 48,
               )
             : null,

@@ -119,8 +119,7 @@ class LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveIndicatorColor =
-        indicatorColor ?? theme.colorScheme.primary;
+    final effectiveIndicatorColor = indicatorColor ?? theme.colorScheme.primary;
     final effectiveBackgroundColor =
         backgroundColor ?? theme.colorScheme.surface;
 
