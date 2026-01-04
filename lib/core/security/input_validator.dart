@@ -125,7 +125,8 @@ abstract class InputValidator {
   }
 
   /// Valida un nombre de persona.
-  static String? validateName(String? value, {int minLength = 2, int maxLength = 100}) {
+  static String? validateName(String? value,
+      {int minLength = 2, int maxLength = 100}) {
     if (value == null || value.trim().isEmpty) {
       return 'El nombre es requerido';
     }

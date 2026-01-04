@@ -140,8 +140,8 @@ abstract class AppConstants {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Umbral de confianza para detección en tiempo real
-  /// (ligeramente más alto que galería para reducir falsos positivos)
-  static const double realtimeConfidenceThreshold = 0.45;
+  /// (igualado a defaultConfidenceThreshold para paridad FOTO-LIVE)
+  static const double realtimeConfidenceThreshold = 0.40;
 
   /// Tiempo máximo de inferencia antes de saltar frame (ms)
   static const int maxInferenceTimeMs = 800;

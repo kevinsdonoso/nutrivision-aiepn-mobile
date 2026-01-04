@@ -53,7 +53,8 @@ class ModelException extends NutriVisionException {
   });
 
   @override
-  String get userMessage => 'Error con el modelo de detección. Por favor reinicia la aplicación.';
+  String get userMessage =>
+      'Error con el modelo de detección. Por favor reinicia la aplicación.';
 }
 
 /// Excepción cuando el modelo no se puede cargar.
@@ -69,7 +70,8 @@ class ModelLoadException extends ModelException {
   }) : super(code: 'MODEL_LOAD_ERROR');
 
   @override
-  String get userMessage => 'No se pudo cargar el modelo de IA. Verifica que la app esté instalada correctamente.';
+  String get userMessage =>
+      'No se pudo cargar el modelo de IA. Verifica que la app esté instalada correctamente.';
 }
 
 /// Excepción cuando las etiquetas no se pueden cargar.
@@ -85,19 +87,22 @@ class LabelsLoadException extends ModelException {
   }) : super(code: 'LABELS_LOAD_ERROR');
 
   @override
-  String get userMessage => 'No se pudieron cargar las etiquetas de ingredientes.';
+  String get userMessage =>
+      'No se pudieron cargar las etiquetas de ingredientes.';
 }
 
 /// Excepción cuando el modelo no está inicializado antes de usarse.
 class ModelNotInitializedException extends ModelException {
   const ModelNotInitializedException({
-    super.message = 'El detector no ha sido inicializado. Llama a initialize() primero.',
+    super.message =
+        'El detector no ha sido inicializado. Llama a initialize() primero.',
     super.originalError,
     super.stackTrace,
   }) : super(code: 'MODEL_NOT_INITIALIZED');
 
   @override
-  String get userMessage => 'El detector no está listo. Por favor espera a que se cargue.';
+  String get userMessage =>
+      'El detector no está listo. Por favor espera a que se cargue.';
 }
 
 /// Excepción cuando el modelo ya fue liberado/disposed.
@@ -126,7 +131,8 @@ class InferenceException extends NutriVisionException {
   });
 
   @override
-  String get userMessage => 'Error al analizar la imagen. Intenta con otra imagen.';
+  String get userMessage =>
+      'Error al analizar la imagen. Intenta con otra imagen.';
 }
 
 /// Excepción durante el preprocesamiento de imagen.
@@ -138,7 +144,8 @@ class PreprocessingException extends InferenceException {
   }) : super(code: 'PREPROCESSING_ERROR');
 
   @override
-  String get userMessage => 'Error al procesar la imagen. Verifica que el formato sea válido.';
+  String get userMessage =>
+      'Error al procesar la imagen. Verifica que el formato sea válido.';
 }
 
 /// Excepción durante el postprocesamiento de resultados.
@@ -170,7 +177,8 @@ class InferenceTimeoutException extends InferenceException {
   }) : super(code: 'INFERENCE_TIMEOUT');
 
   @override
-  String get userMessage => 'El análisis está tardando demasiado. Intenta con una imagen más pequeña.';
+  String get userMessage =>
+      'El análisis está tardando demasiado. Intenta con una imagen más pequeña.';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -203,7 +211,8 @@ class ImageDecodeException extends ImageException {
   }) : super(code: 'IMAGE_DECODE_ERROR');
 
   @override
-  String get userMessage => 'No se pudo leer la imagen. Asegúrate de que sea JPG, PNG o WEBP.';
+  String get userMessage =>
+      'No se pudo leer la imagen. Asegúrate de que sea JPG, PNG o WEBP.';
 }
 
 /// Excepción cuando la imagen tiene dimensiones inválidas.
@@ -231,7 +240,8 @@ class ImageDimensionsException extends ImageException {
   }) : super(code: 'IMAGE_DIMENSIONS_ERROR');
 
   @override
-  String get userMessage => 'La imagen es demasiado pequeña o tiene dimensiones inválidas.';
+  String get userMessage =>
+      'La imagen es demasiado pequeña o tiene dimensiones inválidas.';
 }
 
 /// Excepción cuando no se puede acceder al archivo de imagen.
@@ -337,7 +347,8 @@ class PermissionException extends NutriVisionException {
   });
 
   @override
-  String get userMessage => 'Se requiere permiso de $permissionType para continuar.';
+  String get userMessage =>
+      'Se requiere permiso de $permissionType para continuar.';
 }
 
 /// Excepción cuando el permiso de cámara es denegado.
@@ -349,7 +360,8 @@ class CameraPermissionException extends PermissionException {
   }) : super(permissionType: 'cámara', code: 'CAMERA_PERMISSION_DENIED');
 
   @override
-  String get userMessage => 'Necesitamos acceso a la cámara para detectar ingredientes.';
+  String get userMessage =>
+      'Necesitamos acceso a la cámara para detectar ingredientes.';
 }
 
 /// Excepción cuando el permiso de galería es denegado.
@@ -361,7 +373,8 @@ class GalleryPermissionException extends PermissionException {
   }) : super(permissionType: 'galería', code: 'GALLERY_PERMISSION_DENIED');
 
   @override
-  String get userMessage => 'Necesitamos acceso a la galería para seleccionar imágenes.';
+  String get userMessage =>
+      'Necesitamos acceso a la galería para seleccionar imágenes.';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -394,7 +407,8 @@ class IngredientNotFoundException extends DatabaseException {
   }) : super(code: 'INGREDIENT_NOT_FOUND');
 
   @override
-  String get userMessage => 'No tenemos información nutricional para "$ingredientName".';
+  String get userMessage =>
+      'No tenemos información nutricional para "$ingredientName".';
 }
 
 /// Excepción para errores de datos nutricionales.
@@ -476,7 +490,8 @@ class NutriVisionGenericException extends NutriVisionException {
   }) : super(code: 'GENERIC_ERROR');
 
   @override
-  String get userMessage => 'Ocurrió un error inesperado. Por favor intenta de nuevo.';
+  String get userMessage =>
+      'Ocurrió un error inesperado. Por favor intenta de nuevo.';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -518,8 +533,7 @@ class FrameConversionException extends NutriVisionException {
   }) : super(code: 'FRAME_CONVERSION_ERROR');
 
   @override
-  String get userMessage =>
-      'Error procesando el frame de cámara.';
+  String get userMessage => 'Error procesando el frame de cámara.';
 }
 
 /// Excepción cuando no hay cámaras disponibles.
@@ -531,8 +545,7 @@ class NoCameraAvailableException extends NutriVisionException {
   }) : super(code: 'NO_CAMERA_AVAILABLE');
 
   @override
-  String get userMessage =>
-      'No se encontraron cámaras en el dispositivo.';
+  String get userMessage => 'No se encontraron cámaras en el dispositivo.';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -577,7 +590,8 @@ class AuthEmailAlreadyInUseException extends AuthException {
   }) : super(code: 'AUTH_EMAIL_ALREADY_IN_USE');
 
   @override
-  String get userMessage => 'Este email ya está registrado. ¿Deseas iniciar sesión?';
+  String get userMessage =>
+      'Este email ya está registrado. ¿Deseas iniciar sesión?';
 }
 
 /// Excepción cuando la contraseña es muy débil.
@@ -613,7 +627,8 @@ class AuthUserNotFoundException extends AuthException {
   }) : super(code: 'AUTH_USER_NOT_FOUND');
 
   @override
-  String get userMessage => 'No existe una cuenta con este email. ¿Deseas registrarte?';
+  String get userMessage =>
+      'No existe una cuenta con este email. ¿Deseas registrarte?';
 }
 
 /// Excepción cuando la cuenta está deshabilitada.
@@ -625,7 +640,8 @@ class AuthUserDisabledException extends AuthException {
   }) : super(code: 'AUTH_USER_DISABLED');
 
   @override
-  String get userMessage => 'Tu cuenta ha sido deshabilitada. Contacta soporte.';
+  String get userMessage =>
+      'Tu cuenta ha sido deshabilitada. Contacta soporte.';
 }
 
 /// Excepción cuando hay demasiados intentos de login.
@@ -637,7 +653,8 @@ class AuthTooManyRequestsException extends AuthException {
   }) : super(code: 'AUTH_TOO_MANY_REQUESTS');
 
   @override
-  String get userMessage => 'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.';
+  String get userMessage =>
+      'Demasiados intentos fallidos. Espera unos minutos e intenta de nuevo.';
 }
 
 /// Excepción cuando no hay conexión para autenticación.
@@ -649,7 +666,8 @@ class AuthNetworkException extends AuthException {
   }) : super(code: 'AUTH_NETWORK_ERROR');
 
   @override
-  String get userMessage => 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+  String get userMessage =>
+      'Error de conexión. Verifica tu internet e intenta de nuevo.';
 }
 
 /// Excepción cuando la sesión ha expirado.
@@ -661,7 +679,8 @@ class AuthSessionExpiredException extends AuthException {
   }) : super(code: 'AUTH_SESSION_EXPIRED');
 
   @override
-  String get userMessage => 'Tu sesión ha expirado. Por favor inicia sesión de nuevo.';
+  String get userMessage =>
+      'Tu sesión ha expirado. Por favor inicia sesión de nuevo.';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -702,7 +721,8 @@ class ProfileNotFoundException extends ProfileException {
   }) : super(code: 'PROFILE_NOT_FOUND');
 
   @override
-  String get userMessage => 'No se encontró tu perfil. Por favor inicia sesión de nuevo.';
+  String get userMessage =>
+      'No se encontró tu perfil. Por favor inicia sesión de nuevo.';
 }
 
 // NOTA: ProfilePhotoUploadException removido - Firebase Storage no disponible en plan Spark
