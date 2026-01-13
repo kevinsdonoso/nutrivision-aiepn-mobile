@@ -14,6 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../nutrition/widgets/nutrient_bar.dart';
 import '../../../shared/widgets/runtime_mode_indicator.dart';
 
 /// Pantalla principal de la aplicación.
@@ -401,6 +402,7 @@ class _ModelInfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // HEADER
             Row(
               children: [
                 Icon(
@@ -417,7 +419,9 @@ class _ModelInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
+
+            // SECCIÓN 1: Info básica
             const _InfoRow(
               label: 'Arquitectura',
               value: 'YOLO11n (Ultralytics)',
@@ -427,12 +431,87 @@ class _ModelInfoCard extends StatelessWidget {
               value: '83 clases',
             ),
             const _InfoRow(
+              label: 'Estrategia',
+              value: 'B (sin congelar backbone)',
+            ),
+            const _InfoRow(
               label: 'Formato',
               value: 'TensorFlow Lite',
             ),
             const _InfoRow(
               label: 'Modo',
               value: '100% Offline',
+            ),
+
+            const Divider(height: 32),
+
+            // SECCIÓN 2: Desempeño del Modelo
+            Text(
+              'Desempeño del Modelo',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            NutrientBar(
+              label: 'mAP@0.5',
+              value: 37.66,
+              maxValue: 100,
+              unit: '%',
+              color: AppColors.confidenceMedium,
+            ),
+            const SizedBox(height: 8),
+            NutrientBar(
+              label: 'mAP@0.5-0.95',
+              value: 25.44,
+              maxValue: 100,
+              unit: '%',
+              color: AppColors.confidenceLow,
+            ),
+            const SizedBox(height: 8),
+            NutrientBar(
+              label: 'Precisión',
+              value: 41.01,
+              maxValue: 100,
+              unit: '%',
+              color: AppColors.confidenceMedium,
+            ),
+            const SizedBox(height: 8),
+            NutrientBar(
+              label: 'Recall',
+              value: 37.41,
+              maxValue: 100,
+              unit: '%',
+              color: AppColors.confidenceMedium,
+            ),
+
+            const Divider(height: 32),
+
+            // SECCIÓN 3: Base de Datos Nutricional
+            Text(
+              'Base de Datos Nutricional',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            const _InfoRow(
+              label: 'Ingredientes',
+              value: '80 con datos FDC',
+            ),
+            const _InfoRow(
+              label: 'Platos',
+              value: '6 platos ecuatorianos',
+            ),
+            const _InfoRow(
+              label: 'Cobertura',
+              value: '103.6%',
+            ),
+            const _InfoRow(
+              label: 'Match Score',
+              value: '96.2%',
             ),
           ],
         ),

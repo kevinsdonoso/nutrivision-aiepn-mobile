@@ -59,6 +59,20 @@
 | Tamaño del modelo | ~10.27 MB |
 | Dataset | NutriVisionAIEPN (297 imágenes, 6 platos) |
 
+**Métricas de Desempeño (Dataset Test):**
+- **mAP@0.5:** 37.66%
+- **mAP@0.5-0.95:** 25.44%
+- **Precisión:** 41.01%
+- **Recall:** 37.41%
+- **Estrategia de entrenamiento:** B (sin congelar backbone, freeze=0)
+
+**Base de Datos Nutricional:**
+- **Fuente:** USDA FoodData Central
+- **Ingredientes:** 80 con datos FDC
+- **Platos:** 6 platos ecuatorianos/internacionales
+- **Cobertura:** 103.6%
+- **Match Score:** 96.2%
+
 ### Platos soportados
 
 1. 🥗 Ensalada Caprese
