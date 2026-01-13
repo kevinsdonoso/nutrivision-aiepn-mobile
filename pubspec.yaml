@@ -210,6 +210,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Integration tests de performance para YoloDetector
+  integration_test:
+    sdk: flutter
+
   # Reglas de linting recomendadas por el equipo de Flutter
   # Configuración en analysis_options.yaml
   flutter_lints: ^5.0.0
