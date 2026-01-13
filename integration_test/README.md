@@ -7,7 +7,7 @@ Tests de integración para validar el rendimiento del sistema de detección YOLO
 - Flutter SDK >= 3.38.0
 - Dispositivo Android físico (recomendado) o emulador
 - Modelo TFLite en `assets/models/yolov11n_float32.tflite`
-- Imagen de prueba en `test/test_assets/test_images/pizza.jpg` (opcional)
+- Imágenes de prueba en `test/test_assets/test_images/` (incluidas en el repo)
 
 ## Ejecutar Tests
 
