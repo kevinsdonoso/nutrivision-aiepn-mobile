@@ -356,6 +356,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
+      path: AppConstants.routeForgotPassword,
+      name: 'forgot-password-legacy',
+      builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
       path: AppConstants.routeProfileSetup,
       name: 'profile-setup-legacy',
       builder: (context, state) => const ProfileSetupScreen(),

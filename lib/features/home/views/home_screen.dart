@@ -106,41 +106,46 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       child: Opacity(
                         opacity: _scrollOpacity,
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 40),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Icono de cubiertos
-                                const Icon(
-                                  Icons.restaurant_menu,
-                                  size: 60,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(height: 12),
-                                // Texto "NutriVision AI"
-                                Text(
-                                  'NutriVision AI',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Saludo personalizado
-                                if (isAuthenticated && profile != null)
-                                  Text(
-                                    'Hola, ${profile.displayName}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.white70,
+                        child: SafeArea(
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Icono de cubiertos
+                                    const Icon(
+                                      Icons.restaurant_menu,
+                                      size: 60,
+                                      color: Colors.white,
                                     ),
-                                  ),
-                              ],
+                                    const SizedBox(height: 12),
+                                    // Texto "NutriVision AI"
+                                    Text(
+                                      'NutriVision AI',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // Saludo personalizado
+                                    if (isAuthenticated && profile != null)
+                                      Text(
+                                        'Hola, ${profile.displayName}',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),

@@ -206,108 +206,115 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                // Avatar
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  backgroundImage: profile.photoUrl != null
-                      ? NetworkImage(profile.photoUrl!)
-                      : null,
-                  child: profile.photoUrl == null
-                      ? Text(
-                          profile.initials,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Avatar
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        backgroundImage: profile.photoUrl != null
+                            ? NetworkImage(profile.photoUrl!)
+                            : null,
+                        child: profile.photoUrl == null
+                            ? Text(
+                                profile.initials,
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Nombre
+                      Text(
+                        profile.displayName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      // Completitud del perfil con barra de progreso
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => _showMissingFieldsDialog(context, profile),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
                           ),
-                        )
-                      : null,
-                ),
-                const SizedBox(height: 12),
-
-                // Nombre
-                Text(
-                  profile.displayName,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                // Completitud del perfil con barra de progreso
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () => _showMissingFieldsDialog(context, profile),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(40),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              profile.profileCompletionPercent == 100
-                                  ? Icons.verified
-                                  : Icons.account_circle_outlined,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              profile.profileCompletionPercent == 100
-                                  ? 'Perfil completo'
-                                  : 'Perfil ${profile.profileCompletionPercent}% completo',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(40),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    profile.profileCompletionPercent == 100
+                                        ? Icons.verified
+                                        : Icons.account_circle_outlined,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    profile.profileCompletionPercent == 100
+                                        ? 'Perfil completo'
+                                        : 'Perfil ${profile.profileCompletionPercent}% completo',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (profile.profileCompletionPercent < 100) ...[
+                                    const SizedBox(width: 6),
+                                    const Icon(
+                                      Icons.touch_app,
+                                      color: Colors.white70,
+                                      size: 14,
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ),
-                            if (profile.profileCompletionPercent < 100) ...[
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.touch_app,
-                                color: Colors.white70,
-                                size: 14,
+                              const SizedBox(height: 8),
+                              // Barra de progreso
+                              SizedBox(
+                                width: 180,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: profile.profileCompletionPercent / 100,
+                                    backgroundColor: Colors.white.withAlpha(50),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      profile.profileCompletionPercent == 100
+                                          ? Colors.greenAccent
+                                          : Colors.white,
+                                    ),
+                                    minHeight: 6,
+                                  ),
+                                ),
                               ),
                             ],
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Barra de progreso
-                        SizedBox(
-                          width: 180,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: profile.profileCompletionPercent / 100,
-                              backgroundColor: Colors.white.withAlpha(50),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                profile.profileCompletionPercent == 100
-                                    ? Colors.greenAccent
-                                    : Colors.white,
-                              ),
-                              minHeight: 6,
-                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
