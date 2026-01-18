@@ -412,8 +412,9 @@ void main() {
             'ingredients_not_found': 0,
           },
         },
-        'ingredients': {
+        'foods': {
           'tomate': {
+            'type': 'ingredient',
             'fdc_id': 12345,
             'fdc_description': 'Tomatoes',
             'match_score': 95.0,
@@ -428,6 +429,7 @@ void main() {
             },
           },
           'queso': {
+            'type': 'ingredient',
             'fdc_id': 67890,
             'fdc_description': 'Cheese',
             'match_score': 85.0,
@@ -441,9 +443,8 @@ void main() {
               'sugars_g': 0.0,
             },
           },
-        },
-        'dishes': {
           'caprese': {
+            'type': 'dish',
             'components': {'tomate': 50, 'queso': 50},
             'missing_components': <String>[],
             'nutrients_per_100g': {
