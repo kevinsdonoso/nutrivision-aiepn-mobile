@@ -46,3 +46,7 @@ app.*.map.json
 
 # Claude Code
 .claude/
+
+# Archivos temporales de Claude Code
+nul
+tmpclaude-*

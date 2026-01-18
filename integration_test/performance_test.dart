@@ -14,7 +14,7 @@ import 'package:image/image.dart' as img;
 
 import 'package:nutrivision_aiepn_mobile/core/logging/log_config.dart';
 // ignore_for_file: avoid_print
-import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_detector.dart';
+import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_service.dart';
 
 /// Thresholds de rendimiento por tipo de dispositivo.
 ///

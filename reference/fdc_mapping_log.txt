@@ -1,74 +1,124 @@
+# FDC Mapping Log - 2026-01-12T03:54:53.842983
+# Clases a procesar: 83
 ============================================================
-NutriVisionAIEPN - FoodData Central Mapping Log
-Generated: 2025-12-11T04:03:23.701613
+
+[2026-01-12 03:54:57] [INFO] ==================================================
+[2026-01-12 03:54:57] [INFO] INICIO DE PROCESAMIENTO
+[2026-01-12 03:54:57] [INFO] Ingredientes: 77
+[2026-01-12 03:54:57] [INFO] Platos: 6
+[2026-01-12 03:54:57] [INFO] ==================================================
+[2026-01-12 03:54:57] [INFO] [choclo] ✅ Match: 'Corn, sweet, yellow, raw' (score=100.0)
+[2026-01-12 03:54:58] [INFO] [tostado] ✅ Match: 'Corn nuts' (score=100.0)
+[2026-01-12 03:54:59] [INFO] [mote] ✅ Match: 'Hominy, canned, white' (score=100.0)
+[2026-01-12 03:55:00] [INFO] [cebolla] ✅ Match: 'Onions, raw' (score=100.0)
+[2026-01-12 03:55:01] [INFO] [tomate] ✅ Match: 'Tomatoes, red, ripe, raw, year round average' (score=100.0)
+[2026-01-12 03:55:02] [INFO] [lenteja] ✅ Match: 'Lentils, raw' (score=100.0)
+[2026-01-12 03:55:03] [INFO] [perejil] ✅ Match: 'Parsley, fresh' (score=100.0)
+[2026-01-12 03:55:04] [INFO] [arveja] ✅ Match: 'Peas, green, raw' (score=100.0)
+[2026-01-12 03:55:05] [INFO] [queso_mozzarella] ✅ Match: 'Cheese, mozzarella, whole milk' (score=100.0)
+[2026-01-12 03:55:06] [INFO] [frijol_blanco] ✅ Match: 'Beans, white, mature seeds, raw' (score=100.0)
+[2026-01-12 03:55:07] [INFO] [carne_de_cerdo] ✅ Match: 'Pork, fresh, loin, top loin (chops), boneless, separable lean and fat, raw' (score=75.59055118110236)
+[2026-01-12 03:55:08] [INFO] [chocho] ✅ Match: 'Lupins, mature seeds, cooked, boiled, without salt' (score=93.45794392523365)
+[2026-01-12 03:55:09] [INFO] [albahaca] ✅ Match: 'Basil, fresh' (score=100.0)
+[2026-01-12 03:55:11] [INFO] [camaron] ✅ Match: 'Crustaceans, shrimp, farm raised, raw' (score=76.31578947368422)
+[2026-01-12 03:55:12] [INFO] [frijol_rojo] ✅ Match: 'Beans, kidney, red, mature seeds, raw' (score=100.0)
+[2026-01-12 03:55:13] [WARNING] [masa] ⚠️ Low score: 'Dessert pizza' (score=66.66666666666667)
+[2026-01-12 03:55:14] [INFO] [pimiento_rojo] ✅ Match: 'Peppers, sweet, red, raw' (score=100.0)
+[2026-01-12 03:55:15] [INFO] [arroz] ✅ Match: 'Rice, white, long-grain, regular, raw, unenriched' (score=100.0)
+[2026-01-12 03:55:16] [INFO] [aceituna_negra] ✅ Match: 'Olives, ripe, canned (small-extra large)' (score=100.0)
+[2026-01-12 03:55:17] [INFO] [lechuga] ✅ Match: 'Lettuce, green leaf, raw' (score=100.0)
+[2026-01-12 03:55:18] [INFO] [pimiento_verde] ✅ Match: 'Peppers, sweet, green, raw' (score=100.0)
+[2026-01-12 03:55:19] [INFO] [tomate_cherry] ✅ Match: 'Tomatoes, grape, raw' (score=100.0)
+[2026-01-12 03:55:20] [INFO] [pescado] ✅ Match: 'Fish, tilapia, raw' (score=100.0)
+[2026-01-12 03:55:21] [INFO] [chorizo] ✅ Match: 'Bologna, beef and pork' (score=77.27272727272727)
+[2026-01-12 03:55:22] [INFO] [aguacate] ✅ Match: 'Avocados, raw, all commercial varieties' (score=100.0)
+[2026-01-12 03:55:23] [INFO] [mejillon] ✅ Match: 'Mollusks, mussel, blue, raw' (score=100.0)
+[2026-01-12 03:55:24] [INFO] [papa] ✅ Match: 'Potatoes, flesh and skin, raw' (score=100.0)
+[2026-01-12 03:55:25] [INFO] [pollo] ✅ Match: 'Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw' (score=99.29078014184397)
+[2026-01-12 03:55:26] [INFO] [pulpo] ✅ Match: 'Mollusks, octopus, common, raw' (score=100.0)
+[2026-01-12 03:55:27] [WARNING] [jamon_serrano] ⚠️ Low score: 'Pork, cured, ham, patties, unheated' (score=52.459016393442624)
+[2026-01-12 03:55:28] [INFO] [haba] ✅ Match: 'Broadbeans (fava beans), mature seeds, raw' (score=100.0)
+[2026-01-12 03:55:29] [INFO] [salami] ✅ Match: 'Salami, dry or hard, pork' (score=100.0)
+[2026-01-12 03:55:30] [INFO] [frijol_negro] ✅ Match: 'Beans, black, mature seeds, raw' (score=100.0)
+[2026-01-12 03:55:30] [INFO] [rucula] ✅ Match: 'Arugula, raw' (score=100.0)
+[2026-01-12 03:55:31] [INFO] [espinaca] ✅ Match: 'Spinach, raw' (score=100.0)
+[2026-01-12 03:55:32] [INFO] [limon] ✅ Match: 'Limes, raw' (score=100.0)
+[2026-01-12 03:55:33] [INFO] [pina] ✅ Match: 'Pineapple, raw, all varieties' (score=100.0)
+[2026-01-12 03:55:34] [INFO] [champinon] ✅ Match: 'Mushrooms, white, raw' (score=100.0)
+[2026-01-12 03:55:35] [INFO] [mango] ✅ Match: 'Mangos, raw' (score=100.0)
+[2026-01-12 03:55:36] [INFO] [carne_de_res_molida] ✅ Match: 'Beef, ground, raw' (score=96.96969696969697)
+[2026-01-12 03:55:37] [INFO] [salsa_de_tomate] ✅ Match: 'Sauce, pasta, spaghetti/marinara, ready-to-serve' (score=100.0)
+[2026-01-12 03:55:38] [INFO] [platano_maduro] ✅ Match: 'Plantains, yellow, raw' (score=100.0)
+[2026-01-12 03:55:39] [INFO] [anchoa] ✅ Match: 'Fish, anchovy, european, raw' (score=100.0)
+[2026-01-12 03:55:40] [INFO] [calamar] ✅ Match: 'Mollusks, squid, mixed species, raw' (score=100.0)
+[2026-01-12 03:55:41] [INFO] [jamon] ✅ Match: 'Ham, sliced, regular (approximately 11% fat)' (score=100.0)
+[2026-01-12 03:55:42] [INFO] [almeja] ✅ Match: 'Mollusks, clam, mixed species, raw' (score=100.0)
+[2026-01-12 03:55:43] [INFO] [salchicha] ✅ Match: 'Pork, fresh, separable fat, raw' (score=75.0)
+[2026-01-12 03:55:45] [INFO] [langostino] ✅ Match: 'Crustaceans, shrimp, farm raised, raw' (score=76.31578947368422)
+[2026-01-12 03:55:46] [INFO] [platano_verde] ✅ Match: 'Plantains, green, raw' (score=100.0)
+[2026-01-12 03:55:47] [INFO] [tortilla_de_papa] ✅ Match: 'Egg omelet or scrambled egg, made with oil' (score=78.57142857142857)
+[2026-01-12 03:55:48] [INFO] [mango_verde] ✅ Match: 'Mangos, raw' (score=100.0)
+[2026-01-12 03:55:49] [INFO] [cebolla_blanca] ✅ Match: 'Onions, sweet, raw' (score=100.0)
+[2026-01-12 03:55:50] [INFO] [pepperoni] ✅ Match: 'Pepperoni, beef and pork, sliced' (score=100.0)
+[2026-01-12 03:55:51] [INFO] [pimiento_amarillo] ✅ Match: 'Peppers, sweet, yellow, raw' (score=100.0)
+[2026-01-12 03:55:52] [INFO] [alcachofa] ✅ Match: 'Artichokes, (globe or french), raw' (score=100.0)
+[2026-01-12 03:55:53] [INFO] [queso_fresco] ✅ Match: 'Cheese, fresh, queso fresco' (score=100.0)
+[2026-01-12 03:55:53] [INFO] [aceituna_verde] ✅ Match: 'Olives, pickled, canned or bottled, green' (score=100.0)
+[2026-01-12 03:55:54] [INFO] [oregano] ✅ Match: 'Spices, oregano, dried' (score=100.0)
+[2026-01-12 03:55:55] [INFO] [camote] ✅ Match: 'Sweet potato leaves, raw' (score=80.0)
+[2026-01-12 03:55:57] [INFO] [sal] ✅ Match: 'Salt, table' (score=100.0)
+[2026-01-12 03:55:58] [INFO] [pimienta_negra] ✅ Match: 'Spices, pepper, black' (score=100.0)
+[2026-01-12 03:55:59] [INFO] [queso_parmesano] ✅ Match: 'Cheese, parmesan, grated' (score=100.0)
+[2026-01-12 03:56:00] [INFO] [aji_picante] ✅ Match: 'Peppers, hot chili, red, raw' (score=100.0)
+[2026-01-12 03:56:01] [INFO] [tocino] ✅ Match: 'Pork, cured, bacon, unprepared' (score=100.0)
+[2026-01-12 03:56:02] [WARNING] [carne_de_res] ⚠️ Low score: 'Beef, ground, raw' (score=69.23076923076923)
+[2026-01-12 03:56:02] [INFO] [cuero_reventado] ✅ Match: 'Snacks, pork skins, plain' (score=80.95238095238095)
+[2026-01-12 03:56:03] [INFO] [garbanzo] ✅ Match: 'Chickpeas (garbanzo beans, bengal gram), mature seeds, raw' (score=100.0)
+[2026-01-12 03:56:04] [INFO] [ajo] ✅ Match: 'Garlic, raw' (score=100.0)
+[2026-01-12 03:56:05] [INFO] [cangrejo] ✅ Match: 'Crustaceans, crab, blue, raw' (score=100.0)
+[2026-01-12 03:56:08] [INFO] [vainita] ✅ Match: 'Beans, snap, green, raw' (score=100.0)
+[2026-01-12 03:56:09] [INFO] [pepinillo] ✅ Match: 'Pickles, cucumber, dill or kosher dill' (score=100.0)
+[2026-01-12 03:56:10] [INFO] [naranja] ✅ Match: 'Orange, raw' (score=100.0)
+[2026-01-12 03:56:11] [INFO] [huevo] ✅ Match: 'Egg, whole, raw, fresh' (score=100.0)
+[2026-01-12 03:56:12] [INFO] [zanahoria] ✅ Match: 'Carrots, raw' (score=100.0)
+[2026-01-12 03:56:13] [INFO] [esparrago] ✅ Match: 'Asparagus, raw' (score=100.0)
+[2026-01-12 03:56:14] [INFO] [romero] ✅ Match: 'Rosemary, fresh' (score=100.0)
+[2026-01-12 03:56:15] [INFO] [concha] ✅ Match: 'Mollusks, clam, mixed species, raw' (score=100.0)
+[2026-01-12 03:56:15] [INFO] [aceite_oliva] ✅ Match: 'Olive oil' (score=100.0)
+[2026-01-12 03:56:16] [INFO] [azafran] ✅ Match: 'Spices, saffron' (score=100.0)
+[2026-01-12 03:56:17] [INFO] [cilantro] ✅ Match: 'Coriander (cilantro) leaves, raw' (score=100.0)
+[2026-01-12 03:56:18] [INFO] [menestra] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] [fritada] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] [caprese_salad] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] [paella] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] [pizza] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] [ceviche] ✅ Plato calculado completo
+[2026-01-12 03:56:18] [INFO] JSON exportado: /kaggle/working/nutrition_data/nutrition_fdc.json (40.5 KB)
+[2026-01-12 03:56:18] [INFO] SQLite exportado: /kaggle/working/nutrition_data/fooddata.db (72.0 KB)
+
+============================================================
+RESUMEN FINAL DE EXPORTACIÓN
 ============================================================
 
---- ESTADÍSTICAS ---
-Total clases: 83
-Ingredientes encontrados: 68
-Ingredientes no encontrados: 0
-Platos procesados: 6
-Score promedio: 92.5%
-Tiempo de proceso: 90.5s
+📊 ESTADÍSTICAS:
+   Total clases: 83
+   Clases con datos: 83
+   Cobertura total: 100.0%
+   Ingredientes encontrados: 77
+   Ingredientes score bajo: 3
+   Ingredientes no encontrados: 0
+   Platos completos: 6
+   Platos parciales: 0
+   Platos fallidos: 0
+   Score promedio: 96.2%
+   Tiempo de proceso: 80.7s
 
---- ADVERTENCIAS ---
-  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
-  - {'label': 'pescado', 'score': 62.06896551724138, 'fdc_description': 'Fish, halibut'}
-  - {'label': 'tostado', 'score': 64.86486486486487, 'fdc_description': 'Bread, cinnamon, toasted'}
-  - {'label': 'pollo', 'score': 73.6842105263158, 'fdc_description': 'Chicken feet'}
-  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
-  - {'label': 'arroz', 'score': 62.5, 'fdc_description': 'Adobo, with rice'}
-  - {'label': 'carne_de_cerdo', 'score': 64.0, 'fdc_description': 'Pork, NFS'}
-  - {'label': 'huevo', 'score': 56.52173913043479, 'fdc_description': 'Eggs, Grade A, Large, egg whole'}
-  - {'label': 'papa', 'score': 71.42857142857143, 'fdc_description': 'Stewed potatoes'}
-  - {'label': 'almeja', 'score': 68.96551724137932, 'fdc_description': 'Clams, raw'}
-  - {'label': 'langostino', 'score': 57.14285714285714, 'fdc_description': 'Shrimp, NFS'}
-  - {'label': 'ceviche', 'missing_components': ['cilantro']}
-  - {'label': 'paella', 'missing_components': ['azafran']}
-  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
-  - {'label': 'pescado', 'score': 64.28571428571428, 'fdc_description': 'Fish, whiting, NFS'}
-  - {'label': 'tostado', 'score': 62.5, 'fdc_description': 'Bread, rye, toasted'}
-  - {'label': 'masa', 'score': 66.66666666666667, 'fdc_description': 'Dessert pizza'}
-  - {'label': 'pollo', 'score': 72.07207207207207, 'fdc_description': 'Chicken, breast, boneless, skinless, raw'}
-  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
-  - {'label': 'salchicha', 'score': 73.6842105263158, 'fdc_description': 'Pork sausage'}
-  - {'label': 'tocino', 'score': 66.66666666666667, 'fdc_description': 'Bacon bits'}
-  - {'label': 'arroz', 'score': 73.41772151898735, 'fdc_description': 'Flour, rice, white, unenriched'}
-  - {'label': 'papa', 'score': 70.58823529411764, 'fdc_description': 'Potato, NFS'}
-  - {'label': 'langostino', 'score': 72.0, 'fdc_description': 'Shrimp, fried'}
-  - {'label': 'caprese_salad', 'missing_components': ['aceite_oliva']}
-  - {'label': 'ceviche', 'missing_components': ['cilantro']}
-  - {'label': 'pizza', 'missing_components': ['aceite_oliva']}
-  - {'label': 'menestra', 'missing_components': ['aceite_oliva']}
-  - {'label': 'paella', 'missing_components': ['aceite_oliva', 'azafran']}
-  - {'label': 'fritada', 'missing_components': ['aceite_oliva']}
-  - {'label': 'tortilla_de_papa', 'missing_components': ['aceite_oliva']}
-  - {'label': 'chocho', 'score': 63.63636363636363, 'fdc_description': 'Soup, bean'}
-  - {'label': 'pescado', 'score': 64.28571428571428, 'fdc_description': 'Fish, whiting, NFS'}
-  - {'label': 'tostado', 'score': 62.5, 'fdc_description': 'Bread, rye, toasted'}
-  - {'label': 'masa', 'score': 66.66666666666667, 'fdc_description': 'Dessert pizza'}
-  - {'label': 'pollo', 'score': 72.07207207207207, 'fdc_description': 'Chicken, breast, boneless, skinless, raw'}
-  - {'label': 'salami', 'score': 70.58823529411764, 'fdc_description': 'Salami, NFS'}
-  - {'label': 'salchicha', 'score': 73.6842105263158, 'fdc_description': 'Pork sausage'}
-  - {'label': 'tocino', 'score': 66.66666666666667, 'fdc_description': 'Bacon bits'}
-  - {'label': 'arroz', 'score': 73.41772151898735, 'fdc_description': 'Flour, rice, white, unenriched'}
-  - {'label': 'papa', 'score': 70.58823529411764, 'fdc_description': 'Potato, NFS'}
-  - {'label': 'langostino', 'score': 72.0, 'fdc_description': 'Shrimp, fried'}
-  - {'label': 'tortilla_de_papa', 'score': 62.22222222222222, 'fdc_description': 'Spanish rice, from restaurant'}
+⚠️ ADVERTENCIAS (3):
+   • masa: low_match_score
+   • jamon_serrano: low_match_score
+   • carne_de_res: low_match_score
 
---- ERRORES ---
-  - {'label': 'choclo', 'error': 'not_found_in_fdc'}
-
---- LOG DE PROCESAMIENTO ---
-[04:00:43] [WARNING] 'chocho' tiene match score bajo: 64%
-[04:00:52] [WARNING] 'pescado' tiene match score bajo: 64%
-[04:01:00] [WARNING] 'tostado' tiene match score bajo: 62%
-[04:01:07] [WARNING] 'masa' tiene match score bajo: 67%
-[04:01:13] [WARNING] 'pollo' tiene match score bajo: 72%
-[04:01:15] [WARNING] 'salami' tiene match score bajo: 71%
-[04:01:16] [WARNING] 'salchicha' tiene match score bajo: 74%
-[04:01:18] [WARNING] 'tocino' tiene match score bajo: 67%
-[04:01:20] [WARNING] 'arroz' tiene match score bajo: 73%
-[04:01:28] [WARNING] 'papa' tiene match score bajo: 71%
-[04:01:39] [WARNING] 'langostino' tiene match score bajo: 72%
-[04:01:49] [WARNING] 'tortilla_de_papa' tiene match score bajo: 62%
+📁 ARCHIVOS GENERADOS:
+   • JSON:   /kaggle/working/nutrition_data/nutrition_fdc.json (40.5 KB)
+   • SQLite: /kaggle/working/nutrition_data/fooddata.db (72.0 KB)
+   • Log:    /kaggle/working/nutrition_data/fdc_mapping_log.txt
