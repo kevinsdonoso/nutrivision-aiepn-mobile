@@ -67,6 +67,10 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   // Métricas actuales (manejadas por controller)
   RuntimeMetrics _currentMetrics = RuntimeMetrics.empty();
 
+  // Dimensiones de imagen procesada (post-rotación) para overlay
+  int _processedImageWidth = 0;
+  int _processedImageHeight = 0;
+
   // ═══════════════════════════════════════════════════════════════════════════
   // GETTERS DE ESTADO (Fuente única de verdad)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -96,6 +100,11 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
           if (mounted) {
             setState(() {
               _currentMetrics = metrics;
+              // Almacenar dimensiones de imagen procesada para overlay
+              if (metrics.imageWidth > 0 && metrics.imageHeight > 0) {
+                _processedImageWidth = metrics.imageWidth;
+                _processedImageHeight = metrics.imageHeight;
+              }
             });
             // También actualizar el provider para compatibilidad con widgets existentes
             ref.read(cameraStateProvider.notifier).updateDetections(
@@ -446,7 +455,12 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
       // Ejecutar detección usando el provider (para one-off detection)
       // NOTA: Esto cargará el detector si aún no está cargado
       final detector = await ref.read(yoloDetectorProvider.future);
-      final detections = await detector.detect(image);
+      final settings = await ref.read(cameraSettingsProvider.future);
+      final detections = await detector.detect(
+        image,
+        confidenceThreshold: settings.confidenceThreshold,
+        iouThreshold: settings.iouThreshold,
+      );
 
       if (!mounted) return;
 
@@ -757,49 +771,80 @@ class _CameraDetectionPageState extends ConsumerState<CameraDetectionPage>
   }
 
   Widget _buildCameraView() {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Preview de cámara (no depende del estado)
-        _buildCameraPreview(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Obtener el tamaño real del área de preview
+        final previewAreaSize = Size(constraints.maxWidth, constraints.maxHeight);
 
-        // Overlay de detecciones - Widget separado que escucha solo detections
-        _DetectionOverlayWrapper(
-          previewSize: MediaQuery.of(context).size,
-          imageWidth:
-              _cameraController!.value.previewSize?.height.toInt() ?? 640,
-          imageHeight:
-              _cameraController!.value.previewSize?.width.toInt() ?? 480,
-        ),
+        // Usar dimensiones de imagen procesada (post-rotación) si disponibles,
+        // sino calcular basándose en orientación del sensor
+        int imageWidth = _processedImageWidth;
+        int imageHeight = _processedImageHeight;
 
-        // Controles - Widget separado con su propio estado
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: _CameraControlsWrapper(
-            onCapture: isDetectionOn ? null : () => _captureAndAnalyze(),
-            onToggleFlash: isDetectionOn ? null : _toggleFlash,
-            onSwitchCamera: isDetectionOn
-                ? null
-                : (_cameras != null && _cameras!.length > 1 ? _switchCamera : null),
-          ),
-        ),
+        if (imageWidth == 0 || imageHeight == 0) {
+          // Fallback: calcular basándose en orientación del sensor
+          final sensorOrientation =
+              _cameraController?.description.sensorOrientation ?? 90;
+          final sensorWidth =
+              _cameraController?.value.previewSize?.width.toInt() ?? 640;
+          final sensorHeight =
+              _cameraController?.value.previewSize?.height.toInt() ?? 480;
 
-        // Badge de conteo de detecciones - Widget separado
-        const _DetectionCountBadge(),
+          // Si sensor está a 90° o 270°, intercambiar dimensiones
+          if (sensorOrientation == 90 || sensorOrientation == 270) {
+            imageWidth = sensorHeight;
+            imageHeight = sensorWidth;
+          } else {
+            imageWidth = sensorWidth;
+            imageHeight = sensorHeight;
+          }
+        }
 
-        // Badge de informacion de memoria - Widget separado
-        _MemoryInfoBadge(isModelLoaded: isModelLoaded),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // Preview de cámara (no depende del estado)
+            _buildCameraPreview(),
 
-        // Badge de advertencia de resolución baja - Widget separado
-        const _LowResolutionWarning(),
+            // Overlay de detecciones - Widget separado que escucha solo detections
+            _DetectionOverlayWrapper(
+              previewSize: previewAreaSize,
+              imageWidth: imageWidth,
+              imageHeight: imageHeight,
+            ),
 
-        // Overlay de métricas runtime (NEW)
-        if (_detectionController.isDetectionActive &&
-            _currentMetrics.totalFramesProcessed > 0)
-          _buildMetricsOverlay(),
-      ],
+            // Controles - Widget separado con su propio estado
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _CameraControlsWrapper(
+                onCapture: isDetectionOn ? null : () => _captureAndAnalyze(),
+                onToggleFlash: isDetectionOn ? null : _toggleFlash,
+                onSwitchCamera: isDetectionOn
+                    ? null
+                    : (_cameras != null && _cameras!.length > 1
+                        ? _switchCamera
+                        : null),
+              ),
+            ),
+
+            // Badge de conteo de detecciones - Widget separado
+            const _DetectionCountBadge(),
+
+            // Badge de informacion de memoria - Widget separado
+            _MemoryInfoBadge(isModelLoaded: isModelLoaded),
+
+            // Badge de advertencia de resolución baja - Widget separado
+            const _LowResolutionWarning(),
+
+            // Overlay de métricas runtime (NEW)
+            if (_detectionController.isDetectionActive &&
+                _currentMetrics.totalFramesProcessed > 0)
+              _buildMetricsOverlay(),
+          ],
+        );
+      },
     );
   }
 

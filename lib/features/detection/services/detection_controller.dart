@@ -17,8 +17,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../data/models/detection.dart';
-import 'yolo_detector.dart';
-import 'camera_frame_processor.dart';
+import 'yolo_service.dart';
+import 'detection_service.dart';
 
 /// Controlador que gestiona el ciclo de vida completo de la detección.
 ///
@@ -51,6 +51,10 @@ class DetectionController {
   final List<double> _recentConfidences = []; // Últimos 30 confidences
   int _totalFramesProcessed = 0;
   DateTime? _sessionStartTime;
+
+  // Dimensiones de imagen procesada (post-rotación)
+  int _lastImageWidth = 0;
+  int _lastImageHeight = 0;
 
   // Callbacks
   Function(List<Detection>, RuntimeMetrics)? _onDetectionsUpdated;
@@ -258,6 +262,10 @@ class DetectionController {
       final inferenceTimeMs =
           _lastInferenceTime!.difference(inferenceStart).inMilliseconds;
 
+      // Almacenar dimensiones de imagen procesada (post-rotación)
+      _lastImageWidth = result.imageWidth;
+      _lastImageHeight = result.imageHeight;
+
       // Actualizar métricas
       _updateMetrics(inferenceTimeMs, result.detections);
       _totalFramesProcessed++;
@@ -339,6 +347,8 @@ class DetectionController {
       avgConfidence: avgConfidence,
       totalFramesProcessed: _totalFramesProcessed,
       sessionDurationSec: sessionDurationSec,
+      imageWidth: _lastImageWidth,
+      imageHeight: _lastImageHeight,
     );
   }
 
@@ -389,6 +399,12 @@ class RuntimeMetrics {
   final int totalFramesProcessed;
   final int sessionDurationSec;
 
+  /// Ancho de la imagen procesada (post-rotación).
+  final int imageWidth;
+
+  /// Alto de la imagen procesada (post-rotación).
+  final int imageHeight;
+
   const RuntimeMetrics({
     required this.avgFps,
     required this.avgLatencyMs,
@@ -397,6 +413,8 @@ class RuntimeMetrics {
     required this.avgConfidence,
     required this.totalFramesProcessed,
     required this.sessionDurationSec,
+    this.imageWidth = 0,
+    this.imageHeight = 0,
   });
 
   factory RuntimeMetrics.empty() => const RuntimeMetrics(
@@ -407,6 +425,8 @@ class RuntimeMetrics {
         avgConfidence: 0,
         totalFramesProcessed: 0,
         sessionDurationSec: 0,
+        imageWidth: 0,
+        imageHeight: 0,
       );
 
   @override

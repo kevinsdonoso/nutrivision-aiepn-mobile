@@ -14,9 +14,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 import '../../../app/routes.dart';
-import '../services/yolo_detector.dart';
+import '../services/yolo_service.dart';
 import '../../../data/models/detection.dart';
 import '../../../core/exceptions/app_exceptions.dart';
+import '../providers/camera_settings_provider.dart';
+import '../widgets/gallery_settings_panel.dart';
 import '../../nutrition/providers/nutrition_provider.dart';
 import '../../nutrition/widgets/nutrition_card.dart';
 import '../../nutrition/widgets/quantity_adjustment_dialog.dart';
@@ -167,10 +169,15 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
       _imageWidth = image.width;
       _imageHeight = image.height;
 
+      // Obtener ajustes de detección
+      final settings = await ref.read(cameraSettingsProvider.future);
+
       final stopwatch = Stopwatch()..start();
       final detections = await _detector.detectFromSource(
         source: DetectionSource.photo,
         image: image,
+        confidenceThreshold: settings.confidenceThreshold,
+        iouThreshold: settings.iouThreshold,
       );
       stopwatch.stop();
 
@@ -232,6 +239,13 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
     );
   }
 
+  Future<void> _showSettingsPanel() async {
+    final result = await showGallerySettingsPanel(context);
+    if (result == true && mounted) {
+      _showSnackBar('Ajustes aplicados', Colors.green);
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // BUILD UI
   // ═══════════════════════════════════════════════════════════════════════════
@@ -254,6 +268,11 @@ class _GalleryDetectionPageState extends ConsumerState<GalleryDetectionPage> {
               tooltip: 'Mostrar todos',
               onPressed: () => setState(() => _selectedIngredient = null),
             ),
+          IconButton(
+            icon: const Icon(Icons.tune),
+            tooltip: 'Ajustes de deteccion',
+            onPressed: _showSettingsPanel,
+          ),
         ],
       ),
       body: SingleChildScrollView(

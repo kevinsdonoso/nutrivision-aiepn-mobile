@@ -147,23 +147,23 @@ class NutritionData {
       json['metadata'] as Map<String, dynamic>? ?? {},
     );
 
-    // Parsear ingredientes
-    final ingredientsJson = json['ingredients'] as Map<String, dynamic>? ?? {};
-    final ingredients = ingredientsJson.map(
-      (label, data) => MapEntry(
-        label,
-        NutritionInfo.fromJsonIngredient(label, data as Map<String, dynamic>),
-      ),
-    );
+    // Parsear foods (estructura unificada con campo 'type')
+    final foodsJson = json['foods'] as Map<String, dynamic>? ?? {};
 
-    // Parsear platos
-    final dishesJson = json['dishes'] as Map<String, dynamic>? ?? {};
-    final dishes = dishesJson.map(
-      (label, data) => MapEntry(
-        label,
-        NutritionInfo.fromJsonDish(label, data as Map<String, dynamic>),
-      ),
-    );
+    final ingredients = <String, NutritionInfo>{};
+    final dishes = <String, NutritionInfo>{};
+
+    for (final entry in foodsJson.entries) {
+      final label = entry.key;
+      final data = entry.value as Map<String, dynamic>;
+      final type = data['type'] as String?;
+
+      if (type == 'dish') {
+        dishes[label] = NutritionInfo.fromJsonDish(label, data);
+      } else {
+        ingredients[label] = NutritionInfo.fromJsonIngredient(label, data);
+      }
+    }
 
     return NutritionData(
       metadata: metadata,
