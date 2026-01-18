@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                         yolo_detector.dart                                    ║
+// ║                            yolo_service.dart                                  ║
 // ║              Motor de inferencia YOLO11n con TensorFlow Lite                  ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Clase principal para detección de ingredientes alimenticios.                 ║

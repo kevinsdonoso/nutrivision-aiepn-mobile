@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                         camera_frame_processor.dart                           ║
+// ║                           detection_service.dart                              ║
 // ║              Procesador de frames de cámara para detección YOLO               ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Convierte frames de cámara (YUV420) a formato RGB para inferencia.           ║
@@ -16,7 +16,7 @@ import '../../../core/logging/app_logger.dart';
 import '../../../data/models/detection.dart';
 import 'image_processing_isolate.dart';
 import 'native_image_processor.dart';
-import 'yolo_detector.dart';
+import 'yolo_service.dart';
 
 /// Procesador de frames de cámara para detección en tiempo real.
 ///

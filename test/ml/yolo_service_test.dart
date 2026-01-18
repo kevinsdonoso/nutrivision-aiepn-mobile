@@ -1,13 +1,11 @@
 // ╔═══════════════════════════════════════════════════════════════════════════════╗
-// ║                      yolo_detector_test.dart                                  ║
+// ║                        yolo_service_test.dart                                 ║
 // ║          Tests para el detector YOLO11n - NutriVisionAIEPN                    ║
 // ╠═══════════════════════════════════════════════════════════════════════════════╣
 // ║  Verifica que el detector YOLO funciona correctamente.                        ║
 // ║  Usa las imágenes de prueba en test/test_assets/test_images/                  ║
 // ║                                                                               ║
-// ║  Ejecutar con: flutter test test/ml/yolo_detector_test.dart                   ║
-// ║                                                                               ║
-// ║  v2.0 - Actualizado para usar excepciones personalizadas                      ║
+// ║  Ejecutar con: flutter test test/ml/yolo_service_test.dart                    ║
 // ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 import 'dart:io';
@@ -18,7 +16,7 @@ import 'package:image/image.dart' as img;
 import 'package:nutrivision_aiepn_mobile/core/exceptions/app_exceptions.dart';
 import 'package:nutrivision_aiepn_mobile/core/logging/log_config.dart';
 import 'package:nutrivision_aiepn_mobile/data/models/detection.dart';
-import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_detector.dart';
+import 'package:nutrivision_aiepn_mobile/features/detection/services/yolo_service.dart';
 
 /// Configuración del test
 class TestConfig {
